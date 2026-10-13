@@ -20,7 +20,7 @@ Contexto, regras (RN), decisões (D) e contratos: [README](../../README.md). Pla
   - Commit: `docs: persona do paciente`
   - Pronto quando: tem todos os itens pedidos pelo professor.
 
-- [ ] **A2 · Decisões D1, D2, D3, D6 e D7**
+- [x] **A2 · Decisões D1, D2, D3, D6 e D7**
   - Branch: `docs/decisoes-pesquisa`
   - O que fazer: em `docs/decisoes.md`, escrever cada decisão com o porquê, ligando-a à persona do paciente. As justificativas aprovadas pela dupla estão no README (seção 4); aqui elas são explicadas com mais detalhe.
   - Commit: `docs: decisoes da pesquisa`
