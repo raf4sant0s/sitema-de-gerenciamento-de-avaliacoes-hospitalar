@@ -25,7 +25,7 @@ Contexto, regras (RN), decisões (D) e contratos: [README](../../README.md). Pla
   - O que fazer: em `docs/decisoes.md`, escrever cada decisão com o porquê, ligando-a à persona do paciente. As justificativas aprovadas pela dupla estão no README (seção 4); aqui elas são explicadas com mais detalhe.
   - Commit: `docs: decisoes da pesquisa`
 
-- [ ] **A3 · Guia de estilos**
+- [x] **A3 · Guia de estilos**
   - Branch: `docs/guia-de-estilos`
   - O que fazer: `docs/guia-de-estilos.md` com cores, fontes, tamanhos, carinhas, botões e estados (normal, tocado, desabilitado). Partir da seção 11 do README e atualizá-la se algo mudar.
   - Commit: `docs: guia de estilos`
