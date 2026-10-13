@@ -6,6 +6,6 @@ Site do paciente (React + Vite). Pesquisa **100% anônima**: nenhum dado pessoal
 | --- | --- |
 | `public/` | Arquivos estáticos (ícones, imagens) |
 | `src/api/` | Funções que chamam a API |
-| `src/components/` | Peças visuais reutilizáveis (botões, carinhas, escala 0 a 10) |
+| `src/components/` | Peças visuais reutilizáveis (botões, carinhas de 1 a 5, link "pular") |
 | `src/pages/` | As telas da pesquisa |
 | `src/styles/` | Estilos globais |
