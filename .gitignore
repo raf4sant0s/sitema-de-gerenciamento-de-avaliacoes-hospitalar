@@ -1,0 +1,23 @@
+# dependências e builds
+node_modules/
+dist/
+build/
+coverage/
+playwright-report/
+test-results/
+
+# variáveis de ambiente (nunca commitar)
+.env
+.env.*
+!.env.example
+
+# arquivo pessoal do Claude (cada um tem o seu)
+CLAUDE.local.md
+.claude/settings.local.json
+
+# sistema e editor
+.DS_Store
+Thumbs.db
+.vscode/*
+!.vscode/extensions.json
+*.log
