@@ -14,7 +14,7 @@ Contexto, regras (RN), decisões (D) e contratos: [README](../../README.md). Pla
 
 ## Etapa 1 — Documentos e design
 
-- [ ] **A1 · Persona do paciente**
+- [x] **A1 · Persona do paciente**
   - Branch: `docs/persona-paciente`
   - O que fazer: em `docs/personas.md`, seção "Paciente": nome fictício, idade, contexto, objetivos, dores, familiaridade com tecnologia, canal preferido e uma frase que represente a visão dela.
   - Commit: `docs: persona do paciente`
