@@ -20,11 +20,18 @@ O README acima é a fonte única de verdade: contexto, regras de negócio (RN), 
 6. **Ao terminar uma tarefa:**
    - rode os testes e confira que funciona;
    - marque `[x]` na seção 13 do README;
-   - sugira a mensagem de commit (a que está na seção 13);
    - lembre a pessoa de escrever 3 linhas em `docs/registro-processo.md` (o que fez, ferramenta usada, o que mudou do plano);
-   - lembre de abrir o Pull Request para o colega revisar.
-7. **Nunca** commite `.env`, senhas ou tokens. Senhas de exemplo vêm de variáveis de ambiente.
-8. Commits e pushes só quando a pessoa pedir.
+   - entregue o **passo a passo do commit** (regra 8).
+7. **Nunca** coloque `.env`, senhas ou tokens no git. Senhas de exemplo vêm de variáveis de ambiente.
+8. **Commits: o Claude NUNCA executa `git commit`, `git push`, merge ou qualquer comando que altere o histórico.** Quem faz é sempre a pessoa, no próprio computador, com a própria conta. O Claude **nunca** adiciona `Co-Authored-By`, "Generated with Claude" ou qualquer marca do Claude em commits, Pull Requests ou arquivos do repositório. Ao terminar cada tarefa, o Claude **sempre** entrega o passo a passo, explicando cada comando e ligando-o ao que foi feito no projeto:
+   1. qual tarefa da seção 13 foi concluída e quais regras (RN) ou decisões (D) ela atende;
+   2. `git status` para conferir os arquivos alterados (listar quais são esperados);
+   3. `git add <arquivos da tarefa>` (só os arquivos da pessoa dona, nunca `.env`);
+   4. `git commit -m "<mensagem da seção 13>"`;
+   5. `git push -u origin <nome-da-branch>`;
+   6. como abrir o Pull Request no GitHub para o colega revisar (título e descrição sugeridos, citando a tarefa e as RN);
+   7. depois do merge: `git checkout main` e `git pull`.
+   Cada comando vai num bloco separado, em PowerShell.
 
 ## Pontos que valem nota (não esquecer)
 

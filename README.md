@@ -588,6 +588,7 @@ Depois: abrir **Pull Request** no GitHub → o colega revisa → **Merge** → o
 
 - Nunca commitar direto na `main`. Uma branch por tarefa.
 - Cada um commita do próprio computador, com a própria conta.
+- **Quem commita é sempre a pessoa, nunca o Claude.** O Claude não executa `git commit`, `git push` nem merge, e não coloca nenhuma marca dele (`Co-Authored-By`, "Generated with Claude") em commits, Pull Requests ou arquivos. Ao terminar cada tarefa, ele entrega o passo a passo dos comandos acima, explicando cada um e dizendo qual tarefa da seção 13 e quais regras (RN) e decisões (D) do projeto aquele commit entrega.
 - Prefixos: `feat` (funcionalidade), `fix` (correção), `docs` (documentos), `test` (testes), `chore` (configuração), `refactor` (reorganização sem mudar comportamento). Escopo entre parênteses = módulo: `feat(tickets): ...`.
 - Arquivos `AB` (seção 7): avise antes de mexer.
 
