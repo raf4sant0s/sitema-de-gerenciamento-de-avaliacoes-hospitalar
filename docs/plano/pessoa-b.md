@@ -15,7 +15,7 @@ Contexto, regras (RN), decisões (D) e contratos: [README](../../README.md). Pla
 
 ## Etapa 1 — Base (prioridade)
 
-- [ ] **B1 · Criar a API**
+- [x] **B1 · Criar a API**
   - Branch: `chore/api-base`
   - O que fazer: `package.json` na raiz com workspaces (`apps/*` e `packages/*`); projeto Node + Express + TypeScript em `apps/api`; `src/config/` lendo o `.env`; `.env.example`; formato padrão de erro (`src/shared/errors.ts`); rota `GET /api/health`; Swagger em `/api/docs`.
   - Arquivos compartilhados (avisar a Pessoa A): `package.json` da raiz, `apps/api/package.json`, `app.ts`, `server.ts`.

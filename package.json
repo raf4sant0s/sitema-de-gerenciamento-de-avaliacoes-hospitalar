@@ -1,0 +1,13 @@
+{
+  "name": "sistema-avaliacoes-hospitalar",
+  "private": true,
+  "description": "Sistema de avaliação anônima do paciente: API, site da pesquisa e site de gestão",
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "dev:api": "npm run dev --workspace api",
+    "test:api": "npm run test --workspace api"
+  }
+}

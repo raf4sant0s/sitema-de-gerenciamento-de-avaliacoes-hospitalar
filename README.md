@@ -369,7 +369,29 @@ Pré-requisitos: Node.js 20 LTS, Git e VS Code.
 - só a Rafaela roda as migrations (`database/migrations/`), e avisa a Estefanie antes;
 - antes de rodar seeds ou apagar dados, avisem a colega, porque o que uma faz no banco a outra vê na hora.
 
-Os comandos exatos de instalação serão escritos aqui quando os projetos forem criados (Etapa 1 dos planos).
+**Primeira vez** (na pasta raiz do projeto; instala as bibliotecas de todos os apps de uma vez):
+
+```bash
+npm install
+```
+
+**API** (`apps/api`):
+
+1. Copie `apps/api/.env.example` para `apps/api/.env` e preencha (o `.env` nunca vai para o git):
+```bash
+copy apps\api\.env.example apps\api\.env
+```
+2. Ligar a API (reinicia sozinha quando um arquivo muda):
+```bash
+npm run dev:api
+```
+3. Conferir no navegador: `http://localhost:3333/api/health` responde `{"status":"ok"}` e `http://localhost:3333/api/docs` abre o Swagger.
+4. Rodar os testes:
+```bash
+npm run test:api
+```
+
+Os comandos dos sites `pesquisa` e `gestao` entram aqui na tarefa A6. Portas combinadas: `pesquisa` em `5173` e `gestao` em `5174` (são as que a API libera em `CORS_ORIGINS`).
 
 Variáveis de ambiente (os arquivos `.env` **nunca** vão para o git; só os `.env.example`):
 
