@@ -1,7 +1,7 @@
 import { type FormEvent, useState } from 'react';
 import { ApiError } from '../../api/client';
 import { downloadQrCode, type Sector, updateSector } from '../../api/sectors';
-import { input, primaryButton, secondaryButton } from './styles';
+import { input, primaryButton, secondaryButton } from '../../components/ui/styles';
 
 // Um setor na lista: links, código, situação e ações (tarefa B11).
 export default function SectorCard({ sector, onChanged }: { sector: Sector; onChanged: (sector: Sector) => void }) {

@@ -2,7 +2,7 @@ import { slugify } from '@avaliacoes/schemas';
 import { type FormEvent, useState } from 'react';
 import { ApiError } from '../../api/client';
 import { createSector, type Sector } from '../../api/sectors';
-import { input, primaryButton } from './styles';
+import { input, primaryButton } from '../../components/ui/styles';
 
 // Formulário "Novo setor" (tarefa B11).
 // Decisão da dupla: o link nasce do nome e pode ser ajustado antes de salvar; depois não muda mais.

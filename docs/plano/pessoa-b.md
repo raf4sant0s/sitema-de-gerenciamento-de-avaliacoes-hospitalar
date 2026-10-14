@@ -10,7 +10,7 @@ Contexto, regras (RN), decisões (D) e contratos: [README](../../README.md). Pla
 - Faça as tarefas **na ordem**. Cada uma tem a sua branch, que sai da `develop` e volta para ela com `git merge`, sem Pull Request (README, seção 15).
 - **B1, B2 e B3 são prioridade:** a Estefanie (Pessoa A) depende delas para começar a parte de API. Faça essas três antes dos documentos, se precisar.
 - **Depende de** diz quais tarefas da Pessoa A precisam estar na `develop` antes de começar.
-- Ao terminar uma tarefa, troque `[ ]` por `[x]` **no mesmo commit** e escreva 3 linhas em `docs/registro-processo.md`.
+- Ao terminar uma tarefa, troque `[ ]` por `[x]` **no mesmo commit** e o Claude escreve a linha em `docs/registro-processo.md`.
 - Itens **(a definir)** precisam ser decididos pela dupla antes de implementar.
 
 ## Etapa 1 — Base (prioridade)
@@ -84,7 +84,7 @@ Contexto, regras (RN), decisões (D) e contratos: [README](../../README.md). Pla
   - Regras: RN01, RN16
   - Commit: `feat(sectors): setores e qr code`
 
-- [ ] **B12 · Usuários**
+- [x] **B12 · Usuários**
   - Branch: `feat/usuarios`
   - Depende de: B10
   - O que fazer: rotas de `/users` e tela `/usuarios`. O super admin cadastra todos; o admin de setor só cadastra visualizadores do próprio setor (RN16).

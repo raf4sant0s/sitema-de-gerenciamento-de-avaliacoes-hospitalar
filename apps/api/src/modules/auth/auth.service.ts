@@ -37,3 +37,17 @@ export async function getCurrentUser(users: UsersRepository, id: number): Promis
 
   return toAuthUser(user);
 }
+
+// "Minha senha": a própria pessoa troca a senha, confirmando a atual (decisão da dupla, tarefa B12).
+export async function changePassword(users: UsersRepository, id: number, currentPassword: string, newPassword: string) {
+  const user = await users.findById(id);
+  if (!user || !user.active) {
+    throw new AppError(401, 'UNAUTHORIZED', 'Faça login para continuar');
+  }
+
+  if (!(await bcrypt.compare(currentPassword, user.password_hash))) {
+    throw new AppError(400, 'WRONG_PASSWORD', 'A senha atual está incorreta');
+  }
+
+  await users.update(id, { passwordHash: await bcrypt.hash(newPassword, 10) });
+}

@@ -60,5 +60,29 @@ export function createAuthRouter(users: UsersRepository) {
    */
   router.get('/me', requireAuth, controller.me);
 
+  /**
+   * @openapi
+   * /auth/password:
+   *   put:
+   *     summary: Trocar a própria senha ("Minha senha")
+   *     tags: [Login]
+   *     security: [{ bearerAuth: [] }]
+   *     requestBody:
+   *       required: true
+   *       content:
+   *         application/json:
+   *           schema:
+   *             type: object
+   *             required: [currentPassword, newPassword]
+   *             properties:
+   *               currentPassword: { type: string }
+   *               newPassword: { type: string, description: "Mínimo 8 caracteres" }
+   *     responses:
+   *       200: { description: "Senha trocada ({ ok: true })" }
+   *       400: { description: "Senha atual errada (WRONG_PASSWORD) ou nova senha inválida (VALIDATION_ERROR)" }
+   *       401: { description: "Sem login (UNAUTHORIZED)" }
+   */
+  router.put('/password', requireAuth, controller.changePassword);
+
   return router;
 }

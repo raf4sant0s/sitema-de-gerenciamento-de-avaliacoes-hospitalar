@@ -65,6 +65,13 @@ export default function AppLayout() {
         <div className="border-t border-line p-4">
           <p className="font-bold">{user.name}</p>
           <p className="text-muted">{roleLabels[user.role]}</p>
+          <NavLink
+            to="/minha-senha"
+            onClick={() => setMenuOpen(false)}
+            className="mt-2 inline-block text-fhdod-red-dark underline focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-ink"
+          >
+            Minha senha
+          </NavLink>
           <button
             type="button"
             onClick={logout}

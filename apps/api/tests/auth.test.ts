@@ -5,34 +5,25 @@ import jwt from 'jsonwebtoken';
 import request from 'supertest';
 import { beforeAll, describe, expect, it } from 'vitest';
 import { createApp } from '../src/app';
-import type { UsersRepository } from '../src/database/repositories/users.repository';
 import { type AuthUser, canAccessSector, requireAuth, requireRole, signToken } from '../src/shared/auth';
 import { errorHandler } from '../src/shared/errors';
+import { fakeUsersRepository } from './fakes';
 
 // "Banco de mentira" só na memória: os testes não tocam no Supabase.
 const PASSWORD = 'senha-de-teste-123';
-let users: User[] = [];
+const users: User[] = [];
 
-const fakeUsers: UsersRepository = {
-  async findByEmail(email) {
-    return users.find((user) => user.email.toLowerCase() === email.toLowerCase()) ?? null;
-  },
-  async findById(id) {
-    return users.find((user) => user.id === id) ?? null;
-  },
-};
-
-const app = createApp({ users: fakeUsers });
+const app = createApp({ users: fakeUsersRepository(users) });
 
 beforeAll(async () => {
   const password_hash = await bcrypt.hash(PASSWORD, 10);
   const base = { password_hash, active: true, created_at: new Date() };
-  users = [
+  users.push(
     { ...base, id: 1, name: 'Super Admin', email: 'super@hospital.com', role: 'SUPER_ADMIN', sector_id: null },
     { ...base, id: 2, name: 'Admin do PA', email: 'admin.pa@hospital.com', role: 'SECTOR_ADMIN', sector_id: 10 },
     { ...base, id: 3, name: 'Visualizador do PA', email: 'viewer.pa@hospital.com', role: 'VIEWER', sector_id: 10 },
     { ...base, id: 4, name: 'Desativado', email: 'antigo@hospital.com', role: 'VIEWER', sector_id: 10, active: false },
-  ];
+  );
 });
 
 describe('POST /api/auth/login', () => {

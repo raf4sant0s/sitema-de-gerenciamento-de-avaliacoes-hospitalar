@@ -5,7 +5,9 @@ import { RequireAuth } from './auth/RequireAuth';
 import AppLayout from './components/layout/AppLayout';
 import UnderConstruction from './components/layout/UnderConstruction';
 import LoginPage from './pages/login/LoginPage';
+import MyPasswordPage from './pages/minha-senha/MyPasswordPage';
 import SectorsPage from './pages/setores/SectorsPage';
+import UsersPage from './pages/usuarios/UsersPage';
 
 // Rotas do site de gestão (README, seção 10). Arquivo compartilhado (AB):
 // cada pessoa troca o <UnderConstruction> da sua aba pela tela de verdade, avisando a colega antes.
@@ -64,7 +66,7 @@ export default function App() {
               path="usuarios"
               element={
                 <RequireAuth roles={rolesFor('/usuarios')}>
-                  <UnderConstruction title="Usuários" />
+                  <UsersPage />
                 </RequireAuth>
               }
             />
@@ -84,6 +86,9 @@ export default function App() {
                 </RequireAuth>
               }
             />
+
+            {/* Todos os perfis: trocar a própria senha (link embaixo do menu) */}
+            <Route path="minha-senha" element={<MyPasswordPage />} />
           </Route>
 
           {/* Endereço que não existe: volta para o início */}
