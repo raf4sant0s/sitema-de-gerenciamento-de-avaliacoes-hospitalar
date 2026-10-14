@@ -52,7 +52,7 @@ Numeradas para serem citadas em código, testes e commits (ex.: `// RN07`).
 
 ### Pesquisa do paciente (site `pesquisa`)
 
-- **RN01** Cada setor tem URL própria `/<slug>` (ex.: `/pronto-atendimento`) e um código curto `/c/<CODIGO>` (6 caracteres). Cada um gera um QR Code.
+- **RN01** Cada setor tem URL própria `/<slug>` (ex.: `/pronto-atendimento`) e um código curto `/c/<CODIGO>` (6 caracteres). Cada um gera um QR Code. O link (slug) é gerado a partir do nome e pode ser ajustado antes de salvar; **depois de criado, o link e o código nunca mudam**, porque estão impressos nos QR Codes (decisão da dupla). O código é sorteado pela API, sem letras e números fáceis de confundir (0/O, 1/I/L). Os links `login`, `c` e `tv` são reservados.
 - **RN02** Uma pesquisa ativa por setor. As perguntas aparecem **uma por tela**, na ordem cadastrada.
 - **RN03** **Nunca** mostrar o número de perguntas, "3 de 10" ou barra de progresso.
 - **RN04** **Todas** as perguntas são respondidas com **carinhas de 1 a 5** (Péssimo, Ruim, Regular, Bom, Ótimo).
@@ -305,7 +305,7 @@ Na API, as rotas fechadas usam os middlewares de `src/shared/auth.ts`: `requireA
 
 | Método | Rota | Quem pode |
 | --- | --- | --- |
-| GET/POST | `/sectors` · PUT/DELETE `/sectors/:id` | Super admin (admin de setor e visualizador só leem o próprio) |
+| GET/POST | `/sectors` · GET/PUT/DELETE `/sectors/:id` | Super admin (admin de setor e visualizador só leem o próprio). POST: `{ name, slug }`, o código é gerado. PUT: só `{ name?, active? }` (link e código não mudam; 400 se enviados). DELETE desativa. Resposta: `{ id, name, slug, code, active, createdAt, surveyUrl, shortUrl }`. Erros: 409 `SLUG_TAKEN`, 404 `SECTOR_NOT_FOUND` |
 | GET | `/sectors/:id/qrcode?type=slug\|code` | Super admin e admin do setor (PNG) |
 | GET/POST | `/users` · PUT/DELETE `/users/:id` | Super admin: todos. Admin de setor: só visualizadores do seu setor |
 | GET/POST | `/surveys` · PUT `/surveys/:id` | Super admin e admin do setor |
@@ -454,6 +454,7 @@ Variáveis de ambiente (os arquivos `.env` **nunca** vão para o git; só os `.e
 | | `PORT` | Porta da API (ex.: `3333`) |
 | | `CORS_ORIGINS` | Endereços dos dois sites |
 | | `SEED_PASSWORD` | Senha dos usuários de exemplo |
+| | `SURVEY_SITE_URL` | Endereço do site da pesquisa, que vai dentro dos QR Codes (padrão `http://localhost:5173`; trocar quando publicar) |
 | `apps/pesquisa/.env` | `VITE_API_URL` | Endereço da API |
 | `apps/gestao/.env` | `VITE_API_URL`, `VITE_SOCKET_URL` | Endereço da API e do tempo real |
 
