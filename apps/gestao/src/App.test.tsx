@@ -6,6 +6,10 @@ import { saveSession } from './auth/session';
 
 // Testes do login e do menu, com a API "de mentira" (fetch simulado).
 
+// O dashboard (página inicial, A14) busca indicadores na API. Aqui ele vira só um título,
+// para estes testes continuarem testando apenas o login e o menu. O dashboard tem os próprios testes.
+vi.mock('./pages/dashboard/DashboardPage', () => ({ default: () => <h1>Dashboard</h1> }));
+
 function apiResponds(status: number, body: unknown) {
   vi.stubGlobal(
     'fetch',

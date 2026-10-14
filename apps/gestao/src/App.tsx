@@ -5,6 +5,7 @@ import { RequireAuth } from './auth/RequireAuth';
 import AppLayout from './components/layout/AppLayout';
 import UnderConstruction from './components/layout/UnderConstruction';
 import CommentsPage from './pages/comentarios/CommentsPage';
+import DashboardPage from './pages/dashboard/DashboardPage';
 import SchedulePage from './pages/escala/SchedulePage';
 import LoginPage from './pages/login/LoginPage';
 import MyPasswordPage from './pages/minha-senha/MyPasswordPage';
@@ -36,7 +37,7 @@ export default function App() {
               index
               element={
                 <RequireAuth roles={rolesFor('/')}>
-                  <UnderConstruction title="Dashboard" />
+                  <DashboardPage />
                 </RequireAuth>
               }
             />
