@@ -180,7 +180,7 @@ gestao (site dos gerentes) ──┘
 │   ├── migrations/                        B   (SQL que cria as tabelas)
 │   └── seeds/                             A   (dados de exemplo)
 ├── packages/
-│   └── schemas/src/                       B   (Zod, um arquivo por tabela)
+│   └── schemas/src/                       B   (Zod, um arquivo por tabela; pacote `@avaliacoes/schemas`)
 └── apps/
     ├── api/
     │   ├── package.json                   AB
@@ -388,9 +388,12 @@ copy apps\api\.env.example apps\api\.env
 npm run dev:api
 ```
 3. Conferir no navegador: `http://localhost:3333/api/health` responde `{"status":"ok"}` e `http://localhost:3333/api/docs` abre o Swagger.
-4. Rodar os testes:
+4. Rodar os testes (da API e do pacote de schemas):
 ```bash
 npm run test:api
+```
+```bash
+npm run test:schemas
 ```
 
 **Banco** (só a Rafaela, e avisando a Estefanie antes, porque o banco é o mesmo para as duas):

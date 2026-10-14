@@ -1,0 +1,20 @@
+{
+  "name": "@avaliacoes/schemas",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Schemas Zod das tabelas do banco, usados pela API e pelos dois sites",
+  "main": "src/index.ts",
+  "types": "src/index.ts",
+  "scripts": {
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "@types/node": "^26.6.5",
+    "typescript": "^7.0.2",
+    "vitest": "^5.0.4"
+  },
+  "dependencies": {
+    "zod": "^4.6.7"
+  }
+}
