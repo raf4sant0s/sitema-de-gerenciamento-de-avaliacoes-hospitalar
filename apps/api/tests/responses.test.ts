@@ -20,10 +20,14 @@ const sqlFile = (...parts: string[]) => fs.readFileSync(path.join(root, ...parts
 
 let db: PGlite;
 let app: express.Express;
+let service: ResponsesService;
 
 // Faz o PGlite parecer o Pool da biblioteca pg (só o que o repositório usa).
 function poolFrom(pglite: PGlite): Pool {
-  const query = (text: string, params?: unknown[]) => pglite.query(text, params);
+  const query = async (text: string, params?: unknown[]) => {
+    const result = await pglite.query(text, params);
+    return { ...result, rowCount: result.affectedRows ?? 0 }; // o pg chama de rowCount
+  };
   return { query, connect: async () => ({ query, release: () => {} }) } as unknown as Pool;
 }
 
@@ -64,7 +68,7 @@ beforeAll(async () => {
   await db.exec(sqlFile('database', 'seeds', '001_setores_e_pesquisas.sql'));
   await db.exec(sqlFile('database', 'seeds', '002_equipes_e_escala.sql'));
 
-  const service = new ResponsesService(new SupabaseResponsesRepository(() => poolFrom(db)));
+  service = new ResponsesService(new SupabaseResponsesRepository(() => poolFrom(db)));
   app = express();
   app.use(express.json());
   app.use('/api', createResponsesRouter(service));
@@ -240,5 +244,35 @@ describe('PUT /answers, POST /comment e POST /complete (RN05, RN09, RN10, RN11)'
     for (const personal of ['name', 'phone', 'email', 'cpf']) {
       expect(columns).not.toContain(personal);
     }
+  });
+});
+
+describe('Respostas abandonadas (RN10, tarefa A12)', () => {
+  it('PARTIAL parada há mais de 30 min vira ABANDONED; as outras não mudam; os toques continuam lá', async () => {
+    const old = await startResponse(2);
+    const recent = await startResponse(4);
+    const finished = await startResponse(5);
+    await db.query("UPDATE responses SET updated_at = NOW() - INTERVAL '31 minutes' WHERE id = $1", [old.id]);
+    await db.query("UPDATE responses SET updated_at = NOW() - INTERVAL '29 minutes' WHERE id = $1", [recent.id]);
+    await db.query(
+      "UPDATE responses SET status = 'COMPLETE', updated_at = NOW() - INTERVAL '2 hours' WHERE id = $1",
+      [finished.id],
+    );
+
+    const total = await service.abandonInactive();
+
+    expect(total).toBe(1);
+    const status = async (id: string) => (await one<{ status: string }>('SELECT status FROM responses WHERE id = $1', [id])).status;
+    expect(await status(old.id)).toBe('ABANDONED');
+    expect(await status(recent.id)).toBe('PARTIAL');
+    expect(await status(finished.id)).toBe('COMPLETE');
+
+    // RN10: o que o paciente respondeu antes de sair continua contando nos indicadores
+    const answers = await one<{ total: number }>('SELECT count(*)::int AS total FROM answers WHERE response_id = $1', [old.id]);
+    expect(answers.total).toBe(1);
+  });
+
+  it('rodar de novo não muda nada (só pega as PARTIAL)', async () => {
+    expect(await service.abandonInactive()).toBe(0);
   });
 });

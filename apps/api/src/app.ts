@@ -5,6 +5,7 @@ import { env } from './config/env';
 import { createRepositories, type Repositories } from './database';
 import { createAuthRouter } from './modules/auth/auth.routes';
 import { createResponsesRouter } from './modules/responses/responses.routes';
+import { ResponsesService } from './modules/responses/responses.service';
 import { createSectorsRouter } from './modules/sectors/sectors.routes';
 import { SectorsService } from './modules/sectors/sectors.service';
 import { errorHandler, notFoundHandler } from './shared/errors';
@@ -50,7 +51,7 @@ export function createApp(overrides: Partial<Repositories> = {}) {
   // Rotas dos módulos (README, seção 9).
   app.use('/api/auth', createAuthRouter(repositories.users)); // login e perfis (B9)
   app.use('/api/sectors', createSectorsRouter(new SectorsService(repositories.sectors, env.SURVEY_SITE_URL))); // setores e QR Code (B11)
-  app.use('/api', createResponsesRouter()); // pesquisa do paciente, pública (A10)
+  app.use('/api', createResponsesRouter(new ResponsesService(repositories.responses))); // pesquisa do paciente, pública (A10)
 
   // Estes dois ficam sempre por último: rota inexistente e tratamento de erros.
   app.use(notFoundHandler);

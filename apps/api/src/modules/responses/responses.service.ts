@@ -3,6 +3,9 @@ import type { PublicSurvey, ResponsesRepository } from '../../database/repositor
 import { AppError } from '../../shared/errors';
 import { getShift } from '../../shared/shift';
 
+// RN10: resposta PARTIAL sem atividade por 30 minutos vira ABANDONED.
+export const ABANDON_AFTER_MINUTES = 30;
+
 // Regras da pesquisa do paciente. Usa só a interface do repositório, nunca o banco direto.
 // "now" pode ser trocado nos testes; na API é sempre a hora atual.
 export class ResponsesService {
@@ -81,6 +84,11 @@ export class ResponsesService {
     }
 
     await this.repository.completeResponse(responseId);
+  }
+
+  // RN10: chamado pela rotina de abandono (abandonment.ts). Devolve quantas respostas mudaram.
+  abandonInactive(): Promise<number> {
+    return this.repository.abandonInactive(ABANDON_AFTER_MINUTES);
   }
 
   private orNotFound(survey: PublicSurvey | null): PublicSurvey {

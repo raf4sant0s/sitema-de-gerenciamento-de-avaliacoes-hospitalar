@@ -81,7 +81,7 @@ Contexto, regras (RN), decisões (D) e contratos: [README](../../README.md). Pla
   - Commit: `feat(pesquisa): telas da pesquisa`
   - Pronto quando: dá para responder uma pesquisa inteira no celular e ver os dados no banco.
 
-- [ ] **A12 · Respostas abandonadas**
+- [x] **A12 · Respostas abandonadas**
   - Branch: `feat/abandono`
   - Depende de: A10
   - O que fazer: rotina na API que muda para `ABANDONED` as respostas `PARTIAL` paradas há 30 minutos (RN10), com teste.
