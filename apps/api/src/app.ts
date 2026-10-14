@@ -2,6 +2,7 @@ import cors from 'cors';
 import express from 'express';
 import swaggerUi from 'swagger-ui-express';
 import { env } from './config/env';
+import { createResponsesRouter } from './modules/responses/responses.routes';
 import { errorHandler, notFoundHandler } from './shared/errors';
 import { swaggerSpec } from './shared/swagger';
 
@@ -40,6 +41,7 @@ export function createApp() {
   });
 
   // As rotas dos módulos (auth, sectors, responses...) serão registradas aqui, nas próximas tarefas.
+  app.use('/api', createResponsesRouter()); // pesquisa do paciente, pública (A10)
 
   // Estes dois ficam sempre por último: rota inexistente e tratamento de erros.
   app.use(notFoundHandler);

@@ -66,7 +66,7 @@ Contexto, regras (RN), decisões (D) e contratos: [README](../../README.md). Pla
 
 ## Etapa 3 — Pesquisa funcionando
 
-- [ ] **A10 · API pública da pesquisa**
+- [x] **A10 · API pública da pesquisa**
   - Branch: `feat/pesquisa-api`
   - Depende de: B1, B2, B3, A8
   - O que fazer: módulo `apps/api/src/modules/responses/` com as rotas públicas da seção 9 do README, e as consultas SQL em `database/repositories/responses.repository.ts` e `database/supabase/responses.repository.ts`. Criar a resposta no 1º toque (RN09), salvar cada toque, calcular turno e equipe (RN13, RN14), `complete` exige a obrigatória (RN05).
