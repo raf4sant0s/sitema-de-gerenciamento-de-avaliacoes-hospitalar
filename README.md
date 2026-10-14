@@ -261,7 +261,7 @@ Tabelas:
 | `answers` | `id` serial PK · `response_id` → responses · `question_id` → questions · `value` int 1–5 · `created_at` · único (`response_id`, `question_id`) |
 | `comments` | `id` serial PK · `response_id` → responses · `type` comment_type (opcional) · `text` text · `status` (padrão `NEW`) · `treatment_note` text · `treated_by` → users · `treated_at` · `created_at` |
 
-Índices: `responses(sector_id, created_at)`, `comments(status)`.
+Índices: `responses(sector_id, created_at)`, `responses(sector_id, shift_date, shift)` (migration 003, usado pelo dashboard e pela escala), `comments(status)`.
 
 Tabela de controle (não faz parte do sistema, só das migrations): `schema_migrations` (`name` text PK · `applied_at` timestamptz) guarda quais arquivos de `database/migrations/` já rodaram. É criada sozinha pelo comando `npm run db:migrate`.
 
