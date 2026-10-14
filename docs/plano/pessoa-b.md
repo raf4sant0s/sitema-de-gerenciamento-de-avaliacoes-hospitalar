@@ -96,7 +96,7 @@ Contexto, regras (RN), decisões (D) e contratos: [README](../../README.md). Pla
   - O que fazer: rotas de `/surveys` e `/questions` com reordenação; tela `/pesquisas`. Só uma pesquisa ativa por setor (RN02) e só uma pergunta obrigatória por pesquisa (RN05).
   - Commit: `feat(surveys): pesquisas e perguntas`
 
-- [ ] **B14 · Equipes e escala**
+- [x] **B14 · Equipes e escala**
   - Branch: `feat/escala`
   - Depende de: B10
   - O que fazer: rotas de `/teams` e `/schedules`; tela `/escala` para cadastrar a equipe de cada setor, data e turno do mês (RN14). O visualizador só vê.

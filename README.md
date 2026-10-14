@@ -70,7 +70,7 @@ Numeradas para serem citadas em código, testes e commits (ex.: `// RN07`).
 ### Turno, escala e equipe
 
 - **RN13** Turnos fixos (fuso `America/Sao_Paulo`): `MANHA` 07:00–12:59, `TARDE` 13:00–18:59, `NOITE` 19:00–06:59. Uma resposta de madrugada (00:00–06:59) pertence ao plantão **noturno do dia anterior**.
-- **RN14** Escala mensal cadastrada pelos admins: para cada setor + data do plantão + turno existe uma equipe. A equipe de uma resposta é encontrada cruzando setor + data do plantão + turno.
+- **RN14** Escala mensal cadastrada pelos admins: para cada setor + data do plantão + turno existe uma equipe. A equipe de uma resposta é encontrada cruzando setor + data do plantão + turno. **Ao salvar a escala, as respostas daquele setor, dia e turno passam para a equipe cadastrada** (decisão da dupla, tarefa B14): assim, uma escala cadastrada com atraso ou corrigida não deixa respostas sem equipe nem com a equipe errada. Equipes não são apagadas, são **desativadas** (somem das opções da escala; o histórico continua).
 - **RN15** A avaliação é vinculada à **equipe**, nunca a uma pessoa. Indicadores por equipe só aparecem com **5 ou mais respostas** (abaixo disso: "dados insuficientes").
 
 ### Site de gestão (site `gestao`)
@@ -255,7 +255,7 @@ Tabelas:
 | `users` | `id` serial PK · `name` text · `email` text único · `password_hash` text · `role` · `sector_id` → sectors (nulo só para `SUPER_ADMIN`) · `active` boolean · `created_at` |
 | `surveys` | `id` serial PK · `sector_id` → sectors · `title` text · `active` boolean (só 1 ativa por setor) · `created_at` |
 | `questions` | `id` serial PK · `survey_id` → surveys · `position` int · `text` text · `step` journey_step · `required` boolean (só 1 true por pesquisa) · `active` boolean |
-| `teams` | `id` serial PK · `sector_id` → sectors · `name` text |
+| `teams` | `id` serial PK · `sector_id` → sectors · `name` text · `active` boolean (padrão true; migration 002) |
 | `schedules` | `id` serial PK · `sector_id` → sectors · `shift_date` date · `shift` · `team_id` → teams · único (`sector_id`, `shift_date`, `shift`) |
 | `responses` | `id` uuid PK · `sector_id` → sectors · `survey_id` → surveys · `shift_date` date · `shift` · `team_id` → teams (nulo se não houver escala) · `status` (padrão `PARTIAL`) · `overall_score` int 1–5 (cópia da obrigatória) · `created_at` · `updated_at` · `completed_at` |
 | `answers` | `id` serial PK · `response_id` → responses · `question_id` → questions · `value` int 1–5 · `created_at` · único (`response_id`, `question_id`) |
@@ -317,9 +317,9 @@ Na API, as rotas fechadas usam os middlewares de `src/shared/auth.ts`: `requireA
 | GET/POST | `/surveys` · GET/PUT `/surveys/:id` | Super admin (todos, ou `?sectorId=`) e admin do setor (o seu). POST: `{ sectorId, title }` (nasce desativada, com a obrigatória). PUT: `{ title?, active? }`. Resposta: `{ id, sectorId, title, active, createdAt }`. Erros: 404 `SURVEY_NOT_FOUND`, 404 `SECTOR_NOT_FOUND` |
 | GET/POST | `/surveys/:id/questions` · PUT/DELETE `/questions/:id` | Super admin e admin do setor. POST: `{ text, step }` (sempre opcional, vai para o fim). PUT: `{ text?, step?, active? }`. DELETE desativa. Resposta: `{ id, surveyId, position, text, step, required, active, answerCount }`. Erros: 404 `QUESTION_NOT_FOUND`, 400 `REQUIRED_QUESTION_LOCKED` (desativar ou mudar a etapa da obrigatória) |
 | PUT | `/surveys/:id/questions/order` | `{ ids: [...] }` com **todas** as opcionais, na nova ordem (a obrigatória fica sempre por último). Devolve as perguntas reordenadas |
-| GET/POST | `/teams` · PUT/DELETE `/teams/:id` | Super admin e admin do setor |
-| GET | `/schedules?sectorId&month=2026-10` | Todos os perfis (no próprio setor) |
-| PUT | `/schedules` | `{ items: [{sectorId, shiftDate, shift, teamId}] }` · Super admin e admin do setor |
+| GET/POST | `/teams` · PUT/DELETE `/teams/:id` | GET: todos os perfis (super admin todas ou `?sectorId=`; os outros, as do seu setor). POST `{ sectorId, name }`, PUT `{ name?, active? }`, DELETE desativa: super admin e admin do setor. Resposta: `{ id, sectorId, name, active }`. Erro: 404 `TEAM_NOT_FOUND` |
+| GET | `/schedules?sectorId&month=2026-10` | Todos os perfis (no próprio setor; o super admin precisa mandar `sectorId`). Resposta: `[{ sectorId, shiftDate, shift, teamId }]` |
+| PUT | `/schedules` | `{ items: [{sectorId, shiftDate, shift, teamId}] }` (até 200; `teamId: null` tira a equipe da célula) · Super admin e admin do setor · Resposta: `{ saved, responsesUpdated }`. 400 se a equipe for de outro setor ou estiver desativada (nada é gravado) |
 
 ### Comentários (módulo `comments`) — B
 
