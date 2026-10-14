@@ -188,6 +188,7 @@ gestao (site dos gerentes) ──┘
     │       ├── app.ts, server.ts          AB
     │       ├── config/                    B
     │       ├── database/
+    │       │   ├── index.ts               AB  (liga as interfaces às implementações; cada uma registra os seus repositórios)
     │       │   ├── repositories/          B   (interfaces) · A: `responses.repository.ts` e `dashboard.repository.ts`
     │       │   └── supabase/              B   (conexão e implementação com pg) · A: `responses.repository.ts` e `dashboard.repository.ts`
     │       ├── shared/                    B   (erros, middlewares de login e perfil) · A só `shift.ts` e `realtime.ts`
@@ -266,6 +267,19 @@ Tabela de controle (não faz parte do sistema, só das migrations): `schema_migr
 
 Base: `/api`. JSON. Erros sempre em `{ "error": { "code": "REQUIRED_MISSING", "message": "..." } }`. Datas em ISO 8601.
 
+Códigos de erro usados em todas as rotas:
+
+| Status | `code` | Quando |
+| --- | --- | --- |
+| 400 | `VALIDATION_ERROR` | O corpo ou os filtros vieram em formato errado |
+| 401 | `UNAUTHORIZED` | Rota fechada sem token, com token inválido ou vencido |
+| 401 | `INVALID_CREDENTIALS` | Login com e-mail ou senha incorretos (ou usuário desativado) |
+| 403 | `FORBIDDEN` | O perfil não pode fazer aquilo, ou o setor não é o da pessoa (RN16) |
+| 404 | `NOT_FOUND` | Rota ou registro que não existe |
+| 500 | `INTERNAL_ERROR` | Erro inesperado na API |
+
+Rotas fechadas recebem o token no cabeçalho `Authorization: Bearer <token>`. O token vale **8 horas** (decisão da dupla).
+
 ### Pública, sem login (módulo `responses`) — A
 
 | Método | Rota | Corpo | Resposta |
@@ -282,7 +296,9 @@ Base: `/api`. JSON. Erros sempre em `{ "error": { "code": "REQUIRED_MISSING", "m
 | Método | Rota | Corpo | Resposta |
 | --- | --- | --- | --- |
 | POST | `/auth/login` | `{ email, password }` | `{ token, user: {id, name, role, sectorId} }` |
-| GET | `/auth/me` | — | `{ user }` |
+| GET | `/auth/me` | — | `{ user }` (mesmo formato do login) |
+
+Na API, as rotas fechadas usam os middlewares de `src/shared/auth.ts`: `requireAuth` (precisa estar logado), `requireRole('SUPER_ADMIN', ...)` (só esses perfis) e `assertSectorAccess(user, sectorId)` (admin de setor e visualizador só no próprio setor).
 
 ### Cadastros (login obrigatório) — B
 
@@ -411,7 +427,7 @@ Variáveis de ambiente (os arquivos `.env` **nunca** vão para o git; só os `.e
 | Arquivo | Variável | Para que serve |
 | --- | --- | --- |
 | `apps/api/.env` | `DATABASE_URL` | Endereço de conexão do Postgres do Supabase |
-| | `JWT_SECRET` | Texto longo aleatório para assinar o login |
+| | `JWT_SECRET` | Texto longo aleatório (mínimo 32 caracteres) para assinar o login. **Obrigatório:** sem ele a API e o `db:migrate` não rodam |
 | | `PORT` | Porta da API (ex.: `3333`) |
 | | `CORS_ORIGINS` | Endereços dos dois sites |
 | | `SEED_PASSWORD` | Senha dos usuários de exemplo |
@@ -457,9 +473,11 @@ Depois, juntar a tarefa na `develop` e enviar:
 ```bash
 git checkout develop
 git pull
-git merge feat/pesquisa-carinhas
+git merge --no-edit feat/pesquisa-carinhas
 git push
 ```
+
+O `--no-edit` aceita a mensagem automática do merge, sem abrir o editor Vim.
 
 Em seguida, avisar a colega para dar `git pull` na `develop` (e `npm install`, se algum `package.json` mudou).
 

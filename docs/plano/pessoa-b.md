@@ -62,7 +62,7 @@ Contexto, regras (RN), decisões (D) e contratos: [README](../../README.md). Pla
 
 ## Etapa 3 — Login e perfis
 
-- [ ] **B9 · Login e perfis na API**
+- [x] **B9 · Login e perfis na API**
   - Branch: `feat/auth`
   - Depende de: B1, B2, B3
   - O que fazer: módulo `auth` (`POST /auth/login`, `GET /auth/me`) com JWT e bcrypt; repositório de usuários; middlewares `requireAuth` e `requireRole` em `src/shared/`; regra de que admin de setor e visualizador só acessam o próprio setor (RN16).

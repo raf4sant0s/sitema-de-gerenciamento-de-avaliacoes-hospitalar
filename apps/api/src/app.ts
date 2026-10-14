@@ -2,11 +2,15 @@ import cors from 'cors';
 import express from 'express';
 import swaggerUi from 'swagger-ui-express';
 import { env } from './config/env';
+import { createRepositories, type Repositories } from './database';
+import { createAuthRouter } from './modules/auth/auth.routes';
 import { errorHandler, notFoundHandler } from './shared/errors';
 import { swaggerSpec } from './shared/swagger';
 
 // Monta a API. Fica separado do server.ts para os testes poderem usar a API sem ligar o servidor.
-export function createApp() {
+// Os repositórios (acesso ao banco) podem ser trocados: os testes passam uns "de mentira",
+// sem banco de verdade. Sem nada, a API usa o banco real (database/index.ts).
+export function createApp(repositories: Repositories = createRepositories()) {
   const app = express();
 
   // Só os dois sites do projeto podem chamar a API.
@@ -39,7 +43,8 @@ export function createApp() {
     res.json({ status: 'ok' });
   });
 
-  // As rotas dos módulos (auth, sectors, responses...) serão registradas aqui, nas próximas tarefas.
+  // Rotas dos módulos (README, seção 9).
+  app.use('/api/auth', createAuthRouter(repositories.users));
 
   // Estes dois ficam sempre por último: rota inexistente e tratamento de erros.
   app.use(notFoundHandler);

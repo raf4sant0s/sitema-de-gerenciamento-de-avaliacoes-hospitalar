@@ -19,6 +19,23 @@ export const swaggerSpec = swaggerJsdoc({
         'API única do sistema: atende o site da pesquisa e o site de gestão. É a única parte que acessa o banco.',
     },
     servers: [{ url: '/api' }],
+    components: {
+      // Botão "Authorize" do Swagger: cole o token recebido no login para testar as rotas fechadas.
+      securitySchemes: {
+        bearerAuth: { type: 'http', scheme: 'bearer', bearerFormat: 'JWT' },
+      },
+      schemas: {
+        AuthUser: {
+          type: 'object',
+          properties: {
+            id: { type: 'integer', example: 1 },
+            name: { type: 'string', example: 'Ana' },
+            role: { type: 'string', enum: ['SUPER_ADMIN', 'SECTOR_ADMIN', 'VIEWER'] },
+            sectorId: { type: 'integer', nullable: true, example: null },
+          },
+        },
+      },
+    },
   },
   apis: [sourceFiles],
 });
