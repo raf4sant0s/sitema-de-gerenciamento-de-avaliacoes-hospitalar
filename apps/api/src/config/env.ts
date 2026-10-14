@@ -3,7 +3,7 @@ import { z } from 'zod';
 
 // Lê as variáveis do arquivo .env e confere se estão certas antes de a API subir.
 // Se faltar alguma obrigatória, a API para com uma mensagem dizendo qual é.
-// As variáveis do banco (DATABASE_URL) e do login (JWT_SECRET) entram aqui nas tarefas B2 e B9.
+// A variável do login (JWT_SECRET) entra aqui na tarefa B9.
 const envSchema = z.object({
   PORT: z.coerce.number().int().positive().default(3333),
   // Endereços dos dois sites, separados por vírgula. Só eles podem chamar a API.
@@ -16,6 +16,14 @@ const envSchema = z.object({
         .map((origin) => origin.trim())
         .filter((origin) => origin.length > 0),
     ),
+  // Endereço de conexão do banco (Supabase). Fica opcional aqui para a API e os testes
+  // que não usam o banco funcionarem sem ele; quem precisa do banco confere se ele existe
+  // (ver database/supabase/connection.ts).
+  // Se a linha estiver vazia (DATABASE_URL=), conta como "não informado".
+  DATABASE_URL: z
+    .string()
+    .optional()
+    .transform((value) => (value ? value : undefined)),
 });
 
 const parsed = envSchema.safeParse(process.env);

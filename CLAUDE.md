@@ -30,14 +30,14 @@ O README acima é a fonte única de verdade: contexto, regras de negócio (RN), 
    - lembre a pessoa de escrever 3 linhas em `docs/registro-processo.md` (o que fez, ferramenta usada, o que mudou do plano);
    - entregue o **passo a passo do commit** (regra 9).
 8. **Nunca** coloque `.env`, senhas ou tokens no git. Senhas de exemplo vêm de variáveis de ambiente.
-9. **Commits: o Claude NUNCA executa `git commit`, `git push`, merge ou qualquer comando que altere o histórico.** Quem faz é sempre a pessoa, no próprio computador, com a própria conta. O Claude **nunca** adiciona `Co-Authored-By`, "Generated with Claude" ou qualquer marca do Claude em commits, Pull Requests ou arquivos do repositório. Ao terminar cada tarefa, o Claude **sempre** entrega o passo a passo, explicando cada comando e ligando-o ao que foi feito no projeto:
+9. **Commits: o Claude NUNCA executa `git commit`, `git push`, merge ou qualquer comando que altere o histórico.** Quem faz é sempre a pessoa, no próprio computador, com a própria conta. O Claude **nunca** adiciona `Co-Authored-By`, "Generated with Claude" ou qualquer marca do Claude em commits ou arquivos do repositório. **A dupla não usa Pull Request: nunca mande abrir um.** Ao terminar cada tarefa, o Claude **sempre** entrega o passo a passo, explicando cada comando e ligando-o ao que foi feito no projeto:
    1. qual tarefa do plano foi concluída e quais regras (RN) ou decisões (D) ela atende;
    2. `git status` para conferir os arquivos alterados (listar quais são esperados);
    3. `git add <arquivos da tarefa>` (só os arquivos da pessoa dona, nunca `.env`);
    4. `git commit -m "<mensagem indicada no plano>"`;
    5. `git push -u origin <nome-da-branch>`;
-   6. como abrir o Pull Request no GitHub **com destino `develop`** para o colega revisar (título e descrição sugeridos, citando a tarefa e as RN);
-   7. depois do merge: `git checkout develop` e `git pull`.
+   6. juntar na `develop` sem Pull Request: `git checkout develop`, `git pull`, `git merge <nome-da-branch>`, `git push`;
+   7. avisar a colega para dar `git pull` na `develop` (e `npm install`, se algum `package.json` mudou).
    Cada comando vai num bloco separado, em PowerShell.
 
 ## Pontos que valem nota (não esquecer)

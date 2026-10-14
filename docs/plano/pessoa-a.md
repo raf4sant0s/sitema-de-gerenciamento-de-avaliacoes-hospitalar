@@ -7,7 +7,7 @@ Contexto, regras (RN), decisões (D) e contratos: [README](../../README.md). Pla
 
 ## Como usar este plano
 
-- Faça as tarefas **na ordem**. Cada uma tem a sua branch, que sai da `develop` e volta para a `develop` por Pull Request (README, seção 15).
+- Faça as tarefas **na ordem**. Cada uma tem a sua branch, que sai da `develop` e volta para ela com `git merge`, sem Pull Request (README, seção 15).
 - **Depende de** diz quais tarefas da Pessoa B precisam estar na `develop` antes de começar. Se ainda não estiverem, pule para a próxima tarefa que não dependa delas.
 - Ao terminar uma tarefa, troque `[ ]` por `[x]` **no mesmo commit** e escreva 3 linhas em `docs/registro-processo.md`.
 - Itens **(a definir)** precisam ser decididos pela dupla antes de implementar.

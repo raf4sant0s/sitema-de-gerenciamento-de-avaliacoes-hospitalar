@@ -7,7 +7,7 @@ Contexto, regras (RN), decisões (D) e contratos: [README](../../README.md). Pla
 
 ## Como usar este plano
 
-- Faça as tarefas **na ordem**. Cada uma tem a sua branch, que sai da `develop` e volta para a `develop` por Pull Request (README, seção 15).
+- Faça as tarefas **na ordem**. Cada uma tem a sua branch, que sai da `develop` e volta para ela com `git merge`, sem Pull Request (README, seção 15).
 - **B1, B2 e B3 são prioridade:** a Estefanie (Pessoa A) depende delas para começar a parte de API. Faça essas três antes dos documentos, se precisar.
 - **Depende de** diz quais tarefas da Pessoa A precisam estar na `develop` antes de começar.
 - Ao terminar uma tarefa, troque `[ ]` por `[x]` **no mesmo commit** e escreva 3 linhas em `docs/registro-processo.md`.
@@ -22,7 +22,7 @@ Contexto, regras (RN), decisões (D) e contratos: [README](../../README.md). Pla
   - Commit: `chore(api): cria projeto da api`
   - Pronto quando: `npm run dev` sobe a API e `/api/docs` abre no navegador.
 
-- [ ] **B2 · Tabelas do banco**
+- [x] **B2 · Tabelas do banco**
   - Branch: `feat/banco-tabelas`
   - O que fazer: `database/migrations/001_cria_tabelas.sql` com todas as tabelas, tipos, chaves e índices da seção 8 do README, em SQL padrão (sem recursos exclusivos do Supabase); rodar no Supabase; conexão com `pg` em `apps/api/src/database/supabase/connection.ts`.
   - O banco é **um só** para as duas (README, seção 12). Depois de rodar a migration, passe o `DATABASE_URL` para a Estefanie por mensagem privada, nunca pelo git.

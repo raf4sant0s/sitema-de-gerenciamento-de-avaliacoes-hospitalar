@@ -256,6 +256,8 @@ Tabelas:
 
 Índices: `responses(sector_id, created_at)`, `comments(status)`.
 
+Tabela de controle (não faz parte do sistema, só das migrations): `schema_migrations` (`name` text PK · `applied_at` timestamptz) guarda quais arquivos de `database/migrations/` já rodaram. É criada sozinha pelo comando `npm run db:migrate`.
+
 **Nenhuma tabela guarda dado pessoal do paciente (RN08).**
 
 **Seeds (A):** setores de exemplo, uma pesquisa por setor, equipes, escala do mês atual, respostas e comentários variados, e um usuário de cada perfil. Senhas vêm do `.env` (`SEED_PASSWORD`), nunca escritas no código.
@@ -391,6 +393,14 @@ npm run dev:api
 npm run test:api
 ```
 
+**Banco** (só a Rafaela, e avisando a Estefanie antes, porque o banco é o mesmo para as duas):
+
+1. Preencha o `DATABASE_URL` no `apps/api/.env` (Supabase → **Connect** → **Session pooler**).
+2. Rodar as migrations novas de `database/migrations/` (as que já rodaram são puladas):
+```bash
+npm run db:migrate
+```
+
 Os comandos dos sites `pesquisa` e `gestao` entram aqui na tarefa A6. Portas combinadas: `pesquisa` em `5173` e `gestao` em `5174` (são as que a API libera em `CORS_ORIGINS`).
 
 Variáveis de ambiente (os arquivos `.env` **nunca** vão para o git; só os `.env.example`):
@@ -427,7 +437,7 @@ Contratos = seções 3, 8, 9 e 10. Os dois dependem deles.
 
 - `main`: só recebe a `develop` quando algo estiver pronto para publicar.
 - `develop`: onde o trabalho dos dois se junta.
-- Uma branch por tarefa, **saindo da `develop`**, com o nome indicado no plano (ex.: `feat/pesquisa-carinhas`). Pull Request **para a `develop`**.
+- Uma branch por tarefa, **saindo da `develop`**, com o nome indicado no plano (ex.: `feat/pesquisa-carinhas`). Ao terminar, a própria pessoa junta a branch na `develop` com `git merge`. **A dupla não usa Pull Request.**
 
 ```bash
 git checkout develop
@@ -439,11 +449,20 @@ git commit -m "feat(pesquisa): perguntas com carinhas"
 git push -u origin feat/pesquisa-carinhas
 ```
 
-Depois: abrir **Pull Request** no GitHub com destino `develop` → o colega revisa → **Merge** → os dois dão `git pull` na `develop`.
+Depois, juntar a tarefa na `develop` e enviar:
 
-- Nunca commitar direto na `main` nem na `develop`.
+```bash
+git checkout develop
+git pull
+git merge feat/pesquisa-carinhas
+git push
+```
+
+Em seguida, avisar a colega para dar `git pull` na `develop` (e `npm install`, se algum `package.json` mudou).
+
+- Nunca trabalhar direto na `main` nem na `develop`: elas só recebem merges.
 - Cada um commita do próprio computador, com a própria conta.
-- **Quem commita é sempre a pessoa, nunca o Claude.** O Claude não executa `git commit`, `git push` nem merge, e não coloca marca dele (`Co-Authored-By`, "Generated with Claude") em commits, Pull Requests ou arquivos. Ao terminar cada tarefa, ele entrega o passo a passo dos comandos, explicando cada um e dizendo qual tarefa do plano e quais regras (RN) e decisões (D) aquele commit entrega.
+- **Quem commita é sempre a pessoa, nunca o Claude.** O Claude não executa `git commit`, `git push` nem merge, e não coloca marca dele (`Co-Authored-By`, "Generated with Claude") em commits ou arquivos. Ao terminar cada tarefa, ele entrega o passo a passo dos comandos, explicando cada um e dizendo qual tarefa do plano e quais regras (RN) e decisões (D) aquele commit entrega.
 - Prefixos: `feat` (funcionalidade), `fix` (correção), `docs` (documentos), `test` (testes), `chore` (configuração), `refactor` (reorganização sem mudar comportamento). Escopo entre parênteses: `feat(comments): ...`.
 - Arquivos `AB` (seção 7): avise antes de mexer.
 
