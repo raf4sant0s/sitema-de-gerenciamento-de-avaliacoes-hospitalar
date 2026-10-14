@@ -121,7 +121,7 @@ Contexto, regras (RN), decisões (D) e contratos: [README](../../README.md). Pla
 
 ## Etapa 5 — Testes e acabamento
 
-- [ ] **A18 · Testes E2E do paciente**
+- [x] **A18 · Testes E2E do paciente**
   - Branch: `test/e2e-pesquisa`
   - O que fazer: Playwright: responder tudo; fechar no meio e conferir a resposta parcial; tentar terminar sem a obrigatória.
   - Commit: `test(e2e): fluxo do paciente`

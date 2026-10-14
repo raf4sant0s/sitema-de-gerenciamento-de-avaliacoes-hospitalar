@@ -8,5 +8,6 @@ export default defineConfig({
   plugins: [react(), tailwindcss()],
   server: { port: 5173, strictPort: true },
   // Testes (npm test): rodam num navegador simulado (jsdom).
-  test: { environment: 'jsdom' },
+  // A pasta e2e/ é do Playwright (npm run test:e2e), não do Vitest.
+  test: { environment: 'jsdom', exclude: ['e2e/**', 'node_modules/**'] },
 });
