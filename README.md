@@ -85,7 +85,7 @@ Numeradas para serem citadas em código, testes e commits (ex.: `// RN07`).
 
   Cadastro de usuários (decisões da dupla, tarefa B12): o super admin cadastra qualquer perfil, **inclusive outro super admin** (sempre sem setor); o admin de setor só cadastra visualizadores do próprio setor. Quem cadastra digita a **senha inicial** (mínimo 8 caracteres) e cada pessoa a troca em **"Minha senha"**. **Ninguém desativa a si mesmo nem muda o próprio perfil ou setor.** Desativar não apaga: a pessoa só deixa de conseguir entrar.
 
-- **RN17** Comentários: os gerentes leem e podem **marcar como tratado** (status `NEW` → `TREATED`), com um campo para anotar o que foi feito.
+- **RN17** Comentários: os gerentes leem e podem **marcar como tratado** (status `NEW` → `TREATED`), com um campo para anotar o que foi feito. Decisões da dupla (tarefa B15): **escrever o que foi feito é obrigatório** para marcar como tratado; um comentário tratado **pode ser reaberto**, e a anotação anterior continua guardada.
 - **RN18** **TV Wall:** aba do site de gestão, visível **só para o super admin**, com os dashboards e **todos os comentários, sem exceção**.
 - **RN19** Exportação em **Excel** das respostas, com os filtros aplicados.
 
@@ -325,8 +325,8 @@ Na API, as rotas fechadas usam os middlewares de `src/shared/auth.ts`: `requireA
 
 | Método | Rota | Observação |
 | --- | --- | --- |
-| GET | `/comments?sectorId&status&type&from&to` | Todos os perfis (no próprio setor) |
-| PATCH | `/comments/:id` | `{ status, treatmentNote }` · Super admin e admin do setor |
+| GET | `/comments?sectorId&status&type&from&to&limit&offset` | Todos os perfis (no próprio setor; o super admin vê todos ou filtra). `from`/`to` = dia em que chegou, no horário de Brasília. `limit` padrão 50 (máx. 200). Resposta: `{ items: [{ id, sectorId, sectorName, type, text, status, treatmentNote, treatedBy: {id, name} \| null, treatedAt, createdAt }], total }`, mais novos primeiro |
+| PATCH | `/comments/:id` | `{ status, treatmentNote }` · Super admin e admin do setor. `TREATED` exige `treatmentNote` (400 `VALIDATION_ERROR`); `NEW` reabre e mantém a anotação. Erro: 404 `COMMENT_NOT_FOUND` |
 
 ### Dashboard, TV Wall e Excel (módulo `dashboard`) — A
 
