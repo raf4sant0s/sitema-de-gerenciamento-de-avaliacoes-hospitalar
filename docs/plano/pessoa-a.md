@@ -107,7 +107,7 @@ Contexto, regras (RN), decisões (D) e contratos: [README](../../README.md). Pla
   - O que fazer: `apps/api/src/shared/realtime.ts` com Socket.IO; emitir `response:changed` e `comment:created`; o dashboard atualiza sozinho.
   - Commit: `feat(realtime): atualizacao ao vivo`
 
-- [ ] **A16 · TV Wall**
+- [x] **A16 · TV Wall**
   - Branch: `feat/tv-wall`
   - Depende de: A13, A15, B10
   - O que fazer: rota `GET /dashboard/tv` (só super admin) e tela `/tv` com os dashboards e **todos** os comentários (RN18); a aba só aparece para o super admin.

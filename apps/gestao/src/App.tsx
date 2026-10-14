@@ -3,7 +3,6 @@ import { AuthProvider } from './auth/AuthContext';
 import { rolesFor } from './auth/menu';
 import { RequireAuth } from './auth/RequireAuth';
 import AppLayout from './components/layout/AppLayout';
-import UnderConstruction from './components/layout/UnderConstruction';
 import CommentsPage from './pages/comentarios/CommentsPage';
 import DashboardPage from './pages/dashboard/DashboardPage';
 import SchedulePage from './pages/escala/SchedulePage';
@@ -12,6 +11,7 @@ import MyPasswordPage from './pages/minha-senha/MyPasswordPage';
 import SurveyDetailPage from './pages/pesquisas/SurveyDetailPage';
 import SurveysPage from './pages/pesquisas/SurveysPage';
 import SectorsPage from './pages/setores/SectorsPage';
+import TvWallPage from './pages/tv-wall/TvWallPage';
 import UsersPage from './pages/usuarios/UsersPage';
 
 // Rotas do site de gestão (README, seção 10). Arquivo compartilhado (AB):
@@ -45,7 +45,7 @@ export default function App() {
               path="tv"
               element={
                 <RequireAuth roles={rolesFor('/tv')}>
-                  <UnderConstruction title="TV Wall" />
+                  <TvWallPage />
                 </RequireAuth>
               }
             />

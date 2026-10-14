@@ -2,6 +2,7 @@ import type { PGlite } from '@electric-sql/pglite';
 import request from 'supertest';
 import { beforeAll, describe, expect, it } from 'vitest';
 import { createApp } from '../src/app';
+import { SupabaseCommentsRepository } from '../src/database/supabase/comments.repository';
 import { SupabaseDashboardRepository } from '../src/database/supabase/dashboard.repository';
 import { type AuthUser, signToken } from '../src/shared/auth';
 import { createTestDatabase, poolFrom } from './pglite';
@@ -19,6 +20,7 @@ import { createTestDatabase, poolFrom } from './pglite';
 let db: PGlite;
 let app: ReturnType<typeof createApp>;
 const ids = { pa: 0, rx: 0 };
+const responseIds: string[] = [];
 
 const superAdmin: AuthUser = { id: 1, name: 'Carla', role: 'SUPER_ADMIN', sectorId: null };
 const auth = (user: AuthUser) => ({ Authorization: `Bearer ${signToken(user)}` });
@@ -48,6 +50,7 @@ async function insertResponse(
      VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING id`,
     [s.sectorId, s.surveyId, data.date, data.shift, data.teamId, data.status, data.overall ?? null],
   );
+  responseIds.push(id);
   if (data.recepcao) {
     await db.query('INSERT INTO answers (response_id, question_id, value) VALUES ($1, $2, $3)', [id, s.recepcao, data.recepcao]);
   }
@@ -76,7 +79,21 @@ beforeAll(async () => {
   await insertResponse(rx, { shift: 'TARDE', date: '2026-10-02', teamId: rxA, status: 'COMPLETE', overall: 4 });
   await insertResponse(rx, { shift: 'TARDE', date: '2026-10-02', teamId: rxA, status: 'ABANDONED', recepcao: 3 });
 
-  app = createApp({ dashboard: new SupabaseDashboardRepository(() => poolFrom(db)) });
+  // Comentários para o TV Wall (A16): um elogio, uma reclamação já tratada e um sem tipo.
+  const comment = (responseIndex: number, type: string | null, text: string, status: string, createdAt: string) =>
+    db.query('INSERT INTO comments (response_id, type, text, status, created_at) VALUES ($1, $2, $3, $4, $5)', [
+      responseIds[responseIndex],
+      type,
+      text,
+      status,
+      createdAt,
+    ]);
+  await comment(0, 'ELOGIO', 'Médico muito atencioso.', 'NEW', '2026-10-01T10:00:00-03:00');
+  await comment(8, 'RECLAMACAO', 'Demorou muito no Raio-X.', 'TREATED', '2026-10-02T15:00:00-03:00');
+  await comment(5, null, 'Foi tudo normal.', 'NEW', '2026-10-02T20:00:00-03:00');
+
+  const pool = () => poolFrom(db);
+  app = createApp({ dashboard: new SupabaseDashboardRepository(pool), comments: new SupabaseCommentsRepository(pool) });
 }, 60_000);
 
 describe('GET /api/dashboard/summary (RN20)', () => {
@@ -211,5 +228,39 @@ describe('GET /api/dashboard/timeline', () => {
       { date: '2026-10-01', average: 3, count: 5 },
       { date: '2026-10-02', average: 4, count: 3 },
     ]);
+  });
+});
+
+describe('GET /api/dashboard/tv (RN18, A16)', () => {
+  it('super admin vê o hospital todo, a nota por setor e TODOS os comentários, os mais novos primeiro', async () => {
+    const res = await request(app).get('/api/dashboard/tv').set(auth(superAdmin));
+
+    expect(res.status).toBe(200);
+    expect(res.body.summary).toMatchObject({ overallAverage: 3.4, totalResponses: 10 });
+    expect(res.body.sectors.map((s: { label: string }) => s.label)).toEqual(['Pronto Atendimento', 'Raio-X']);
+    expect(res.body.totalComments).toBe(3);
+    expect(res.body.comments.map((c: { type: string | null; status: string; sectorName: string }) => [c.type, c.status, c.sectorName])).toEqual([
+      [null, 'NEW', 'Pronto Atendimento'],
+      ['RECLAMACAO', 'TREATED', 'Raio-X'],
+      ['ELOGIO', 'NEW', 'Pronto Atendimento'],
+    ]);
+    // Na TV não aparece quem tratou nem a anotação interna
+    expect(res.body.comments[1]).not.toHaveProperty('treatedBy');
+    expect(res.body.comments[1]).not.toHaveProperty('treatmentNote');
+  });
+
+  it('o período filtra os indicadores e os comentários', async () => {
+    const res = await request(app).get('/api/dashboard/tv?from=2026-10-02').set(auth(superAdmin));
+
+    expect(res.body.summary.totalResponses).toBe(5);
+    expect(res.body.totalComments).toBe(2);
+  });
+
+  it('admin de setor e visualizador não abrem o TV Wall → 403 (D5)', async () => {
+    for (const user of [adminPA(), viewerPA()]) {
+      const res = await request(app).get('/api/dashboard/tv').set(auth(user));
+      expect(res.status).toBe(403);
+      expect(res.body.error.code).toBe('FORBIDDEN');
+    }
   });
 });
