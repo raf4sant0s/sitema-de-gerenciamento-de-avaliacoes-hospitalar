@@ -27,7 +27,7 @@ O README acima é a fonte única de verdade: contexto, regras de negócio (RN), 
 7. **Ao terminar uma tarefa:**
    - rode os testes e confira que funciona;
    - marque `[x]` na tarefa do plano da pessoa;
-   - lembre a pessoa de escrever 3 linhas em `docs/registro-processo.md` (o que fez, ferramenta usada, o que mudou do plano);
+   - **escreva você mesmo** uma linha em `docs/registro-processo.md` (data, quem, o que fez, ferramentas, o que mudou do plano e por quê), no topo da tabela, e inclua o arquivo no commit da tarefa. Não peça para a pessoa escrever;
    - entregue o **passo a passo do commit** (regra 9).
 8. **Nunca** coloque `.env`, senhas ou tokens no git. Senhas de exemplo vêm de variáveis de ambiente.
 9. **Commits: o Claude NUNCA executa `git commit`, `git push`, merge ou qualquer comando que altere o histórico.** Quem faz é sempre a pessoa, no próprio computador, com a própria conta. O Claude **nunca** adiciona `Co-Authored-By`, "Generated with Claude" ou qualquer marca do Claude em commits ou arquivos do repositório. **A dupla não usa Pull Request: nunca mande abrir um.** Ao terminar cada tarefa, o Claude **sempre** entrega o passo a passo, explicando cada comando e ligando-o ao que foi feito no projeto:
