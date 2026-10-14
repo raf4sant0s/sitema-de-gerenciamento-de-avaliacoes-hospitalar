@@ -51,7 +51,7 @@ Contexto, regras (RN), decisões (D) e contratos: [README](../../README.md). Pla
   - O que fazer: em `apps/pesquisa/src/components/`: carinhas de 1 a 5 com rótulo em texto (RN04), botão grande, link "pular" discreto (RN07), moldura da tela da pesquisa. Usar dados de mentira por enquanto.
   - Commit: `feat(pesquisa): componentes base`
 
-- [ ] **A8 · Cálculo de turno**
+- [x] **A8 · Cálculo de turno**
   - Branch: `feat/turno`
   - Depende de: B1
   - O que fazer: `apps/api/src/shared/shift.ts`, que recebe data e hora e devolve `shift` e `shift_date` (RN13, incluindo a madrugada), com testes unitários.
