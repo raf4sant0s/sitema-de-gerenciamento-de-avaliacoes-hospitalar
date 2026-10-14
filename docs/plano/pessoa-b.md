@@ -42,7 +42,7 @@ Contexto, regras (RN), decisões (D) e contratos: [README](../../README.md). Pla
   - O que fazer: em `docs/personas.md`, seção "Gestão": nome fictício, idade, contexto, objetivos, dores, familiaridade com tecnologia, canal preferido e uma frase que represente a visão dele(a).
   - Commit: `docs: persona do gestor`
 
-- [ ] **B5 · Decisões D4, D5 e D8**
+- [x] **B5 · Decisões D4, D5 e D8**
   - Branch: `docs/decisoes-gestao`
   - O que fazer: em `docs/decisoes.md`, escrever cada decisão com o porquê, ligando-a à persona do gestor. As justificativas aprovadas pela dupla estão no README (seção 4); aqui elas são explicadas com mais detalhe.
   - Commit: `docs: decisoes da gestao`

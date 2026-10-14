@@ -60,3 +60,47 @@ As decisões abaixo estão resumidas no README (seção 4). Aqui cada uma é exp
 **Ligação com a persona:** a Dona Cida saiu de madrugada, cansada. Se o celular tocar ou ela guardar o aparelho no meio da pesquisa, as carinhas que já tocou ficam salvas e entram nos números do hospital.
 
 **Onde aparece:** API pública da pesquisa (README, seção 9); no mock, indicar que não existe botão "salvar".
+
+## Gestão
+
+### D4 · Avaliação ligada à equipe do turno, nunca a uma pessoa; mínimo de 5 respostas para mostrar a equipe
+
+**O que é:** cada resposta guarda o setor, a data do plantão e o turno (RN12, RN13). A escala do mês diz qual equipe estava de plantão em cada setor, dia e turno, e é assim que a resposta fica ligada a uma **equipe**, nunca a um profissional (RN14, RN15). Nos indicadores, a nota de uma equipe só aparece com **5 ou mais respostas**; abaixo disso aparece "dados insuficientes" (RN15). Ao salvar a escala, as respostas daquele dia e turno passam para a equipe cadastrada, mesmo que a escala tenha sido feita depois.
+
+**Por quê:**
+- Não responsabilizar injustamente um profissional por uma avaliação isolada.
+- Uma ou duas respostas não dizem nada sobre uma equipe; com pelo menos 5, a média já começa a fazer sentido.
+- A escala costuma ser cadastrada ou corrigida com atraso; sem atualizar as respostas, elas ficariam sem equipe ou com a equipe errada.
+
+**Ligação com a persona:** a Renata quer saber o que o paciente achou do plantão dela, mas tem medo de que uma reclamação isolada pese contra um técnico ou uma enfermeira. Olhando por equipe e só com respostas suficientes, ela age onde há um padrão, sem apontar uma pessoa.
+
+**Onde aparece:** tela **Escala** do site `gestao` (equipes e grade do mês por dia e turno); nenhuma tabela do banco liga resposta a uma pessoa (README, seção 8); indicadores por equipe do dashboard, com "dados insuficientes" abaixo de 5 respostas.
+
+### D5 · TV Wall numa aba só do super admin, com todos os comentários sem exceção
+
+**O que é:** o TV Wall é uma aba do site de gestão, com os dashboards e **todos** os comentários dos pacientes, sem filtro (RN18). Só o super admin vê essa aba; para os outros perfis ela nem aparece no menu, e quem tenta abrir pelo endereço recebe "Sem permissão" (RN16).
+
+**Por quê:**
+- Os comentários podem conter críticas. Deixar o TV Wall restrito evita expor problemas ao público e às equipes de outros setores.
+- A direção tem a visão completa do hospital, sem filtro.
+
+**Ligação com a persona:** a Renata não quer que as críticas dos pacientes ao Pronto Atendimento fiquem expostas para quem passa no corredor. Ela vê e trata os comentários do setor dela na tela **Comentários**; a visão de todos os setores juntos, no TV Wall, fica com a direção.
+
+**Onde aparece:** menu lateral do site `gestao` (a aba TV Wall só existe para o super admin); proteção da rota `/tv`; rota da API do TV Wall restrita ao super admin (README, seção 9).
+
+### D8 · Três perfis: super admin, admin de setor e visualizador designado a um setor
+
+**O que é:** o site de gestão tem três perfis (RN16):
+- **Super admin:** tudo, em todos os setores; cadastra setores e usuários, inclusive outros super admins.
+- **Admin de setor:** gerencia só o seu setor (pesquisa, escala, comentários e visualizadores).
+- **Visualizador:** só olha os dados do setor para o qual foi designado, sem mudar nada.
+
+Cada pessoa troca a própria senha em "Minha senha", e ninguém desativa a si mesmo nem muda o próprio perfil.
+
+**Por quê:**
+- Cada gestor só vê e mexe no próprio setor.
+- O visualizador permite mostrar os resultados a outras pessoas da equipe sem dar poder de mudar nada.
+
+**Ligação com a persona:** a Renata é admin de setor do Pronto Atendimento. Ela cuida da pesquisa, da escala e dos comentários só do setor dela, e cadastra a enfermeira líder do noturno como visualizadora, para acompanhar os resultados sem conseguir alterar a escala ou tratar comentários.
+
+**Onde aparece:** menu lateral do site `gestao`, que mostra só as abas de cada perfil; tela **Usuários** (o admin de setor só cadastra visualizadores do próprio setor); telas de **Escala** e **Comentários**, que viram só leitura para o visualizador; todas as rotas da API conferem o perfil e o setor (README, seção 9).
