@@ -6,6 +6,8 @@ import { createRepositories, type Repositories } from './database';
 import { createAuthRouter } from './modules/auth/auth.routes';
 import { createResponsesRouter } from './modules/responses/responses.routes';
 import { ResponsesService } from './modules/responses/responses.service';
+import { createSchedulesRouter } from './modules/schedules/schedules.routes';
+import { SchedulesService } from './modules/schedules/schedules.service';
 import { createSectorsRouter } from './modules/sectors/sectors.routes';
 import { SectorsService } from './modules/sectors/sectors.service';
 import { createSurveysRouter } from './modules/surveys/surveys.routes';
@@ -57,6 +59,7 @@ export function createApp(overrides: Partial<Repositories> = {}) {
   app.use('/api/sectors', createSectorsRouter(new SectorsService(repositories.sectors, env.SURVEY_SITE_URL))); // setores e QR Code (B11)
   app.use('/api/users', createUsersRouter(new UsersService(repositories.users, repositories.sectors))); // usuários (B12)
   app.use('/api', createSurveysRouter(new SurveysService(repositories.surveys, repositories.sectors))); // pesquisas e perguntas (B13)
+  app.use('/api', createSchedulesRouter(new SchedulesService(repositories.schedules, repositories.sectors))); // equipes e escala (B14)
   app.use('/api', createResponsesRouter(new ResponsesService(repositories.responses))); // pesquisa do paciente, pública (A10)
 
   // Estes dois ficam sempre por último: rota inexistente e tratamento de erros.
