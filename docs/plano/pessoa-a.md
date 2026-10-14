@@ -101,7 +101,7 @@ Contexto, regras (RN), decisões (D) e contratos: [README](../../README.md). Pla
   - O que fazer: `apps/gestao/src/pages/dashboard/` e `components/charts/`, com filtros (período, setor, turno, equipe) e navegação hospital → setor → turno → equipe.
   - Commit: `feat(gestao): tela do dashboard`
 
-- [ ] **A15 · Tempo real**
+- [x] **A15 · Tempo real**
   - Branch: `feat/tempo-real`
   - Depende de: A10, A14
   - O que fazer: `apps/api/src/shared/realtime.ts` com Socket.IO; emitir `response:changed` e `comment:created`; o dashboard atualiza sozinho.

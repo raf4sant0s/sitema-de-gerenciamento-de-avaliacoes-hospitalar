@@ -107,7 +107,7 @@ export class SupabaseResponsesRepository implements ResponsesRepository {
 
   async findResponse(id: string): Promise<StoredResponse | null> {
     const result = await this.db().query<StoredResponse>(
-      'SELECT id, survey_id AS "surveyId", status FROM responses WHERE id = $1',
+      'SELECT id, survey_id AS "surveyId", sector_id AS "sectorId", status FROM responses WHERE id = $1',
       [id],
     );
     return result.rows[0] ?? null;
@@ -169,13 +169,14 @@ export class SupabaseResponsesRepository implements ResponsesRepository {
 
   // A hora vem do banco (NOW()), e não do computador da API, para as duas sempre concordarem.
   // As respostas (answers) não são apagadas: continuam contando nos indicadores (RN10).
-  async abandonInactive(minutes: number): Promise<number> {
-    const result = await this.db().query(
+  async abandonInactive(minutes: number): Promise<number[]> {
+    const result = await this.db().query<{ sector_id: number }>(
       `UPDATE responses
        SET status = 'ABANDONED'
-       WHERE status = 'PARTIAL' AND updated_at < NOW() - $1 * INTERVAL '1 minute'`,
+       WHERE status = 'PARTIAL' AND updated_at < NOW() - $1 * INTERVAL '1 minute'
+       RETURNING sector_id`,
       [minutes],
     );
-    return result.rowCount ?? 0;
+    return result.rows.map((row) => row.sector_id);
   }
 }

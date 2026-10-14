@@ -23,6 +23,7 @@ export interface SurveyQuestion {
 export interface StoredResponse {
   id: string;
   surveyId: number;
+  sectorId: number;
   status: ResponseStatus;
 }
 
@@ -57,6 +58,6 @@ export interface ResponsesRepository {
   completeResponse(responseId: string): Promise<void>;
 
   // RN10: muda para ABANDONED as respostas PARTIAL sem atividade há mais de "minutes" minutos.
-  // Devolve quantas mudaram.
-  abandonInactive(minutes: number): Promise<number>;
+  // Devolve o setor de cada resposta que mudou (para avisar o dashboard, A15).
+  abandonInactive(minutes: number): Promise<number[]>;
 }

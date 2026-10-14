@@ -24,6 +24,7 @@ import TimelineChart from '../../components/charts/TimelineChart';
 import ErrorMessage from '../../components/ui/ErrorMessage';
 import { input } from '../../components/ui/styles';
 import BreakdownTable from './BreakdownTable';
+import { useRealtime } from './useRealtime';
 
 const STEP_LABELS: Record<JourneyStep, string> = {
   RECEPCAO: 'Recepção',
@@ -93,6 +94,10 @@ export default function DashboardPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const lastRequest = useRef(0);
+  // A15: aumenta a cada aviso de tempo real, para buscar os números de novo
+  const [refresh, setRefresh] = useState(0);
+  const silent = useRef(false);
+  const refreshTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // Nível da comparação: sem setor → por setor; com setor → por turno; com turno → por equipe.
   const by: BreakdownBy = !filters.sectorId ? 'sector' : !filters.shift ? 'shift' : 'team';
@@ -114,10 +119,28 @@ export default function DashboardPage() {
       .catch(() => setTeams([]));
   }, [filters.sectorId, filters.from, filters.to]);
 
-  // Busca todos os indicadores de novo a cada mudança de filtro.
+  // A15: quando chega uma resposta nova do setor na tela (ou de qualquer setor, na visão do hospital),
+  // busca de novo. Vários toques seguidos viram uma busca só (espera 1 segundo).
+  const live = useRealtime(['response:changed'], (_event, sectorId) => {
+    if (filters.sectorId !== undefined && filters.sectorId !== sectorId) return;
+    if (refreshTimer.current) return;
+    refreshTimer.current = setTimeout(() => {
+      refreshTimer.current = null;
+      silent.current = true;
+      setRefresh((n) => n + 1);
+    }, 1000);
+  });
+
+  useEffect(() => () => {
+    if (refreshTimer.current) clearTimeout(refreshTimer.current);
+  }, []);
+
+  // Busca todos os indicadores de novo a cada mudança de filtro (ou aviso de tempo real).
   useEffect(() => {
     const request = ++lastRequest.current;
-    setLoading(true);
+    // Atualização pelo tempo real é "silenciosa": não apaga a tela enquanto busca.
+    if (!silent.current) setLoading(true);
+    silent.current = false;
     setError('');
     Promise.all([getSummary(filters), getSteps(filters), getQuestions(filters), getBreakdown(by, filters), getTimeline(filters)])
       .then(([summary, steps, questions, breakdown, timeline]) => {
@@ -132,7 +155,7 @@ export default function DashboardPage() {
       .finally(() => {
         if (request === lastRequest.current) setLoading(false);
       });
-  }, [filters, by]);
+  }, [filters, by, refresh]);
 
   function update(changes: Partial<DashboardFilters>) {
     setFilters((current) => ({ ...current, ...changes }));
@@ -181,6 +204,12 @@ export default function DashboardPage() {
             })}
           </ol>
         </nav>
+        {live && (
+          <p className="ml-auto flex items-center gap-2 font-bold text-success">
+            <span aria-hidden="true" className="h-3 w-3 rounded-full bg-success" />
+            Ao vivo
+          </p>
+        )}
       </div>
 
       {/* Filtros, numa linha acima dos gráficos */}

@@ -16,6 +16,15 @@ vi.mock('../../api/sectors');
 let currentUser: AuthUser;
 vi.mock('../../auth/AuthContext', () => ({ useAuth: () => ({ user: currentUser }) }));
 
+// Tempo real "de mentira": o teste guarda a função do dashboard e simula um aviso da API (A15).
+let sendNotice: (event: 'response:changed', sectorId: number) => void = () => {};
+vi.mock('./useRealtime', () => ({
+  useRealtime: (_events: string[], onChange: typeof sendNotice) => {
+    sendNotice = onChange;
+    return true;
+  },
+}));
+
 const api = vi.mocked(dashboardApi);
 
 const superAdmin: AuthUser = { id: 1, name: 'Carla', role: 'SUPER_ADMIN', sectorId: null };
@@ -147,5 +156,21 @@ describe('tela do dashboard (A14)', () => {
     render(<DashboardPage />);
 
     await waitFor(() => expect(screen.getByRole('alert').textContent).toContain('Você só tem acesso aos dados do seu setor'));
+  });
+
+  it('tempo real: mostra "Ao vivo" e busca de novo quando chega resposta do setor na tela (A15)', async () => {
+    currentUser = viewerPA;
+    render(<DashboardPage />);
+    await screen.findByText('Nota geral por turno');
+    expect(screen.getByText('Ao vivo')).toBeTruthy();
+    const before = api.getSummary.mock.calls.length;
+
+    sendNotice('response:changed', 3); // outro setor: o visualizador do PA não precisa buscar
+    sendNotice('response:changed', 1);
+    sendNotice('response:changed', 1); // vários avisos seguidos viram uma busca só
+
+    await waitFor(() => expect(api.getSummary.mock.calls.length).toBe(before + 1), { timeout: 3000 });
+    await new Promise((resolve) => setTimeout(resolve, 1200));
+    expect(api.getSummary.mock.calls.length).toBe(before + 1);
   });
 });

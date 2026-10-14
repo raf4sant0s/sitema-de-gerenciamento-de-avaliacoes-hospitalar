@@ -9,10 +9,14 @@ import type { Pool } from 'pg';
 const root = path.join(__dirname, '..', '..', '..');
 const sqlFile = (...parts: string[]) => fs.readFileSync(path.join(root, ...parts), 'utf8');
 
-// Cria o banco com a migration e os seeds de estrutura (setores, pesquisas, perguntas, equipes e escala).
+// Cria o banco com TODAS as migrations (em ordem: 001, 002...) e os seeds de estrutura
+// (setores, pesquisas, perguntas, equipes e escala).
 export async function createTestDatabase(): Promise<PGlite> {
   const db = new PGlite();
-  await db.exec(sqlFile('database', 'migrations', '001_cria_tabelas.sql'));
+  const migrations = fs.readdirSync(path.join(root, 'database', 'migrations')).filter((f) => f.endsWith('.sql')).sort();
+  for (const file of migrations) {
+    await db.exec(sqlFile('database', 'migrations', file));
+  }
   await db.exec(sqlFile('database', 'seeds', '001_setores_e_pesquisas.sql'));
   await db.exec(sqlFile('database', 'seeds', '002_equipes_e_escala.sql'));
   return db;
