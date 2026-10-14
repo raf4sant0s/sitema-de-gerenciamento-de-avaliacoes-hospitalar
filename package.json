@@ -11,6 +11,7 @@
     "test:api": "npm run test --workspace api",
     "dev:pesquisa": "npm run dev --workspace pesquisa",
     "dev:gestao": "npm run dev --workspace gestao",
-    "db:migrate": "npm run db:migrate --workspace api"
+    "db:migrate": "npm run db:migrate --workspace api",
+    "test:schemas": "npm run test --workspace @avaliacoes/schemas"
   }
 }

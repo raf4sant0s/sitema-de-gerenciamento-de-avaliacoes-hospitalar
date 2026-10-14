@@ -29,7 +29,7 @@ Contexto, regras (RN), decisões (D) e contratos: [README](../../README.md). Pla
   - Commit: `feat(db): cria tabelas`
   - Pronto quando: as tabelas aparecem no Supabase e a API consegue se conectar.
 
-- [ ] **B3 · Schemas Zod**
+- [x] **B3 · Schemas Zod**
   - Branch: `feat/schemas-zod`
   - Depende de: B2
   - O que fazer: em `packages/schemas/src/`, um arquivo por tabela com os mesmos campos e regras do SQL (ex.: `value` de 1 a 5), exportando também os tipos TypeScript.
