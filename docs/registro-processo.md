@@ -4,6 +4,7 @@ Vale 1 ponto no Projeto Aplicado. No fim de cada dia de trabalho, cada um adicio
 
 | Data | Quem | O que fez | Ferramentas | O que mudou do plano e por quê |
 | --- | --- | --- | --- | --- |
+| 13/10/2026 | Estefanie | Componentes da pesquisa (tarefa A7): carinhas 1–5 com rótulo, botão grande, "pular" discreto e moldura da tela, com dados de mentira e 5 testes | Claude Code, Vitest, Testing Library | Carinhas uma embaixo da outra (em linha o rótulo de 18 px não cabe no celular); a tela avança sozinha após o toque |
 | 13/10/2026 | Estefanie | Criou os sites pesquisa e gestao (tarefa A6): React 18 + Vite + TypeScript + Tailwind + React Router, cores e fonte do guia, client.ts e .env.example | Claude Code, npm | Cores da FHDOD no Tailwind em vez do azul do README; fonte instalada pelo pacote @fontsource para funcionar sem internet |
 | 13/10/2026 | Estefanie | Guia de estilos com a identidade da FHDOD: logo e cores vermelho, branco e cinza | Claude Code | O azul do README foi trocado pelas cores do hospital; contrastes medidos de novo; seção 11 do README a atualizar com a Rafaela |
 | 13/10/2026 | Estefanie | Guia de estilos em docs/guia-de-estilos.md (tarefa A3): cores, fonte, tamanhos, carinhas, botões e estados | Claude Code | Ao medir o contraste, a cor de alerta (#B26A00) deu 4,0:1, abaixo do AA; proposta de trocar por #8A5300, a decidir com a dupla |

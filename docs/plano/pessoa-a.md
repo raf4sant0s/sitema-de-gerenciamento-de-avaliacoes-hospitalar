@@ -46,7 +46,7 @@ Contexto, regras (RN), decisões (D) e contratos: [README](../../README.md). Pla
   - Commit: `chore(sites): cria projetos pesquisa e gestao`
   - Pronto quando: `npm run dev` abre os dois sites no navegador.
 
-- [ ] **A7 · Componentes da pesquisa**
+- [x] **A7 · Componentes da pesquisa**
   - Branch: `feat/pesquisa-componentes`
   - O que fazer: em `apps/pesquisa/src/components/`: carinhas de 1 a 5 com rótulo em texto (RN04), botão grande, link "pular" discreto (RN07), moldura da tela da pesquisa. Usar dados de mentira por enquanto.
   - Commit: `feat(pesquisa): componentes base`
