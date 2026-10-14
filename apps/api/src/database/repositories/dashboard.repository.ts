@@ -52,10 +52,34 @@ export interface TimelinePoint {
   count: number;
 }
 
+// Exportação para Excel (RN19, A17). Nenhum dado pessoal: não existe nenhum guardado (RN08).
+export interface ExportResponseRow {
+  id: string;
+  startedAt: string; // DD/MM/AAAA HH:MM no horário de Brasília
+  shiftDate: string; // DD/MM/AAAA
+  shift: Shift;
+  sectorName: string;
+  teamName: string | null;
+  status: 'PARTIAL' | 'COMPLETE' | 'ABANDONED';
+  overallScore: number | null;
+  commentType: 'ELOGIO' | 'RECLAMACAO' | 'SUGESTAO' | null;
+  commentText: string | null;
+}
+
+export interface ExportAnswerRow {
+  responseId: string;
+  sectorName: string;
+  step: JourneyStep;
+  question: string;
+  value: number;
+}
+
 export interface DashboardRepository {
   summary(filters: DashboardFilters): Promise<DashboardSummary>;
   questions(filters: DashboardFilters): Promise<QuestionIndicator[]>;
   steps(filters: DashboardFilters): Promise<StepIndicator[]>;
   breakdown(by: BreakdownBy, filters: DashboardFilters): Promise<BreakdownRow[]>;
   timeline(filters: DashboardFilters): Promise<TimelinePoint[]>;
+  exportResponses(filters: DashboardFilters): Promise<ExportResponseRow[]>;
+  exportAnswers(filters: DashboardFilters): Promise<ExportAnswerRow[]>;
 }

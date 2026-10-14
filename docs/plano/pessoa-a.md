@@ -113,7 +113,7 @@ Contexto, regras (RN), decisões (D) e contratos: [README](../../README.md). Pla
   - O que fazer: rota `GET /dashboard/tv` (só super admin) e tela `/tv` com os dashboards e **todos** os comentários (RN18); a aba só aparece para o super admin.
   - Commit: `feat(gestao): tv wall`
 
-- [ ] **A17 · Exportar Excel**
+- [x] **A17 · Exportar Excel**
   - Branch: `feat/excel`
   - Depende de: A13
   - O que fazer: `GET /dashboard/export.xlsx` com os filtros e o botão "Exportar Excel" no dashboard (RN19).

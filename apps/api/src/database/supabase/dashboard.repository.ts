@@ -5,6 +5,8 @@ import type {
   DashboardFilters,
   DashboardRepository,
   DashboardSummary,
+  ExportAnswerRow,
+  ExportResponseRow,
   QuestionIndicator,
   StepIndicator,
   TimelinePoint,
@@ -163,5 +165,41 @@ export class SupabaseDashboardRepository implements DashboardRepository {
       params,
     );
     return result.rows.map((row) => ({ date: row.date, average: Number(row.average), count: row.count }));
+  }
+
+  // RN19: uma linha por resposta, com os mesmos filtros do dashboard. Mais antigas primeiro.
+  async exportResponses(filters: DashboardFilters): Promise<ExportResponseRow[]> {
+    const { where, params } = buildWhere(filters);
+    const result = await this.db().query<ExportResponseRow>(
+      `SELECT r.id,
+              to_char(r.created_at AT TIME ZONE 'America/Sao_Paulo', 'DD/MM/YYYY HH24:MI') AS "startedAt",
+              to_char(r.shift_date, 'DD/MM/YYYY') AS "shiftDate",
+              r.shift, se.name AS "sectorName", t.name AS "teamName", r.status,
+              r.overall_score AS "overallScore", c.type AS "commentType", c.text AS "commentText"
+       FROM responses r
+       JOIN sectors se ON se.id = r.sector_id
+       LEFT JOIN teams t ON t.id = r.team_id
+       LEFT JOIN comments c ON c.response_id = r.id
+       ${where}
+       ORDER BY r.created_at`,
+      params,
+    );
+    return result.rows;
+  }
+
+  // RN19: uma linha por carinha tocada (perguntas puladas não aparecem).
+  async exportAnswers(filters: DashboardFilters): Promise<ExportAnswerRow[]> {
+    const { where, params } = buildWhere(filters);
+    const result = await this.db().query<ExportAnswerRow>(
+      `SELECT a.response_id AS "responseId", se.name AS "sectorName", q.step, q.text AS question, a.value
+       FROM answers a
+       JOIN responses r ON r.id = a.response_id
+       JOIN questions q ON q.id = a.question_id
+       JOIN sectors se ON se.id = r.sector_id
+       ${where}
+       ORDER BY r.created_at, q.required, q.position`,
+      params,
+    );
+    return result.rows;
   }
 }

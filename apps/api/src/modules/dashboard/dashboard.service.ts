@@ -6,6 +6,7 @@ import type {
 } from '../../database/repositories/dashboard.repository';
 import { assertSectorAccess, type AuthUser } from '../../shared/auth';
 import { AppError } from '../../shared/errors';
+import { buildExportWorkbook } from './excel';
 
 // RN15: indicador por equipe só aparece com 5 ou mais respostas.
 export const MIN_RESPONSES_PER_TEAM = 5;
@@ -65,6 +66,23 @@ export class DashboardService {
 
   timeline(user: AuthUser, filters: DashboardFilters) {
     return this.repository.timeline(this.scope(user, filters));
+  }
+
+  // RN19: planilha com as respostas, com os mesmos filtros (e a mesma restrição de setor) do dashboard.
+  async exportExcel(user: AuthUser, filters: DashboardFilters): Promise<{ file: Buffer; fileName: string }> {
+    const scoped = this.scope(user, filters);
+    const [responses, answers] = await Promise.all([
+      this.repository.exportResponses(scoped),
+      this.repository.exportAnswers(scoped),
+    ]);
+
+    // Nomes para a aba "Filtros" (vêm das próprias respostas exportadas).
+    const sectorName = scoped.sectorId !== undefined ? (responses[0]?.sectorName ?? `Setor ${scoped.sectorId}`) : undefined;
+    const teamName = scoped.teamId !== undefined ? (responses[0]?.teamName ?? `Equipe ${scoped.teamId}`) : undefined;
+
+    const file = await buildExportWorkbook(responses, answers, { ...scoped, sectorName, teamName });
+    const period = [scoped.from, scoped.to].filter(Boolean).join('_a_');
+    return { file, fileName: `avaliacoes${period ? `_${period}` : ''}.xlsx` };
   }
 
   // RN18 / D5: TV Wall do super admin (a rota já barra os outros perfis).

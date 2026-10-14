@@ -173,4 +173,18 @@ describe('tela do dashboard (A14)', () => {
     await new Promise((resolve) => setTimeout(resolve, 1200));
     expect(api.getSummary.mock.calls.length).toBe(before + 1);
   });
+
+  it('"Exportar Excel" baixa a planilha com os filtros que estão na tela (RN19)', async () => {
+    const user = userEvent.setup();
+    api.exportExcel.mockResolvedValue();
+    render(<DashboardPage />);
+
+    await user.selectOptions(await screen.findByLabelText('Setor'), '1');
+    await user.selectOptions(screen.getByLabelText('Turno'), 'NOITE');
+    await user.click(screen.getByRole('button', { name: /Exportar Excel/ }));
+
+    expect(api.exportExcel).toHaveBeenCalledWith(expect.objectContaining({ sectorId: 1, shift: 'NOITE' }));
+    const [filters] = api.exportExcel.mock.calls[0];
+    expect(filters.from).toMatch(/^\d{4}-\d{2}-\d{2}$/);
+  });
 });

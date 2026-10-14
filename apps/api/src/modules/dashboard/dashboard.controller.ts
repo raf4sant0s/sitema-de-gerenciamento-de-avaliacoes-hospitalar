@@ -49,6 +49,13 @@ export function createDashboardController(service: DashboardService) {
       res.json(await service.timeline(req.user!, parse(filtersQuery, req.query)));
     },
 
+    async exportExcel(req: Request, res: Response) {
+      const { file, fileName } = await service.exportExcel(req.user!, parse(filtersQuery, req.query));
+      res.type('application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+      res.setHeader('Content-Disposition', `attachment; filename="${fileName}"`);
+      res.send(file);
+    },
+
     async tv(req: Request, res: Response) {
       const { from, to } = parse(filtersQuery, req.query);
       res.json(await service.tv({ from, to }));

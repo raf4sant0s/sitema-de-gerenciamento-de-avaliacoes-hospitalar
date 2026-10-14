@@ -6,6 +6,7 @@ import {
   type BreakdownRow,
   type DashboardFilters,
   type DashboardSummary,
+  exportExcel,
   getBreakdown,
   getQuestions,
   getSteps,
@@ -22,7 +23,7 @@ import FaceDistribution from '../../components/charts/FaceDistribution';
 import { Face, faceFor, formatAverage } from '../../components/charts/faces';
 import TimelineChart from '../../components/charts/TimelineChart';
 import ErrorMessage from '../../components/ui/ErrorMessage';
-import { input } from '../../components/ui/styles';
+import { input, secondaryButton } from '../../components/ui/styles';
 import BreakdownTable from './BreakdownTable';
 import { useRealtime } from './useRealtime';
 
@@ -93,6 +94,7 @@ export default function DashboardPage() {
   const [data, setData] = useState<DashboardData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [exporting, setExporting] = useState(false);
   const lastRequest = useRef(0);
   // A15: aumenta a cada aviso de tempo real, para buscar os números de novo
   const [refresh, setRefresh] = useState(0);
@@ -161,6 +163,19 @@ export default function DashboardPage() {
     setFilters((current) => ({ ...current, ...changes }));
   }
 
+  // RN19: baixa a planilha com os filtros que estão na tela.
+  async function handleExport() {
+    setExporting(true);
+    setError('');
+    try {
+      await exportExcel(filters);
+    } catch (err) {
+      setError(err instanceof ApiError ? err.message : 'Não foi possível gerar a planilha.');
+    } finally {
+      setExporting(false);
+    }
+  }
+
   function drillDown(row: BreakdownRow) {
     if (by === 'sector') update({ sectorId: Number(row.key), shift: undefined, teamId: undefined });
     else if (by === 'shift') update({ shift: row.key as Shift, teamId: undefined });
@@ -214,7 +229,7 @@ export default function DashboardPage() {
 
       {/* Filtros, numa linha acima dos gráficos */}
       <form
-        className="grid gap-3 rounded-xl border border-line bg-white p-4 sm:grid-cols-2 lg:grid-cols-5"
+        className="grid items-end gap-3 rounded-xl border border-line bg-white p-4 sm:grid-cols-2 lg:grid-cols-6"
         onSubmit={(event) => event.preventDefault()}
         aria-label="Filtros"
       >
@@ -287,6 +302,10 @@ export default function DashboardPage() {
             ))}
           </select>
         </label>
+        <button type="button" className={secondaryButton} onClick={handleExport} disabled={exporting}>
+          <span aria-hidden="true">⭳ </span>
+          {exporting ? 'Gerando...' : 'Exportar Excel'}
+        </button>
       </form>
 
       <ErrorMessage message={error} />

@@ -5,7 +5,6 @@ import type { DashboardService } from './dashboard.service';
 
 // Rotas do dashboard (README, seção 9). Ficam em /api/dashboard e exigem login.
 // Os três perfis podem ver; admin de setor e visualizador só o próprio setor (RN22).
-// A rota do Excel (A17) entra aqui na próxima tarefa.
 export function createDashboardRouter(service: DashboardService) {
   const router = Router();
   const controller = createDashboardController(service);
@@ -216,6 +215,31 @@ export function createDashboardRouter(service: DashboardService) {
    *       403: { description: "Não é super admin (FORBIDDEN)" }
    */
   router.get('/tv', requireRole('SUPER_ADMIN'), controller.tv);
+
+  /**
+   * @openapi
+   * /dashboard/export.xlsx:
+   *   get:
+   *     summary: Baixa as respostas em Excel, com os filtros do dashboard (RN19)
+   *     description: Planilha com 3 abas (Respostas, Perguntas e Filtros). Nenhum dado pessoal (RN08). Admin de setor e visualizador só exportam o próprio setor (RN22).
+   *     tags: [Dashboard]
+   *     security: [{ bearerAuth: [] }]
+   *     parameters:
+   *       - $ref: '#/components/parameters/DashFrom'
+   *       - $ref: '#/components/parameters/DashTo'
+   *       - $ref: '#/components/parameters/DashSector'
+   *       - $ref: '#/components/parameters/DashShift'
+   *       - $ref: '#/components/parameters/DashTeam'
+   *     responses:
+   *       200:
+   *         description: Arquivo .xlsx
+   *         content:
+   *           application/vnd.openxmlformats-officedocument.spreadsheetml.sheet:
+   *             schema: { type: string, format: binary }
+   *       400: { description: "Filtro inválido (VALIDATION_ERROR)" }
+   *       403: { description: "Setor que não é o da pessoa (FORBIDDEN)" }
+   */
+  router.get('/export.xlsx', controller.exportExcel);
 
   return router;
 }

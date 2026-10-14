@@ -1,5 +1,5 @@
 import type { JourneyStep, Shift } from '@avaliacoes/schemas';
-import { api } from './client';
+import { api, downloadFile } from './client';
 
 // Chamadas do dashboard para a API (README, seção 9; tarefas A13 e A14).
 
@@ -79,6 +79,12 @@ export function getBreakdown(by: BreakdownBy, filters: DashboardFilters) {
 
 export function getTimeline(filters: DashboardFilters) {
   return api<TimelinePoint[]>(`/dashboard/timeline${query(filters)}`);
+}
+
+// RN19 (A17): baixa a planilha das respostas, com os mesmos filtros da tela.
+export function exportExcel(filters: DashboardFilters) {
+  const period = [filters.from, filters.to].filter(Boolean).join('_a_');
+  return downloadFile(`/dashboard/export.xlsx${query(filters)}`, `avaliacoes${period ? `_${period}` : ''}.xlsx`);
 }
 
 // TV Wall (RN18, A16): só o super admin. Comentários de todos os tipos e situações, os mais novos primeiro.

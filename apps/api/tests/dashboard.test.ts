@@ -1,4 +1,5 @@
 import type { PGlite } from '@electric-sql/pglite';
+import ExcelJS from 'exceljs';
 import request from 'supertest';
 import { beforeAll, describe, expect, it } from 'vitest';
 import { createApp } from '../src/app';
@@ -262,5 +263,75 @@ describe('GET /api/dashboard/tv (RN18, A16)', () => {
       expect(res.status).toBe(403);
       expect(res.body.error.code).toBe('FORBIDDEN');
     }
+  });
+});
+
+describe('GET /api/dashboard/export.xlsx (RN19, A17)', () => {
+  // Baixa a planilha como arquivo (bytes) e abre com o exceljs.
+  async function download(user: AuthUser, query = '') {
+    const res = await request(app)
+      .get(`/api/dashboard/export.xlsx${query}`)
+      .set(auth(user))
+      .buffer(true)
+      .parse((response, callback) => {
+        const chunks: Buffer[] = [];
+        response.on('data', (chunk: Buffer) => chunks.push(chunk));
+        response.on('end', () => callback(null, Buffer.concat(chunks)));
+      });
+    const workbook = new ExcelJS.Workbook();
+    if (res.status === 200) await workbook.xlsx.load(res.body);
+    return { res, workbook };
+  }
+
+  const values = (sheet: ExcelJS.Worksheet, rowNumber: number) => (sheet.getRow(rowNumber).values as unknown[]).slice(1);
+
+  it('super admin baixa as respostas do hospital, com 3 abas e cabeçalhos em português', async () => {
+    const { res, workbook } = await download(superAdmin);
+
+    expect(res.status).toBe(200);
+    expect(res.headers['content-type']).toContain('spreadsheetml');
+    expect(res.headers['content-disposition']).toContain('.xlsx');
+    expect(workbook.worksheets.map((sheet) => sheet.name)).toEqual(['Respostas', 'Perguntas', 'Filtros']);
+
+    const responses = workbook.getWorksheet('Respostas')!;
+    expect(values(responses, 1)).toEqual([
+      'Código', 'Início (data e hora)', 'Data do plantão', 'Turno', 'Setor', 'Equipe', 'Situação',
+      'Nota geral (1 a 5)', 'Tipo do comentário', 'Comentário',
+    ]);
+    expect(responses.rowCount).toBe(1 + 10);
+
+    // Primeira resposta inserida: Pronto Atendimento, manhã de 01/10, Equipe A, nota 1, com elogio
+    const first = values(responses, 2);
+    expect(first.slice(2, 8)).toEqual(['01/10/2026', 'Manhã', 'Pronto Atendimento', 'Equipe A', 'Completa', 1]);
+    expect(first.slice(8)).toEqual(['Elogio', 'Médico muito atencioso.']);
+
+    // Aba Perguntas: uma linha por carinha tocada (5×2 + 2 + 1 + 1 + 1 = 15)
+    expect(workbook.getWorksheet('Perguntas')!.rowCount).toBe(1 + 15);
+  });
+
+  it('nenhuma coluna de dado pessoal (RN08)', async () => {
+    const { workbook } = await download(superAdmin);
+    const headers = workbook.worksheets.flatMap((sheet) => values(sheet, 1).map(String).map((h) => h.toLowerCase()));
+    for (const personal of ['nome', 'telefone', 'e-mail', 'email', 'cpf']) {
+      expect(headers.some((h) => h.includes(personal))).toBe(false);
+    }
+  });
+
+  it('usa os mesmos filtros do dashboard e mostra quais foram usados', async () => {
+    const { workbook } = await download(superAdmin, '?from=2026-10-02&shift=TARDE');
+
+    expect(workbook.getWorksheet('Respostas')!.rowCount).toBe(1 + 2); // as 2 do Raio-X à tarde
+    const filters = workbook.getWorksheet('Filtros')!;
+    expect(values(filters, 2)).toEqual(['Período (data do plantão)', '02/10/2026 a sem limite']);
+    expect(values(filters, 4)).toEqual(['Turno', 'Tarde']);
+    expect(values(filters, 6)).toEqual(['Respostas exportadas', 2]);
+  });
+
+  it('visualizador só exporta o próprio setor; outro setor → 403 (RN22)', async () => {
+    const own = await download(viewerPA());
+    expect(own.workbook.getWorksheet('Respostas')!.rowCount).toBe(1 + 8);
+
+    const other = await download(viewerPA(), `?sectorId=${ids.rx}`);
+    expect(other.res.status).toBe(403);
   });
 });
