@@ -1,10 +1,12 @@
 import type { DashboardRepository } from './repositories/dashboard.repository';
 import type { ResponsesRepository } from './repositories/responses.repository';
 import type { SectorsRepository } from './repositories/sectors.repository';
+import type { SurveysRepository } from './repositories/surveys.repository';
 import type { UsersRepository } from './repositories/users.repository';
 import { SupabaseDashboardRepository } from './supabase/dashboard.repository';
 import { SupabaseResponsesRepository } from './supabase/responses.repository';
 import { SupabaseSectorsRepository } from './supabase/sectors.repository';
+import { SupabaseSurveysRepository } from './supabase/surveys.repository';
 import { SupabaseUsersRepository } from './supabase/users.repository';
 
 // Aqui se escolhe QUAL banco a API usa. É o único lugar que liga as interfaces
@@ -14,6 +16,7 @@ import { SupabaseUsersRepository } from './supabase/users.repository';
 export interface Repositories {
   users: UsersRepository;
   sectors: SectorsRepository;
+  surveys: SurveysRepository;
   responses: ResponsesRepository; // pesquisa do paciente (A)
   dashboard: DashboardRepository; // indicadores do dashboard (A)
 }
@@ -22,6 +25,7 @@ export function createRepositories(): Repositories {
   return {
     users: new SupabaseUsersRepository(),
     sectors: new SupabaseSectorsRepository(),
+    surveys: new SupabaseSurveysRepository(),
     responses: new SupabaseResponsesRepository(),
     dashboard: new SupabaseDashboardRepository(),
   };

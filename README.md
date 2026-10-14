@@ -57,6 +57,8 @@ Numeradas para serem citadas em código, testes e commits (ex.: `// RN07`).
 - **RN03** **Nunca** mostrar o número de perguntas, "3 de 10" ou barra de progresso.
 - **RN04** **Todas** as perguntas são respondidas com **carinhas de 1 a 5** (Péssimo, Ruim, Regular, Bom, Ótimo).
 - **RN05** Existe **uma única pergunta obrigatória** por pesquisa: a avaliação geral do hospital. Ela aparece sempre na **última tela** de perguntas. Todas as outras são opcionais.
+
+  Cadastro de pesquisas (decisões da dupla, tarefa B13): toda pesquisa **nasce desativada e já com a pergunta obrigatória** (texto padrão "No geral, como você avalia o atendimento do hospital hoje?", editável), que não pode ser desativada nem mudar de etapa. **Ativar uma pesquisa desativa a que estava ativa no mesmo setor** (com confirmação na tela). O texto de uma pergunta que já recebeu respostas **pode ser corrigido, com aviso**. Desativar uma pergunta não apaga as respostas dela.
 - **RN06** As perguntas opcionais são organizadas pela etapa da jornada: `RECEPCAO`, `TRIAGEM`, `ENFERMAGEM`, `MEDICO` (e `GERAL`). Cada setor só tem as etapas que fazem sentido.
 - **RN07** Botão **"pular"** nas perguntas opcionais, **discreto** (link pequeno, cor neutra, abaixo das carinhas). A pergunta obrigatória não tem "pular".
 - **RN08** **Pesquisa 100% anônima:** nenhum dado pessoal é pedido nem guardado (sem nome, telefone, e-mail, CPF).
@@ -312,9 +314,9 @@ Na API, as rotas fechadas usam os middlewares de `src/shared/auth.ts`: `requireA
 | GET/POST | `/sectors` · GET/PUT/DELETE `/sectors/:id` | Super admin (admin de setor e visualizador só leem o próprio). POST: `{ name, slug }`, o código é gerado. PUT: só `{ name?, active? }` (link e código não mudam; 400 se enviados). DELETE desativa. Resposta: `{ id, name, slug, code, active, createdAt, surveyUrl, shortUrl }`. Erros: 409 `SLUG_TAKEN`, 404 `SECTOR_NOT_FOUND` |
 | GET | `/sectors/:id/qrcode?type=slug\|code` | Super admin e admin do setor (PNG) |
 | GET/POST | `/users` · PUT/DELETE `/users/:id` | Super admin: todos. Admin de setor: só visualizadores do seu setor. POST: `{ name, email, password, role, sectorId }`. PUT: `{ name?, email?, password?, role?, sectorId?, active? }` (password = redefinir). DELETE desativa. Resposta: `{ id, name, email, role, sectorId, active, createdAt }`, nunca a senha. Erros: 409 `EMAIL_TAKEN`, 404 `USER_NOT_FOUND`, 404 `SECTOR_NOT_FOUND`, 403 ao tentar desativar ou mudar o perfil de si mesmo |
-| GET/POST | `/surveys` · PUT `/surveys/:id` | Super admin e admin do setor |
-| GET/POST | `/surveys/:id/questions` · PUT/DELETE `/questions/:id` | Super admin e admin do setor |
-| PUT | `/surveys/:id/questions/order` | `{ ids: [...] }` reordena |
+| GET/POST | `/surveys` · GET/PUT `/surveys/:id` | Super admin (todos, ou `?sectorId=`) e admin do setor (o seu). POST: `{ sectorId, title }` (nasce desativada, com a obrigatória). PUT: `{ title?, active? }`. Resposta: `{ id, sectorId, title, active, createdAt }`. Erros: 404 `SURVEY_NOT_FOUND`, 404 `SECTOR_NOT_FOUND` |
+| GET/POST | `/surveys/:id/questions` · PUT/DELETE `/questions/:id` | Super admin e admin do setor. POST: `{ text, step }` (sempre opcional, vai para o fim). PUT: `{ text?, step?, active? }`. DELETE desativa. Resposta: `{ id, surveyId, position, text, step, required, active, answerCount }`. Erros: 404 `QUESTION_NOT_FOUND`, 400 `REQUIRED_QUESTION_LOCKED` (desativar ou mudar a etapa da obrigatória) |
+| PUT | `/surveys/:id/questions/order` | `{ ids: [...] }` com **todas** as opcionais, na nova ordem (a obrigatória fica sempre por último). Devolve as perguntas reordenadas |
 | GET/POST | `/teams` · PUT/DELETE `/teams/:id` | Super admin e admin do setor |
 | GET | `/schedules?sectorId&month=2026-10` | Todos os perfis (no próprio setor) |
 | PUT | `/schedules` | `{ items: [{sectorId, shiftDate, shift, teamId}] }` · Super admin e admin do setor |
