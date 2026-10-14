@@ -102,7 +102,7 @@ Contexto, regras (RN), decisões (D) e contratos: [README](../../README.md). Pla
   - O que fazer: rotas de `/teams` e `/schedules`; tela `/escala` para cadastrar a equipe de cada setor, data e turno do mês (RN14). O visualizador só vê.
   - Commit: `feat(schedules): equipes e escala`
 
-- [ ] **B15 · Comentários**
+- [x] **B15 · Comentários**
   - Branch: `feat/comentarios`
   - Depende de: B10
   - O que fazer: rotas de `/comments`; tela `/comentarios` com filtros (setor, tipo, status, data) e a ação "marcar como tratado" com o campo do que foi feito (RN17). Visualizador só lê.

@@ -4,6 +4,7 @@ import { rolesFor } from './auth/menu';
 import { RequireAuth } from './auth/RequireAuth';
 import AppLayout from './components/layout/AppLayout';
 import UnderConstruction from './components/layout/UnderConstruction';
+import CommentsPage from './pages/comentarios/CommentsPage';
 import SchedulePage from './pages/escala/SchedulePage';
 import LoginPage from './pages/login/LoginPage';
 import MyPasswordPage from './pages/minha-senha/MyPasswordPage';
@@ -53,7 +54,7 @@ export default function App() {
               path="comentarios"
               element={
                 <RequireAuth roles={rolesFor('/comentarios')}>
-                  <UnderConstruction title="Comentários" />
+                  <CommentsPage />
                 </RequireAuth>
               }
             />

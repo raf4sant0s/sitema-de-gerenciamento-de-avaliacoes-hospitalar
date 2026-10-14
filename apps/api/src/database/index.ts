@@ -1,10 +1,12 @@
 import type { DashboardRepository } from './repositories/dashboard.repository';
+import type { CommentsRepository } from './repositories/comments.repository';
 import type { ResponsesRepository } from './repositories/responses.repository';
 import type { SchedulesRepository } from './repositories/schedules.repository';
 import type { SectorsRepository } from './repositories/sectors.repository';
 import type { SurveysRepository } from './repositories/surveys.repository';
 import type { UsersRepository } from './repositories/users.repository';
 import { SupabaseDashboardRepository } from './supabase/dashboard.repository';
+import { SupabaseCommentsRepository } from './supabase/comments.repository';
 import { SupabaseResponsesRepository } from './supabase/responses.repository';
 import { SupabaseSchedulesRepository } from './supabase/schedules.repository';
 import { SupabaseSectorsRepository } from './supabase/sectors.repository';
@@ -20,6 +22,7 @@ export interface Repositories {
   sectors: SectorsRepository;
   surveys: SurveysRepository;
   schedules: SchedulesRepository;
+  comments: CommentsRepository;
   responses: ResponsesRepository; // pesquisa do paciente (A)
   dashboard: DashboardRepository; // indicadores do dashboard (A)
 }
@@ -30,6 +33,7 @@ export function createRepositories(): Repositories {
     sectors: new SupabaseSectorsRepository(),
     surveys: new SupabaseSurveysRepository(),
     schedules: new SupabaseSchedulesRepository(),
+    comments: new SupabaseCommentsRepository(),
     responses: new SupabaseResponsesRepository(),
     dashboard: new SupabaseDashboardRepository(),
   };
