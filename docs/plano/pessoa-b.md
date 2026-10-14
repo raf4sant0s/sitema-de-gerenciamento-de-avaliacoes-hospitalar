@@ -37,7 +37,7 @@ Contexto, regras (RN), decisões (D) e contratos: [README](../../README.md). Pla
 
 ## Etapa 2 — Documentos e design
 
-- [ ] **B4 · Persona do gestor**
+- [x] **B4 · Persona do gestor**
   - Branch: `docs/persona-gestor`
   - O que fazer: em `docs/personas.md`, seção "Gestão": nome fictício, idade, contexto, objetivos, dores, familiaridade com tecnologia, canal preferido e uma frase que represente a visão dele(a).
   - Commit: `docs: persona do gestor`
