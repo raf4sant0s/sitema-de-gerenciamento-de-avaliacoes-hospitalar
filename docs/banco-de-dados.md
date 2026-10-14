@@ -239,17 +239,35 @@ Essas regras foram testadas: antes de rodar no Supabase, a migration foi executa
 | `UNIQUE (sector_id, shift_date, shift)` | `schedules` | Achar a equipe de plantão ao criar uma resposta (RN14) e ler a escala do mês |
 | `UNIQUE (response_id, question_id)` | `answers` | Juntar as notas de uma resposta e gravar cada toque (RN09) |
 | `responses_sector_created_at` (`sector_id, created_at`) | `responses` | Respostas de um setor por ordem de chegada |
+| `responses_sector_shift` (`sector_id, shift_date, shift`) | `responses` | Dashboard e escala: respostas de um setor por data do plantão e turno (migration 003) |
 | `comments_status` | `comments` | Filtrar os comentários novos ou tratados |
 
 Todas as consultas usam parâmetros (`$1`, `$2`...), nunca valores colados no texto do SQL. Isso protege contra injeção de SQL e deixa o PostgreSQL reaproveitar o plano da consulta.
 
-### Melhoria proposta
+### Melhoria aplicada: índice por setor + data do plantão + turno
 
-O dashboard e a escala filtram as respostas por **setor + data do plantão + turno** (`shift_date`, `shift`), e não pela data em que a resposta chegou (`created_at`):
+**O problema:** o dashboard e a escala procuram as respostas por **setor + data do plantão + turno** (`shift_date`, `shift`), e não pela data em que a resposta chegou (`created_at`):
 - o dashboard filtra por período, setor, turno e equipe usando `shift_date` (`dashboard.repository.ts`);
 - salvar a escala atualiza as respostas `WHERE sector_id = ... AND shift_date = ... AND shift = ...` (`schedules.repository.ts`).
 
-O índice atual `responses(sector_id, created_at)` ajuda pouco nessas consultas. A proposta é uma migration nova com o índice `responses(sector_id, shift_date, shift)`. Com poucos dados, a diferença não aparece; ela passa a importar quando o hospital acumular meses de respostas.
+O índice da migration 001, `responses(sector_id, created_at)`, só ajudava a separar o setor: o banco ainda lia todas as respostas daquele setor e descartava as de outras datas e turnos.
+
+**A solução:** a migration `003_indice_respostas_plantao.sql` cria o índice `responses_sector_shift` em `responses (sector_id, shift_date, shift)`, na mesma ordem em que essas buscas filtram. Ela só acrescenta o índice; nenhum dado muda.
+
+**A medição:** num PostgreSQL em memória (PGlite) com **60.000 respostas** (4 setores, 270 dias, 3 turnos), a mesma busca do dashboard ("média do setor 1, turno da noite, em setembro") e a mesma atualização da escala ("respostas do setor 1, noite de 10/09"), medidas com `EXPLAIN ANALYZE` antes e depois do índice:
+
+| | Antes (só o índice da 001) | Depois (com o índice da 003) |
+| --- | --- | --- |
+| Índice escolhido pelo PostgreSQL | `responses_sector_created_at` | `responses_sector_shift` |
+| Linhas lidas e descartadas pelo filtro | 14.556 | 0 |
+| Blocos lidos da tabela | 741 | 222 |
+| Tempo da busca do dashboard | 3,4 a 5,8 ms | 0,8 a 0,9 ms |
+| Tempo da atualização da escala | 2,9 a 6,5 ms | 0,04 ms |
+| Resultado | 444 respostas, média 3,0 | o mesmo |
+
+Os tempos variam a cada execução e são de um banco em memória; o que importa é a diferença: com o índice novo, o banco vai direto às respostas certas, sem ler e descartar milhares de linhas. Com os poucos dados de hoje a diferença não aparece; ela passa a importar quando o hospital acumular meses de respostas.
+
+Um teste automático (`apps/api/tests/migrations.test.ts`) roda todas as migrations e confere que essa busca usa o índice novo.
 
 ## 8. Scripts de criação e povoamento
 
@@ -259,6 +277,7 @@ O índice atual `responses(sector_id, created_at)` ajuda pouco nessas consultas.
 | --- | --- |
 | `001_cria_tabelas.sql` | Cria as 9 tabelas, com chaves, `CHECK`, `UNIQUE` e índices |
 | `002_equipes_ativas.sql` | Acrescenta `teams.active`, para equipes serem desativadas em vez de apagadas (tarefa B14) |
+| `003_indice_respostas_plantao.sql` | Cria o índice `responses_sector_shift` para o dashboard e a escala (seção 7) |
 
 Como rodar (na raiz do projeto, com o `DATABASE_URL` no `apps/api/.env`):
 
