@@ -1,0 +1,183 @@
+import { Router } from 'express';
+import { requireAuth } from '../../shared/auth';
+import { createDashboardController } from './dashboard.controller';
+import type { DashboardService } from './dashboard.service';
+
+// Rotas do dashboard (README, seção 9). Ficam em /api/dashboard e exigem login.
+// Os três perfis podem ver; admin de setor e visualizador só o próprio setor (RN22).
+// A rota do TV Wall (A16) e a do Excel (A17) entram aqui nas próximas tarefas.
+export function createDashboardRouter(service: DashboardService) {
+  const router = Router();
+  const controller = createDashboardController(service);
+
+  router.use(requireAuth);
+
+  /**
+   * @openapi
+   * components:
+   *   parameters:
+   *     DashFrom: { in: query, name: from, schema: { type: string, format: date }, description: "Data do plantão inicial (AAAA-MM-DD)" }
+   *     DashTo: { in: query, name: to, schema: { type: string, format: date }, description: "Data do plantão final (AAAA-MM-DD)" }
+   *     DashSector: { in: query, name: sectorId, schema: { type: integer }, description: "Admin de setor e visualizador só o próprio (RN22)" }
+   *     DashShift: { in: query, name: shift, schema: { type: string, enum: [MANHA, TARDE, NOITE] } }
+   *     DashTeam: { in: query, name: teamId, schema: { type: integer } }
+   *
+   * /dashboard/summary:
+   *   get:
+   *     summary: Nota geral e totais (RN20)
+   *     description: Nota geral = média da pergunta obrigatória (1 a 5, 1 casa decimal) e quantas respostas em cada carinha.
+   *     tags: [Dashboard]
+   *     security: [{ bearerAuth: [] }]
+   *     parameters:
+   *       - $ref: '#/components/parameters/DashFrom'
+   *       - $ref: '#/components/parameters/DashTo'
+   *       - $ref: '#/components/parameters/DashSector'
+   *       - $ref: '#/components/parameters/DashShift'
+   *       - $ref: '#/components/parameters/DashTeam'
+   *     responses:
+   *       200:
+   *         description: Indicadores gerais
+   *         content:
+   *           application/json:
+   *             schema:
+   *               type: object
+   *               properties:
+   *                 overallAverage: { type: number, nullable: true, example: 3.8 }
+   *                 totalResponses: { type: integer, example: 160 }
+   *                 complete: { type: integer, example: 127 }
+   *                 partial: { type: integer, example: 4 }
+   *                 abandoned: { type: integer, example: 29 }
+   *                 distribution:
+   *                   type: object
+   *                   example: { "1": 1, "2": 10, "3": 36, "4": 49, "5": 31 }
+   *       400: { description: "Filtro inválido (VALIDATION_ERROR)" }
+   *       401: { description: "Sem login (UNAUTHORIZED)" }
+   *       403: { description: "Setor que não é o da pessoa (FORBIDDEN)" }
+   */
+  router.get('/summary', controller.summary);
+
+  /**
+   * @openapi
+   * /dashboard/questions:
+   *   get:
+   *     summary: Média de cada pergunta (RN21)
+   *     description: Perguntas puladas não entram na média.
+   *     tags: [Dashboard]
+   *     security: [{ bearerAuth: [] }]
+   *     parameters:
+   *       - $ref: '#/components/parameters/DashFrom'
+   *       - $ref: '#/components/parameters/DashTo'
+   *       - $ref: '#/components/parameters/DashSector'
+   *       - $ref: '#/components/parameters/DashShift'
+   *       - $ref: '#/components/parameters/DashTeam'
+   *     responses:
+   *       200:
+   *         description: Uma linha por pergunta
+   *         content:
+   *           application/json:
+   *             schema:
+   *               type: array
+   *               items:
+   *                 type: object
+   *                 properties:
+   *                   questionId: { type: integer }
+   *                   text: { type: string, example: Como foi o atendimento na recepção? }
+   *                   step: { type: string, enum: [GERAL, RECEPCAO, TRIAGEM, ENFERMAGEM, MEDICO] }
+   *                   average: { type: number, example: 3.2 }
+   *                   count: { type: integer, example: 133 }
+   */
+  router.get('/questions', controller.questions);
+
+  /**
+   * @openapi
+   * /dashboard/steps:
+   *   get:
+   *     summary: Média por etapa da jornada (RN21)
+   *     tags: [Dashboard]
+   *     security: [{ bearerAuth: [] }]
+   *     parameters:
+   *       - $ref: '#/components/parameters/DashFrom'
+   *       - $ref: '#/components/parameters/DashTo'
+   *       - $ref: '#/components/parameters/DashSector'
+   *       - $ref: '#/components/parameters/DashShift'
+   *       - $ref: '#/components/parameters/DashTeam'
+   *     responses:
+   *       200:
+   *         description: Na ordem da jornada (recepção, triagem, enfermagem, médico, geral)
+   *         content:
+   *           application/json:
+   *             schema:
+   *               type: array
+   *               items:
+   *                 type: object
+   *                 properties:
+   *                   step: { type: string, example: RECEPCAO }
+   *                   average: { type: number, example: 3.2 }
+   *                   count: { type: integer, example: 133 }
+   */
+  router.get('/steps', controller.steps);
+
+  /**
+   * @openapi
+   * /dashboard/breakdown:
+   *   get:
+   *     summary: Nota geral por setor, turno ou equipe (RN15, RN22)
+   *     description: Por equipe, com menos de 5 respostas com nota geral, a média vem null e insufficient true ("dados insuficientes").
+   *     tags: [Dashboard]
+   *     security: [{ bearerAuth: [] }]
+   *     parameters:
+   *       - { in: query, name: by, required: true, schema: { type: string, enum: [sector, shift, team] } }
+   *       - $ref: '#/components/parameters/DashFrom'
+   *       - $ref: '#/components/parameters/DashTo'
+   *       - $ref: '#/components/parameters/DashSector'
+   *       - $ref: '#/components/parameters/DashShift'
+   *       - $ref: '#/components/parameters/DashTeam'
+   *     responses:
+   *       200:
+   *         description: Uma linha por setor, turno ou equipe
+   *         content:
+   *           application/json:
+   *             schema:
+   *               type: array
+   *               items:
+   *                 type: object
+   *                 properties:
+   *                   key: { type: string, example: "1" }
+   *                   label: { type: string, example: Equipe A · Pronto Atendimento }
+   *                   average: { type: number, nullable: true, example: 3.6 }
+   *                   count: { type: integer, example: 42 }
+   *                   insufficient: { type: boolean, example: false }
+   */
+  router.get('/breakdown', controller.breakdown);
+
+  /**
+   * @openapi
+   * /dashboard/timeline:
+   *   get:
+   *     summary: Nota geral dia a dia (pela data do plantão)
+   *     tags: [Dashboard]
+   *     security: [{ bearerAuth: [] }]
+   *     parameters:
+   *       - $ref: '#/components/parameters/DashFrom'
+   *       - $ref: '#/components/parameters/DashTo'
+   *       - $ref: '#/components/parameters/DashSector'
+   *       - $ref: '#/components/parameters/DashShift'
+   *       - $ref: '#/components/parameters/DashTeam'
+   *     responses:
+   *       200:
+   *         description: Um ponto por dia com respostas
+   *         content:
+   *           application/json:
+   *             schema:
+   *               type: array
+   *               items:
+   *                 type: object
+   *                 properties:
+   *                   date: { type: string, format: date, example: "2026-10-14" }
+   *                   average: { type: number, example: 3.8 }
+   *                   count: { type: integer, example: 9 }
+   */
+  router.get('/timeline', controller.timeline);
+
+  return router;
+}

@@ -89,7 +89,7 @@ Contexto, regras (RN), decisões (D) e contratos: [README](../../README.md). Pla
 
 ## Etapa 4 — Dashboard, tempo real, TV Wall e Excel (site de gestão)
 
-- [ ] **A13 · API do dashboard**
+- [x] **A13 · API do dashboard**
   - Branch: `feat/dashboard-api`
   - Depende de: B9, A10
   - O que fazer: módulo `dashboard` com `summary`, `questions`, `steps`, `breakdown` e `timeline` (seção 9), consultas em `dashboard.repository.ts`, filtros, mínimo de 5 respostas por equipe (RN15) e restrição ao próprio setor para admin de setor e visualizador (RN22).

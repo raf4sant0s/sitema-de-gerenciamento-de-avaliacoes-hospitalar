@@ -1,8 +1,5 @@
-import fs from 'node:fs';
-import path from 'node:path';
-import { PGlite } from '@electric-sql/pglite';
+import type { PGlite } from '@electric-sql/pglite';
 import express from 'express';
-import type { Pool } from 'pg';
 import request from 'supertest';
 import { beforeAll, describe, expect, it } from 'vitest';
 import { SupabaseResponsesRepository } from '../src/database/supabase/responses.repository';
@@ -10,26 +7,15 @@ import { createResponsesRouter } from '../src/modules/responses/responses.routes
 import { ResponsesService } from '../src/modules/responses/responses.service';
 import { errorHandler, notFoundHandler } from '../src/shared/errors';
 import { getShift } from '../src/shared/shift';
+import { createTestDatabase, poolFrom } from './pglite';
 
 // Testes de integração das rotas públicas da pesquisa (tarefa A10).
 // Usam um PostgreSQL de verdade, mas em memória (PGlite): o banco compartilhado do Supabase
 // nunca é tocado. Ele recebe a migration da Rafaela e os seeds de setores, pesquisas e escala.
 
-const root = path.join(__dirname, '..', '..', '..');
-const sqlFile = (...parts: string[]) => fs.readFileSync(path.join(root, ...parts), 'utf8');
-
 let db: PGlite;
 let app: express.Express;
 let service: ResponsesService;
-
-// Faz o PGlite parecer o Pool da biblioteca pg (só o que o repositório usa).
-function poolFrom(pglite: PGlite): Pool {
-  const query = async (text: string, params?: unknown[]) => {
-    const result = await pglite.query(text, params);
-    return { ...result, rowCount: result.affectedRows ?? 0 }; // o pg chama de rowCount
-  };
-  return { query, connect: async () => ({ query, release: () => {} }) } as unknown as Pool;
-}
 
 async function one<T>(sql: string, params: unknown[] = []): Promise<T> {
   return (await db.query<T>(sql, params)).rows[0];
@@ -63,10 +49,7 @@ async function startResponse(value = 4) {
 }
 
 beforeAll(async () => {
-  db = new PGlite();
-  await db.exec(sqlFile('database', 'migrations', '001_cria_tabelas.sql'));
-  await db.exec(sqlFile('database', 'seeds', '001_setores_e_pesquisas.sql'));
-  await db.exec(sqlFile('database', 'seeds', '002_equipes_e_escala.sql'));
+  db = await createTestDatabase();
 
   service = new ResponsesService(new SupabaseResponsesRepository(() => poolFrom(db)));
   app = express();
