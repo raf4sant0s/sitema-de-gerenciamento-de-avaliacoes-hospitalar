@@ -52,7 +52,7 @@ Contexto, regras (RN), decisões (D) e contratos: [README](../../README.md). Pla
   - O que fazer: `docs/requisitos.md` ligando cada pedido do briefing a um requisito (RF), à regra (RN), à tela, à rota da API e ao teste.
   - Commit: `docs: requisitos e rastreabilidade`
 
-- [ ] **B7 · Relatório do banco**
+- [x] **B7 · Relatório do banco**
   - Branch: `docs/relatorio-banco`
   - O que fazer: `docs/banco-de-dados.md` explicando por que SQL e não NoSQL, por que Supabase, como o banco pode ser trocado, e os modelos conceitual e lógico.
   - Commit: `docs: relatorio do banco`
