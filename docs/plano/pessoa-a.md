@@ -74,7 +74,7 @@ Contexto, regras (RN), decisões (D) e contratos: [README](../../README.md). Pla
   - Commit: `feat(responses): api publica da pesquisa`
   - Pronto quando: as rotas funcionam pelo Swagger e têm testes de integração.
 
-- [ ] **A11 · Telas da pesquisa ligadas à API**
+- [x] **A11 · Telas da pesquisa ligadas à API**
   - Branch: `feat/pesquisa-telas`
   - Depende de: A6, A7, A10
   - O que fazer: rotas `/:slug` e `/c/:code`; uma pergunta por tela sem contador (RN03); obrigatória por último (RN05); salvar a cada toque; tela de comentário sempre no final, depois da obrigatória (RN11); agradecimento.
