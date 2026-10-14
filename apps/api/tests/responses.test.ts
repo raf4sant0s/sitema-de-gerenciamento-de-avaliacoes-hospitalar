@@ -1,7 +1,7 @@
 import type { PGlite } from '@electric-sql/pglite';
 import express from 'express';
 import request from 'supertest';
-import { beforeAll, describe, expect, it } from 'vitest';
+import { beforeAll, describe, expect, it, vi } from 'vitest';
 import { SupabaseResponsesRepository } from '../src/database/supabase/responses.repository';
 import { createResponsesRouter } from '../src/modules/responses/responses.routes';
 import { ResponsesService } from '../src/modules/responses/responses.service';
@@ -257,5 +257,32 @@ describe('Respostas abandonadas (RN10, tarefa A12)', () => {
 
   it('rodar de novo não muda nada (só pega as PARTIAL)', async () => {
     expect(await service.abandonInactive()).toBe(0);
+  });
+});
+describe('Avisos de tempo real (A15)', () => {
+  it('cada toque, o comentário e o fim avisam o setor; o abandono avisa uma vez por setor', async () => {
+    const notify = vi.fn();
+    const live = new ResponsesService(new SupabaseResponsesRepository(() => poolFrom(db)), undefined, { notify });
+    const pa = await prontoAtendimento();
+
+    const id = await live.createResponse({ sectorId: pa.sectorId, surveyId: pa.surveyId, questionId: pa.recepcao, value: 3 });
+    await live.saveAnswer(id, pa.geral, 4);
+    await live.addComment(id, null, 'Tudo certo.');
+    await live.complete(id);
+
+    expect(notify.mock.calls).toEqual([
+      ['response:changed', pa.sectorId],
+      ['response:changed', pa.sectorId],
+      ['comment:created', pa.sectorId],
+      ['response:changed', pa.sectorId],
+    ]);
+
+    const first = await live.createResponse({ sectorId: pa.sectorId, surveyId: pa.surveyId, questionId: pa.recepcao, value: 1 });
+    const second = await live.createResponse({ sectorId: pa.sectorId, surveyId: pa.surveyId, questionId: pa.recepcao, value: 2 });
+    await db.query("UPDATE responses SET updated_at = NOW() - INTERVAL '40 minutes' WHERE id IN ($1, $2)", [first, second]);
+    notify.mockClear();
+
+    expect(await live.abandonInactive()).toBe(2);
+    expect(notify.mock.calls).toEqual([['response:changed', pa.sectorId]]);
   });
 });

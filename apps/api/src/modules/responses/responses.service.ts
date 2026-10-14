@@ -1,17 +1,19 @@
 import type { CommentType } from '@avaliacoes/schemas';
 import type { PublicSurvey, ResponsesRepository } from '../../database/repositories/responses.repository';
 import { AppError } from '../../shared/errors';
+import { type Notifier, realtime } from '../../shared/realtime';
 import { getShift } from '../../shared/shift';
 
 // RN10: resposta PARTIAL sem atividade por 30 minutos vira ABANDONED.
 export const ABANDON_AFTER_MINUTES = 30;
 
 // Regras da pesquisa do paciente. Usa só a interface do repositório, nunca o banco direto.
-// "now" pode ser trocado nos testes; na API é sempre a hora atual.
+// "now" e "notifier" podem ser trocados nos testes; na API são a hora atual e o tempo real (A15).
 export class ResponsesService {
   constructor(
     private readonly repository: ResponsesRepository,
     private readonly now: () => Date = () => new Date(),
+    private readonly notifier: Notifier = realtime,
   ) {}
 
   // RN01: pelo link do setor. Setor inativo ou sem pesquisa ativa → 404 (README, seção 9).
@@ -34,7 +36,7 @@ export class ResponsesService {
     const { shift, shiftDate } = getShift(this.now());
     const teamId = await this.repository.findTeamId(input.sectorId, shiftDate, shift);
 
-    return this.repository.createResponse({
+    const id = await this.repository.createResponse({
       sectorId: input.sectorId,
       surveyId: input.surveyId,
       shiftDate,
@@ -44,6 +46,8 @@ export class ResponsesService {
       value: input.value,
       required: question.required,
     });
+    this.notifier.notify('response:changed', input.sectorId); // A15: o dashboard atualiza sozinho
+    return id;
   }
 
   // RN09: cada toque seguinte é salvo na hora.
@@ -56,17 +60,19 @@ export class ResponsesService {
     }
 
     await this.repository.saveAnswer(responseId, questionId, value, question.required);
+    this.notifier.notify('response:changed', response.sectorId);
   }
 
   // RN11: comentário anônimo opcional, com tipo opcional. Um por resposta.
   async addComment(responseId: string, type: CommentType | null, text: string): Promise<void> {
-    await this.getOpenResponse(responseId);
+    const response = await this.getOpenResponse(responseId);
 
     if (await this.repository.hasComment(responseId)) {
       throw new AppError(409, 'COMMENT_ALREADY_SENT', 'Esta resposta já tem um comentário');
     }
 
     await this.repository.createComment(responseId, type, text);
+    this.notifier.notify('comment:created', response.sectorId);
   }
 
   // RN05 e RN10: só termina se a pergunta obrigatória foi respondida.
@@ -84,11 +90,17 @@ export class ResponsesService {
     }
 
     await this.repository.completeResponse(responseId);
+    this.notifier.notify('response:changed', response.sectorId);
   }
 
   // RN10: chamado pela rotina de abandono (abandonment.ts). Devolve quantas respostas mudaram.
-  abandonInactive(): Promise<number> {
-    return this.repository.abandonInactive(ABANDON_AFTER_MINUTES);
+  async abandonInactive(): Promise<number> {
+    const sectorIds = await this.repository.abandonInactive(ABANDON_AFTER_MINUTES);
+    // Um aviso por setor que teve respostas abandonadas (o total de abandonadas mudou).
+    for (const sectorId of new Set(sectorIds)) {
+      this.notifier.notify('response:changed', sectorId);
+    }
+    return sectorIds.length;
   }
 
   private orNotFound(survey: PublicSurvey | null): PublicSurvey {
