@@ -166,4 +166,16 @@ export class SupabaseResponsesRepository implements ResponsesRepository {
       [responseId],
     );
   }
+
+  // A hora vem do banco (NOW()), e não do computador da API, para as duas sempre concordarem.
+  // As respostas (answers) não são apagadas: continuam contando nos indicadores (RN10).
+  async abandonInactive(minutes: number): Promise<number> {
+    const result = await this.db().query(
+      `UPDATE responses
+       SET status = 'ABANDONED'
+       WHERE status = 'PARTIAL' AND updated_at < NOW() - $1 * INTERVAL '1 minute'`,
+      [minutes],
+    );
+    return result.rowCount ?? 0;
+  }
 }

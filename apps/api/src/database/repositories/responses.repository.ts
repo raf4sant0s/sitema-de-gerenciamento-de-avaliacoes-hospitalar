@@ -55,4 +55,8 @@ export interface ResponsesRepository {
 
   hasRequiredAnswer(responseId: string): Promise<boolean>;
   completeResponse(responseId: string): Promise<void>;
+
+  // RN10: muda para ABANDONED as respostas PARTIAL sem atividade há mais de "minutes" minutos.
+  // Devolve quantas mudaram.
+  abandonInactive(minutes: number): Promise<number>;
 }
