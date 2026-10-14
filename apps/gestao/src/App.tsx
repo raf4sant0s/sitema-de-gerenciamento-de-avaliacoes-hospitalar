@@ -6,6 +6,8 @@ import AppLayout from './components/layout/AppLayout';
 import UnderConstruction from './components/layout/UnderConstruction';
 import LoginPage from './pages/login/LoginPage';
 import MyPasswordPage from './pages/minha-senha/MyPasswordPage';
+import SurveyDetailPage from './pages/pesquisas/SurveyDetailPage';
+import SurveysPage from './pages/pesquisas/SurveysPage';
 import SectorsPage from './pages/setores/SectorsPage';
 import UsersPage from './pages/usuarios/UsersPage';
 
@@ -71,10 +73,18 @@ export default function App() {
               }
             />
             <Route
-              path="pesquisas/*"
+              path="pesquisas"
               element={
                 <RequireAuth roles={rolesFor('/pesquisas')}>
-                  <UnderConstruction title="Pesquisas" />
+                  <SurveysPage />
+                </RequireAuth>
+              }
+            />
+            <Route
+              path="pesquisas/:id"
+              element={
+                <RequireAuth roles={rolesFor('/pesquisas')}>
+                  <SurveyDetailPage />
                 </RequireAuth>
               }
             />

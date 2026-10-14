@@ -90,7 +90,7 @@ Contexto, regras (RN), decisões (D) e contratos: [README](../../README.md). Pla
   - O que fazer: rotas de `/users` e tela `/usuarios`. O super admin cadastra todos; o admin de setor só cadastra visualizadores do próprio setor (RN16).
   - Commit: `feat(users): cadastro de usuarios`
 
-- [ ] **B13 · Pesquisas e perguntas**
+- [x] **B13 · Pesquisas e perguntas**
   - Branch: `feat/pesquisas`
   - Depende de: B10
   - O que fazer: rotas de `/surveys` e `/questions` com reordenação; tela `/pesquisas`. Só uma pesquisa ativa por setor (RN02) e só uma pergunta obrigatória por pesquisa (RN05).
