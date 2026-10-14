@@ -4,6 +4,7 @@ import { rolesFor } from './auth/menu';
 import { RequireAuth } from './auth/RequireAuth';
 import AppLayout from './components/layout/AppLayout';
 import UnderConstruction from './components/layout/UnderConstruction';
+import DashboardPage from './pages/dashboard/DashboardPage';
 import LoginPage from './pages/login/LoginPage';
 import MyPasswordPage from './pages/minha-senha/MyPasswordPage';
 import SurveyDetailPage from './pages/pesquisas/SurveyDetailPage';
@@ -34,7 +35,7 @@ export default function App() {
               index
               element={
                 <RequireAuth roles={rolesFor('/')}>
-                  <UnderConstruction title="Dashboard" />
+                  <DashboardPage />
                 </RequireAuth>
               }
             />

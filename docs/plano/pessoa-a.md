@@ -95,7 +95,7 @@ Contexto, regras (RN), decisões (D) e contratos: [README](../../README.md). Pla
   - O que fazer: módulo `dashboard` com `summary`, `questions`, `steps`, `breakdown` e `timeline` (seção 9), consultas em `dashboard.repository.ts`, filtros, mínimo de 5 respostas por equipe (RN15) e restrição ao próprio setor para admin de setor e visualizador (RN22).
   - Commit: `feat(dashboard): indicadores`
 
-- [ ] **A14 · Tela do dashboard**
+- [x] **A14 · Tela do dashboard**
   - Branch: `feat/dashboard-tela`
   - Depende de: A13, B10
   - O que fazer: `apps/gestao/src/pages/dashboard/` e `components/charts/`, com filtros (período, setor, turno, equipe) e navegação hospital → setor → turno → equipe.
