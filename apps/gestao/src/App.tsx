@@ -1,14 +1,94 @@
-import { BrowserRouter, Route, Routes } from 'react-router-dom';
-import HomePage from './pages/HomePage';
+import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom';
+import { AuthProvider } from './auth/AuthContext';
+import { rolesFor } from './auth/menu';
+import { RequireAuth } from './auth/RequireAuth';
+import AppLayout from './components/layout/AppLayout';
+import UnderConstruction from './components/layout/UnderConstruction';
+import LoginPage from './pages/login/LoginPage';
 
 // Rotas do site de gestão (README, seção 10). Arquivo compartilhado (AB):
-// cada pessoa acrescenta as rotas das suas telas, avisando a colega antes.
+// cada pessoa troca o <UnderConstruction> da sua aba pela tela de verdade, avisando a colega antes.
+// Quem pode abrir cada aba está em auth/menu.ts (RN16).
 export default function App() {
   return (
     <BrowserRouter>
-      <Routes>
-        <Route path="*" element={<HomePage />} />
-      </Routes>
+      <AuthProvider>
+        <Routes>
+          <Route path="/login" element={<LoginPage />} />
+
+          {/* Tudo daqui para baixo exige login e usa o menu lateral */}
+          <Route
+            element={
+              <RequireAuth>
+                <AppLayout />
+              </RequireAuth>
+            }
+          >
+            {/* Pessoa A */}
+            <Route
+              index
+              element={
+                <RequireAuth roles={rolesFor('/')}>
+                  <UnderConstruction title="Dashboard" />
+                </RequireAuth>
+              }
+            />
+            <Route
+              path="tv"
+              element={
+                <RequireAuth roles={rolesFor('/tv')}>
+                  <UnderConstruction title="TV Wall" />
+                </RequireAuth>
+              }
+            />
+
+            {/* Pessoa B */}
+            <Route
+              path="comentarios"
+              element={
+                <RequireAuth roles={rolesFor('/comentarios')}>
+                  <UnderConstruction title="Comentários" />
+                </RequireAuth>
+              }
+            />
+            <Route
+              path="setores"
+              element={
+                <RequireAuth roles={rolesFor('/setores')}>
+                  <UnderConstruction title="Setores" />
+                </RequireAuth>
+              }
+            />
+            <Route
+              path="usuarios"
+              element={
+                <RequireAuth roles={rolesFor('/usuarios')}>
+                  <UnderConstruction title="Usuários" />
+                </RequireAuth>
+              }
+            />
+            <Route
+              path="pesquisas/*"
+              element={
+                <RequireAuth roles={rolesFor('/pesquisas')}>
+                  <UnderConstruction title="Pesquisas" />
+                </RequireAuth>
+              }
+            />
+            <Route
+              path="escala"
+              element={
+                <RequireAuth roles={rolesFor('/escala')}>
+                  <UnderConstruction title="Escala" />
+                </RequireAuth>
+              }
+            />
+          </Route>
+
+          {/* Endereço que não existe: volta para o início */}
+          <Route path="*" element={<Navigate to="/" replace />} />
+        </Routes>
+      </AuthProvider>
     </BrowserRouter>
   );
 }

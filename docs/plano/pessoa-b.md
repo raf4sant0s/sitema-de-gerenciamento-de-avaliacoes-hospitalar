@@ -69,7 +69,7 @@ Contexto, regras (RN), decisões (D) e contratos: [README](../../README.md). Pla
   - Commit: `feat(auth): login e perfis`
   - Pronto quando: login devolve o token e há testes de permissão para os 3 perfis.
 
-- [ ] **B10 · Login e menu no site de gestão**
+- [x] **B10 · Login e menu no site de gestão**
   - Branch: `feat/gestao-login-menu`
   - Depende de: A6, B9
   - O que fazer: tela `/login`; guardar o token; layout com o menu conforme o perfil (`components/layout/`); a aba TV Wall só aparece para o super admin; bloquear telas que o perfil não pode ver.

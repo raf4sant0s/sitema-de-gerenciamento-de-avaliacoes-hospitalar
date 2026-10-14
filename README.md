@@ -209,6 +209,7 @@ gestao (site dos gerentes) ──┘
             ├── api/client.ts              AB
             ├── api/dashboard.ts           A
             ├── api/(demais).ts            B
+            ├── auth/                      B   (login guardado, quem vê cada aba, proteção das rotas)
             ├── components/layout/         B   (menu e abas conforme o perfil)
             ├── components/charts/         A
             ├── pages/dashboard/           A
@@ -368,6 +369,13 @@ Telas internas: perguntas opcionais (uma por tela) → pergunta obrigatória →
 | `/pesquisas`, `/pesquisas/:id` | Pesquisas e perguntas | super admin e admin de setor | B |
 | `/escala` | Equipes e escala | super admin e admin de setor (visualizador só vê) | B |
 
+Como funciona (tarefa B10):
+- O login fica guardado **só até fechar a aba** (decisão da dupla, para computadores compartilhados do hospital). Dentro da aba, vale 8 horas.
+- Menu numa **barra lateral à esquerda** (decisão da dupla); no celular vira um botão "Menu".
+- Quem vê cada aba está em `apps/gestao/src/auth/menu.ts`: o menu e a proteção das rotas usam a mesma lista. Quem abre pelo endereço uma tela que o perfil não pode ver recebe "Sem permissão".
+- As abas ainda não feitas mostram "Tela em construção" (`components/layout/UnderConstruction.tsx`). Cada tarefa troca, no `App.tsx`, o `<UnderConstruction>` da sua aba pela tela de verdade.
+- Nas telas, `useAuth()` (de `src/auth/AuthContext.tsx`) diz quem está logado (`user.role`, `user.sectorId`). As chamadas pelo `api()` de `src/api/client.ts` já mandam o token.
+
 ## 11. Guia visual inicial
 
 Valores iniciais para os dois começarem iguais. A Pessoa A finaliza em `docs/guia-de-estilos.md` e atualiza aqui.
@@ -420,7 +428,22 @@ npm run test:schemas
 npm run db:migrate
 ```
 
-Os comandos dos sites `pesquisa` e `gestao` entram aqui na tarefa A6. Portas combinadas: `pesquisa` em `5173` e `gestao` em `5174` (são as que a API libera em `CORS_ORIGINS`).
+**Site de gestão** (`apps/gestao`, porta `5174`; a API precisa estar ligada):
+
+1. Copie o modelo do `.env`:
+```bash
+copy apps\gestao\.env.example apps\gestao\.env
+```
+2. Ligar o site:
+```bash
+npm run dev:gestao
+```
+3. Rodar os testes:
+```bash
+npm run test:gestao
+```
+
+Portas combinadas: `pesquisa` em `5173` e `gestao` em `5174` (são as que a API libera em `CORS_ORIGINS`). Os comandos do site `pesquisa` são da Pessoa A.
 
 Variáveis de ambiente (os arquivos `.env` **nunca** vão para o git; só os `.env.example`):
 
