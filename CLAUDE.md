@@ -36,7 +36,7 @@ O README acima é a fonte única de verdade: contexto, regras de negócio (RN), 
    3. `git add <arquivos da tarefa>` (só os arquivos da pessoa dona, nunca `.env`);
    4. `git commit -m "<mensagem indicada no plano>"`;
    5. `git push -u origin <nome-da-branch>`;
-   6. juntar na `develop` sem Pull Request: `git checkout develop`, `git pull`, `git merge <nome-da-branch>`, `git push`;
+   6. juntar na `develop` sem Pull Request: `git checkout develop`, `git pull`, `git merge --no-edit <nome-da-branch>` (sem o `--no-edit` o git abre o Vim), `git push`;
    7. avisar a colega para dar `git pull` na `develop` (e `npm install`, se algum `package.json` mudou).
    Cada comando vai num bloco separado, em PowerShell.
 

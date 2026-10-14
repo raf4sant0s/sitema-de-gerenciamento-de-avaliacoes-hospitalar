@@ -3,7 +3,6 @@ import { z } from 'zod';
 
 // Lê as variáveis do arquivo .env e confere se estão certas antes de a API subir.
 // Se faltar alguma obrigatória, a API para com uma mensagem dizendo qual é.
-// A variável do login (JWT_SECRET) entra aqui na tarefa B9.
 const envSchema = z.object({
   PORT: z.coerce.number().int().positive().default(3333),
   // Endereços dos dois sites, separados por vírgula. Só eles podem chamar a API.
@@ -24,6 +23,9 @@ const envSchema = z.object({
     .string()
     .optional()
     .transform((value) => (value ? value : undefined)),
+  // Segredo que assina o "crachá" (token) do login. Texto longo e aleatório.
+  // Quem souber este segredo consegue criar crachás falsos: nunca vai para o git.
+  JWT_SECRET: z.string().min(32, 'JWT_SECRET precisa ter pelo menos 32 caracteres'),
 });
 
 const parsed = envSchema.safeParse(process.env);
