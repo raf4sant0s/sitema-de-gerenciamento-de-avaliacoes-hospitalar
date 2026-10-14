@@ -58,7 +58,7 @@ Contexto, regras (RN), decisões (D) e contratos: [README](../../README.md). Pla
   - Commit: `feat(api): calculo de turno`
   - Pronto quando: os testes de manhã, tarde, noite e madrugada passam.
 
-- [ ] **A9 · Dados de exemplo (seeds)**
+- [x] **A9 · Dados de exemplo (seeds)**
   - Branch: `feat/seeds`
   - Depende de: B2
   - O que fazer: arquivos `.sql` em `database/seeds/` com setores, pesquisas, perguntas, equipes, escala do mês, respostas e comentários variados, e um usuário de cada perfil (senha a partir de `SEED_PASSWORD`, nunca escrita no arquivo).
