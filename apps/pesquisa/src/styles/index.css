@@ -1,0 +1,37 @@
+@import "tailwindcss";
+@import "@fontsource/atkinson-hyperlegible/400.css";
+@import "@fontsource/atkinson-hyperlegible/700.css";
+
+/* Cores e fonte do guia de estilos (docs/guia-de-estilos.md): identidade da FHDOD.
+   Viram classes do Tailwind, por exemplo bg-fhdod-red, text-ink, bg-page. */
+@theme {
+  --font-sans: "Atkinson Hyperlegible", system-ui, sans-serif;
+
+  --color-fhdod-red: #DA2F37;      /* vermelho da logo: fundo dos botões principais */
+  --color-fhdod-red-dark: #B8242B; /* botão pressionado, textos e links vermelhos */
+  --color-page: #F5F5F5;           /* fundo das páginas */
+  --color-ink: #2B2B2B;            /* todo o texto */
+  --color-muted: #5F5F5F;          /* "pular", textos de apoio, texto desabilitado */
+  --color-disabled: #E6E6E6;       /* fundo do botão desabilitado */
+  --color-line: #D9D9D9;           /* bordas */
+
+  --color-success: #2E7D32;
+  --color-alert: #8A5300;
+  --color-error: #C62828;
+
+  /* Carinhas de 1 a 5 (RN04) */
+  --color-face-1: #C62828;
+  --color-face-2: #E65100;
+  --color-face-3: #F9A825;
+  --color-face-4: #7CB342;
+  --color-face-5: #2E7D32;
+}
+
+/* Texto mínimo de 18px neste site (README, seção 11) */
+html {
+  font-size: 18px;
+}
+
+body {
+  @apply bg-page font-sans text-ink;
+}

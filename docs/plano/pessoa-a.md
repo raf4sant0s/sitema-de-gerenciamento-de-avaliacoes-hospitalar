@@ -39,7 +39,7 @@ Contexto, regras (RN), decisões (D) e contratos: [README](../../README.md). Pla
 
 ## Etapa 2 — Base
 
-- [ ] **A6 · Criar os sites `pesquisa` e `gestao`**
+- [x] **A6 · Criar os sites `pesquisa` e `gestao`**
   - Branch: `chore/sites-base`
   - O que fazer: projetos React + Vite + TypeScript + Tailwind + React Router em `apps/pesquisa` e `apps/gestao`; cores e fonte da seção 11 no Tailwind; `src/api/client.ts` em cada um; `.env.example` de cada um; uma página inicial simples em cada site para provar que roda.
   - Arquivos compartilhados (avisar a Pessoa B): `apps/gestao/package.json`, `apps/gestao/src/App.tsx`, `apps/gestao/src/api/client.ts`.

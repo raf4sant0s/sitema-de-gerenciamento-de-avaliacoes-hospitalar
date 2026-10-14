@@ -8,6 +8,8 @@
   ],
   "scripts": {
     "dev:api": "npm run dev --workspace api",
-    "test:api": "npm run test --workspace api"
+    "test:api": "npm run test --workspace api",
+    "dev:pesquisa": "npm run dev --workspace pesquisa",
+    "dev:gestao": "npm run dev --workspace gestao"
   }
 }
