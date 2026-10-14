@@ -81,6 +81,8 @@ Numeradas para serem citadas em código, testes e commits (ex.: `// RN07`).
   | Admin de setor | `SECTOR_ADMIN` | Gerencia o **seu** setor: pesquisa, escala, comentários e visualizadores do setor |
   | Visualizador | `VIEWER` | Só visualiza os dados do setor que os admins designaram para ele. Não edita nada |
 
+  Cadastro de usuários (decisões da dupla, tarefa B12): o super admin cadastra qualquer perfil, **inclusive outro super admin** (sempre sem setor); o admin de setor só cadastra visualizadores do próprio setor. Quem cadastra digita a **senha inicial** (mínimo 8 caracteres) e cada pessoa a troca em **"Minha senha"**. **Ninguém desativa a si mesmo nem muda o próprio perfil ou setor.** Desativar não apaga: a pessoa só deixa de conseguir entrar.
+
 - **RN17** Comentários: os gerentes leem e podem **marcar como tratado** (status `NEW` → `TREATED`), com um campo para anotar o que foi feito.
 - **RN18** **TV Wall:** aba do site de gestão, visível **só para o super admin**, com os dashboards e **todos os comentários, sem exceção**.
 - **RN19** Exportação em **Excel** das respostas, com os filtros aplicados.
@@ -211,6 +213,7 @@ gestao (site dos gerentes) ──┘
             ├── api/(demais).ts            B
             ├── auth/                      B   (login guardado, quem vê cada aba, proteção das rotas)
             ├── components/layout/         B   (menu e abas conforme o perfil)
+            ├── components/ui/             B   (estilos de botão e campo, mensagem de erro; podem ser usados por todos)
             ├── components/charts/         A
             ├── pages/dashboard/           A
             ├── pages/tv-wall/             A
@@ -298,6 +301,7 @@ Rotas fechadas recebem o token no cabeçalho `Authorization: Bearer <token>`. O 
 | --- | --- | --- | --- |
 | POST | `/auth/login` | `{ email, password }` | `{ token, user: {id, name, role, sectorId} }` |
 | GET | `/auth/me` | — | `{ user }` (mesmo formato do login) |
+| PUT | `/auth/password` | `{ currentPassword, newPassword }` | `{ ok: true }` · "Minha senha", qualquer perfil · 400 `WRONG_PASSWORD` se a senha atual estiver errada |
 
 Na API, as rotas fechadas usam os middlewares de `src/shared/auth.ts`: `requireAuth` (precisa estar logado), `requireRole('SUPER_ADMIN', ...)` (só esses perfis) e `assertSectorAccess(user, sectorId)` (admin de setor e visualizador só no próprio setor).
 
@@ -307,7 +311,7 @@ Na API, as rotas fechadas usam os middlewares de `src/shared/auth.ts`: `requireA
 | --- | --- | --- |
 | GET/POST | `/sectors` · GET/PUT/DELETE `/sectors/:id` | Super admin (admin de setor e visualizador só leem o próprio). POST: `{ name, slug }`, o código é gerado. PUT: só `{ name?, active? }` (link e código não mudam; 400 se enviados). DELETE desativa. Resposta: `{ id, name, slug, code, active, createdAt, surveyUrl, shortUrl }`. Erros: 409 `SLUG_TAKEN`, 404 `SECTOR_NOT_FOUND` |
 | GET | `/sectors/:id/qrcode?type=slug\|code` | Super admin e admin do setor (PNG) |
-| GET/POST | `/users` · PUT/DELETE `/users/:id` | Super admin: todos. Admin de setor: só visualizadores do seu setor |
+| GET/POST | `/users` · PUT/DELETE `/users/:id` | Super admin: todos. Admin de setor: só visualizadores do seu setor. POST: `{ name, email, password, role, sectorId }`. PUT: `{ name?, email?, password?, role?, sectorId?, active? }` (password = redefinir). DELETE desativa. Resposta: `{ id, name, email, role, sectorId, active, createdAt }`, nunca a senha. Erros: 409 `EMAIL_TAKEN`, 404 `USER_NOT_FOUND`, 404 `SECTOR_NOT_FOUND`, 403 ao tentar desativar ou mudar o perfil de si mesmo |
 | GET/POST | `/surveys` · PUT `/surveys/:id` | Super admin e admin do setor |
 | GET/POST | `/surveys/:id/questions` · PUT/DELETE `/questions/:id` | Super admin e admin do setor |
 | PUT | `/surveys/:id/questions/order` | `{ ids: [...] }` reordena |
@@ -366,6 +370,7 @@ Telas internas: perguntas opcionais (uma por tela) → pergunta obrigatória →
 | `/comentarios` | Comentários | todos (tratar: admins) | B |
 | `/setores` | Setores + QR Code | super admin | B |
 | `/usuarios` | Usuários | super admin e admin de setor | B |
+| `/minha-senha` | Trocar a própria senha (link embaixo do menu) | todos | B |
 | `/pesquisas`, `/pesquisas/:id` | Pesquisas e perguntas | super admin e admin de setor | B |
 | `/escala` | Equipes e escala | super admin e admin de setor (visualizador só vê) | B |
 
