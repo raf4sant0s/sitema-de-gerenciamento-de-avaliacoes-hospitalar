@@ -63,7 +63,7 @@ export function createApp(overrides: Partial<Repositories> = {}) {
   app.use('/api/sectors', createSectorsRouter(new SectorsService(repositories.sectors, env.SURVEY_SITE_URL))); // setores e QR Code (B11)
   app.use('/api/users', createUsersRouter(new UsersService(repositories.users, repositories.sectors))); // usuários (B12)
   app.use('/api', createSurveysRouter(new SurveysService(repositories.surveys, repositories.sectors))); // pesquisas e perguntas (B13)
-  app.use('/api/dashboard', createDashboardRouter(new DashboardService(repositories.dashboard))); // indicadores (A13)
+  app.use('/api/dashboard', createDashboardRouter(new DashboardService(repositories.dashboard, repositories.comments))); // indicadores e TV Wall (A13, A16)
   app.use('/api/comments', createCommentsRouter(new CommentsService(repositories.comments))); // comentários (B15)
   app.use('/api', createSchedulesRouter(new SchedulesService(repositories.schedules, repositories.sectors))); // equipes e escala (B14)
   app.use('/api', createResponsesRouter(new ResponsesService(repositories.responses))); // pesquisa do paciente, pública (A10)

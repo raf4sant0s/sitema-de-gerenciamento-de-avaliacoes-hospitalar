@@ -48,5 +48,10 @@ export function createDashboardController(service: DashboardService) {
     async timeline(req: Request, res: Response) {
       res.json(await service.timeline(req.user!, parse(filtersQuery, req.query)));
     },
+
+    async tv(req: Request, res: Response) {
+      const { from, to } = parse(filtersQuery, req.query);
+      res.json(await service.tv({ from, to }));
+    },
   };
 }

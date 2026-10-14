@@ -1,11 +1,11 @@
 import { Router } from 'express';
-import { requireAuth } from '../../shared/auth';
+import { requireAuth, requireRole } from '../../shared/auth';
 import { createDashboardController } from './dashboard.controller';
 import type { DashboardService } from './dashboard.service';
 
 // Rotas do dashboard (README, seção 9). Ficam em /api/dashboard e exigem login.
 // Os três perfis podem ver; admin de setor e visualizador só o próprio setor (RN22).
-// A rota do TV Wall (A16) e a do Excel (A17) entram aqui nas próximas tarefas.
+// A rota do Excel (A17) entra aqui na próxima tarefa.
 export function createDashboardRouter(service: DashboardService) {
   const router = Router();
   const controller = createDashboardController(service);
@@ -178,6 +178,44 @@ export function createDashboardRouter(service: DashboardService) {
    *                   count: { type: integer, example: 9 }
    */
   router.get('/timeline', controller.timeline);
+
+  /**
+   * @openapi
+   * /dashboard/tv:
+   *   get:
+   *     summary: TV Wall (só super admin, RN18)
+   *     description: Indicadores do hospital inteiro, nota por setor e todos os comentários (de todos os tipos e situações), dos mais recentes para os mais antigos, até 50 de uma vez.
+   *     tags: [Dashboard]
+   *     security: [{ bearerAuth: [] }]
+   *     parameters:
+   *       - $ref: '#/components/parameters/DashFrom'
+   *       - $ref: '#/components/parameters/DashTo'
+   *     responses:
+   *       200:
+   *         description: Dados do TV Wall
+   *         content:
+   *           application/json:
+   *             schema:
+   *               type: object
+   *               properties:
+   *                 summary: { type: object, description: "Mesmo formato do /dashboard/summary" }
+   *                 sectors: { type: array, items: { type: object }, description: "Mesmo formato do /dashboard/breakdown?by=sector" }
+   *                 comments:
+   *                   type: array
+   *                   items:
+   *                     type: object
+   *                     properties:
+   *                       id: { type: integer }
+   *                       sectorId: { type: integer }
+   *                       sectorName: { type: string, example: Pronto Atendimento }
+   *                       type: { type: string, nullable: true, enum: [ELOGIO, RECLAMACAO, SUGESTAO] }
+   *                       text: { type: string }
+   *                       status: { type: string, enum: [NEW, TREATED] }
+   *                       createdAt: { type: string, format: date-time }
+   *                 totalComments: { type: integer, example: 67 }
+   *       403: { description: "Não é super admin (FORBIDDEN)" }
+   */
+  router.get('/tv', requireRole('SUPER_ADMIN'), controller.tv);
 
   return router;
 }

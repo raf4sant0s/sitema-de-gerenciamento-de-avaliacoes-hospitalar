@@ -80,3 +80,25 @@ export function getBreakdown(by: BreakdownBy, filters: DashboardFilters) {
 export function getTimeline(filters: DashboardFilters) {
   return api<TimelinePoint[]>(`/dashboard/timeline${query(filters)}`);
 }
+
+// TV Wall (RN18, A16): só o super admin. Comentários de todos os tipos e situações, os mais novos primeiro.
+export interface TvComment {
+  id: number;
+  sectorId: number;
+  sectorName: string;
+  type: 'ELOGIO' | 'RECLAMACAO' | 'SUGESTAO' | null;
+  text: string;
+  status: 'NEW' | 'TREATED';
+  createdAt: string;
+}
+
+export interface TvData {
+  summary: DashboardSummary;
+  sectors: BreakdownRow[];
+  comments: TvComment[];
+  totalComments: number;
+}
+
+export function getTv(period: Pick<DashboardFilters, 'from' | 'to'>) {
+  return api<TvData>(`/dashboard/tv${query(period)}`);
+}
