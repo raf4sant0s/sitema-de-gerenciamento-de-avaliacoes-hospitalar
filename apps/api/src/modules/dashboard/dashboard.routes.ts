@@ -20,6 +20,16 @@ export function createDashboardRouter(service: DashboardService) {
    *     DashSector: { in: query, name: sectorId, schema: { type: integer }, description: "Admin de setor e visualizador só o próprio (RN22)" }
    *     DashShift: { in: query, name: shift, schema: { type: string, enum: [MANHA, TARDE, NOITE] } }
    *     DashTeam: { in: query, name: teamId, schema: { type: integer } }
+   *   responses:
+   *     DashBadRequest:
+   *       description: "Filtro em formato errado, ou data inicial depois da final (VALIDATION_ERROR)"
+   *       content: { application/json: { schema: { $ref: '#/components/schemas/Error' } } }
+   *     DashUnauthorized:
+   *       description: "Sem login, ou login vencido (UNAUTHORIZED)"
+   *       content: { application/json: { schema: { $ref: '#/components/schemas/Error' } } }
+   *     DashForbidden:
+   *       description: "Admin de setor ou visualizador pedindo outro setor (FORBIDDEN, RN22)"
+   *       content: { application/json: { schema: { $ref: '#/components/schemas/Error' } } }
    *
    * /dashboard/summary:
    *   get:
@@ -49,9 +59,9 @@ export function createDashboardRouter(service: DashboardService) {
    *                 distribution:
    *                   type: object
    *                   example: { "1": 1, "2": 10, "3": 36, "4": 49, "5": 31 }
-   *       400: { description: "Filtro inválido (VALIDATION_ERROR)" }
-   *       401: { description: "Sem login (UNAUTHORIZED)" }
-   *       403: { description: "Setor que não é o da pessoa (FORBIDDEN)" }
+   *       400: { $ref: '#/components/responses/DashBadRequest' }
+   *       401: { $ref: '#/components/responses/DashUnauthorized' }
+   *       403: { $ref: '#/components/responses/DashForbidden' }
    */
   router.get('/summary', controller.summary);
 
@@ -84,6 +94,9 @@ export function createDashboardRouter(service: DashboardService) {
    *                   step: { type: string, enum: [GERAL, RECEPCAO, TRIAGEM, ENFERMAGEM, MEDICO] }
    *                   average: { type: number, example: 3.2 }
    *                   count: { type: integer, example: 133 }
+   *       400: { $ref: '#/components/responses/DashBadRequest' }
+   *       401: { $ref: '#/components/responses/DashUnauthorized' }
+   *       403: { $ref: '#/components/responses/DashForbidden' }
    */
   router.get('/questions', controller.questions);
 
@@ -113,6 +126,9 @@ export function createDashboardRouter(service: DashboardService) {
    *                   step: { type: string, example: RECEPCAO }
    *                   average: { type: number, example: 3.2 }
    *                   count: { type: integer, example: 133 }
+   *       400: { $ref: '#/components/responses/DashBadRequest' }
+   *       401: { $ref: '#/components/responses/DashUnauthorized' }
+   *       403: { $ref: '#/components/responses/DashForbidden' }
    */
   router.get('/steps', controller.steps);
 
@@ -146,6 +162,11 @@ export function createDashboardRouter(service: DashboardService) {
    *                   average: { type: number, nullable: true, example: 3.6 }
    *                   count: { type: integer, example: 42 }
    *                   insufficient: { type: boolean, example: false }
+   *       400:
+   *         description: "Sem by, by diferente de sector/shift/team, ou filtro em formato errado (VALIDATION_ERROR)"
+   *         content: { application/json: { schema: { $ref: '#/components/schemas/Error' } } }
+   *       401: { $ref: '#/components/responses/DashUnauthorized' }
+   *       403: { $ref: '#/components/responses/DashForbidden' }
    */
   router.get('/breakdown', controller.breakdown);
 
@@ -175,6 +196,9 @@ export function createDashboardRouter(service: DashboardService) {
    *                   date: { type: string, format: date, example: "2026-10-14" }
    *                   average: { type: number, example: 3.8 }
    *                   count: { type: integer, example: 9 }
+   *       400: { $ref: '#/components/responses/DashBadRequest' }
+   *       401: { $ref: '#/components/responses/DashUnauthorized' }
+   *       403: { $ref: '#/components/responses/DashForbidden' }
    */
   router.get('/timeline', controller.timeline);
 
@@ -212,7 +236,11 @@ export function createDashboardRouter(service: DashboardService) {
    *                       status: { type: string, enum: [NEW, TREATED] }
    *                       createdAt: { type: string, format: date-time }
    *                 totalComments: { type: integer, example: 67 }
-   *       403: { description: "Não é super admin (FORBIDDEN)" }
+   *       400: { $ref: '#/components/responses/DashBadRequest' }
+   *       401: { $ref: '#/components/responses/DashUnauthorized' }
+   *       403:
+   *         description: "Não é super admin (FORBIDDEN, RN18)"
+   *         content: { application/json: { schema: { $ref: '#/components/schemas/Error' } } }
    */
   router.get('/tv', requireRole('SUPER_ADMIN'), controller.tv);
 
@@ -236,8 +264,9 @@ export function createDashboardRouter(service: DashboardService) {
    *         content:
    *           application/vnd.openxmlformats-officedocument.spreadsheetml.sheet:
    *             schema: { type: string, format: binary }
-   *       400: { description: "Filtro inválido (VALIDATION_ERROR)" }
-   *       403: { description: "Setor que não é o da pessoa (FORBIDDEN)" }
+   *       400: { $ref: '#/components/responses/DashBadRequest' }
+   *       401: { $ref: '#/components/responses/DashUnauthorized' }
+   *       403: { $ref: '#/components/responses/DashForbidden' }
    */
   router.get('/export.xlsx', controller.exportExcel);
 

@@ -126,7 +126,7 @@ Contexto, regras (RN), decisões (D) e contratos: [README](../../README.md). Pla
   - O que fazer: Playwright: responder tudo; fechar no meio e conferir a resposta parcial; tentar terminar sem a obrigatória.
   - Commit: `test(e2e): fluxo do paciente`
 
-- [ ] **A19 · Swagger das suas rotas**
+- [x] **A19 · Swagger das suas rotas**
   - Branch: `docs/swagger-pesquisa-dashboard`
   - O que fazer: documentar as rotas públicas e as do dashboard no Swagger configurado em B1.
   - Commit: `docs(api): rotas da pesquisa e do dashboard`
