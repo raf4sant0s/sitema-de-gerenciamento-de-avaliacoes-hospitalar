@@ -1,4 +1,6 @@
+import type { SectorsRepository } from './repositories/sectors.repository';
 import type { UsersRepository } from './repositories/users.repository';
+import { SupabaseSectorsRepository } from './supabase/sectors.repository';
 import { SupabaseUsersRepository } from './supabase/users.repository';
 
 // Aqui se escolhe QUAL banco a API usa. É o único lugar que liga as interfaces
@@ -7,10 +9,12 @@ import { SupabaseUsersRepository } from './supabase/users.repository';
 
 export interface Repositories {
   users: UsersRepository;
+  sectors: SectorsRepository;
 }
 
 export function createRepositories(): Repositories {
   return {
     users: new SupabaseUsersRepository(),
+    sectors: new SupabaseSectorsRepository(),
   };
 }

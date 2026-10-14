@@ -5,6 +5,7 @@ import { RequireAuth } from './auth/RequireAuth';
 import AppLayout from './components/layout/AppLayout';
 import UnderConstruction from './components/layout/UnderConstruction';
 import LoginPage from './pages/login/LoginPage';
+import SectorsPage from './pages/setores/SectorsPage';
 
 // Rotas do site de gestão (README, seção 10). Arquivo compartilhado (AB):
 // cada pessoa troca o <UnderConstruction> da sua aba pela tela de verdade, avisando a colega antes.
@@ -55,7 +56,7 @@ export default function App() {
               path="setores"
               element={
                 <RequireAuth roles={rolesFor('/setores')}>
-                  <UnderConstruction title="Setores" />
+                  <SectorsPage />
                 </RequireAuth>
               }
             />

@@ -26,6 +26,12 @@ const envSchema = z.object({
   // Segredo que assina o "crachá" (token) do login. Texto longo e aleatório.
   // Quem souber este segredo consegue criar crachás falsos: nunca vai para o git.
   JWT_SECRET: z.string().min(32, 'JWT_SECRET precisa ter pelo menos 32 caracteres'),
+  // Endereço do site da pesquisa (apps/pesquisa). É o que vai dentro do QR Code de cada setor (RN01).
+  // No computador é o localhost; quando o site for publicado, troca para o endereço público.
+  SURVEY_SITE_URL: z
+    .url()
+    .default('http://localhost:5173')
+    .transform((url) => url.replace(/\/+$/, '')), // tira a barra do fim, se tiver
 });
 
 const parsed = envSchema.safeParse(process.env);

@@ -5,13 +5,16 @@ import { env } from './config/env';
 import { createRepositories, type Repositories } from './database';
 import { createAuthRouter } from './modules/auth/auth.routes';
 import { createResponsesRouter } from './modules/responses/responses.routes';
+import { createSectorsRouter } from './modules/sectors/sectors.routes';
+import { SectorsService } from './modules/sectors/sectors.service';
 import { errorHandler, notFoundHandler } from './shared/errors';
 import { swaggerSpec } from './shared/swagger';
 
 // Monta a API. Fica separado do server.ts para os testes poderem usar a API sem ligar o servidor.
-// Os repositórios (acesso ao banco) podem ser trocados: os testes passam uns "de mentira",
-// sem banco de verdade. Sem nada, a API usa o banco real (database/index.ts).
-export function createApp(repositories: Repositories = createRepositories()) {
+// Os repositórios (acesso ao banco) podem ser trocados: os testes passam só os que querem
+// "de mentira" (ex.: createApp({ sectors: falso })); os outros usam o banco real (database/index.ts).
+export function createApp(overrides: Partial<Repositories> = {}) {
+  const repositories: Repositories = { ...createRepositories(), ...overrides };
   const app = express();
 
   // Só os dois sites do projeto podem chamar a API.
@@ -46,6 +49,7 @@ export function createApp(repositories: Repositories = createRepositories()) {
 
   // Rotas dos módulos (README, seção 9).
   app.use('/api/auth', createAuthRouter(repositories.users)); // login e perfis (B9)
+  app.use('/api/sectors', createSectorsRouter(new SectorsService(repositories.sectors, env.SURVEY_SITE_URL))); // setores e QR Code (B11)
   app.use('/api', createResponsesRouter()); // pesquisa do paciente, pública (A10)
 
   // Estes dois ficam sempre por último: rota inexistente e tratamento de erros.

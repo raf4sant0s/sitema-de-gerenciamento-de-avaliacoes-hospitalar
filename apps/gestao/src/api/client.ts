@@ -16,7 +16,8 @@ export class ApiError extends Error {
   }
 }
 
-export async function api<T>(path: string, options: RequestInit = {}): Promise<T> {
+// Faz o pedido para a API, já com o token. Se der erro, lança ApiError.
+async function request(path: string, options: RequestInit = {}): Promise<Response> {
   // Se houver alguém logado, manda o token junto (Authorization: Bearer <token>).
   const token = loadSession()?.token;
 
@@ -45,5 +46,22 @@ export async function api<T>(path: string, options: RequestInit = {}): Promise<T
     );
   }
 
+  return response;
+}
+
+// Para respostas em JSON (a maioria das rotas).
+export async function api<T>(path: string, options: RequestInit = {}): Promise<T> {
+  const response = await request(path, options);
   return response.json() as Promise<T>;
+}
+
+// Para baixar um arquivo da API (ex.: imagem do QR Code, planilha Excel) e salvar no computador.
+export async function downloadFile(path: string, fileName: string): Promise<void> {
+  const response = await request(path);
+  const url = URL.createObjectURL(await response.blob());
+  const link = document.createElement('a');
+  link.href = url;
+  link.download = fileName;
+  link.click();
+  URL.revokeObjectURL(url);
 }

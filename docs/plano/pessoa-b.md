@@ -77,7 +77,7 @@ Contexto, regras (RN), decisões (D) e contratos: [README](../../README.md). Pla
 
 ## Etapa 4 — Cadastros e comentários
 
-- [ ] **B11 · Setores e QR Code**
+- [x] **B11 · Setores e QR Code**
   - Branch: `feat/setores`
   - Depende de: B10
   - O que fazer: rotas de `/sectors` (seção 9) com geração do código de 6 caracteres e do QR Code; tela `/setores`. Os slugs `login`, `c` e `tv` são proibidos.

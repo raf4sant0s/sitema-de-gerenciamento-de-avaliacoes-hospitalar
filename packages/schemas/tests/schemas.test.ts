@@ -90,3 +90,23 @@ describe('schemas das tabelas', () => {
     expect(commentSchema.safeParse({ ...comment, text: '' }).success).toBe(false);
   });
 });
+
+describe('link (slug) do setor (B11)', () => {
+  it('cria o link a partir do nome, sem acento e com hífen', async () => {
+    const { slugify } = await import('../src');
+    expect(slugify('Pronto Atendimento')).toBe('pronto-atendimento');
+    expect(slugify('  Raio-X  ')).toBe('raio-x');
+    expect(slugify('Internação Pediátrica')).toBe('internacao-pediatrica');
+    expect(slugify('UTI 2 / Adulto')).toBe('uti-2-adulto');
+  });
+
+  it('aceita só letras minúsculas, números e hífen, e recusa os reservados', async () => {
+    const { sectorSlugSchema } = await import('../src');
+    expect(sectorSlugSchema.safeParse('pronto-atendimento').success).toBe(true);
+    expect(sectorSlugSchema.safeParse('Pronto Atendimento').success).toBe(false);
+    expect(sectorSlugSchema.safeParse('internação').success).toBe(false);
+    expect(sectorSlugSchema.safeParse('-raio').success).toBe(false);
+    expect(sectorSlugSchema.safeParse('tv').success).toBe(false);
+    expect(sectorSlugSchema.safeParse('c').success).toBe(false);
+  });
+});
