@@ -131,7 +131,7 @@ Contexto, regras (RN), decisões (D) e contratos: [README](../../README.md). Pla
   - O que fazer: documentar as rotas públicas e as do dashboard no Swagger configurado em B1.
   - Commit: `docs(api): rotas da pesquisa e do dashboard`
 
-- [ ] **A20 · Celular e tablet**
+- [x] **A20 · Celular e tablet**
   - Branch: `fix/responsivo`
   - O que fazer: revisar a pesquisa em celular e tablet (toque mínimo de 56 px, contraste, texto mínimo de 18 px).
   - Commit: `fix(pesquisa): ajustes de celular e tablet`

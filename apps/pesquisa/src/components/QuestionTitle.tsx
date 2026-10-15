@@ -7,8 +7,8 @@ interface QuestionTitleProps {
 export default function QuestionTitle({ step, text }: QuestionTitleProps) {
   return (
     <>
-      <p className="mb-2 font-bold text-fhdod-red-dark">{step}</p>
-      <h1 className="mb-5 text-[28px] leading-tight font-bold">{text}</h1>
+      <p className="mb-2 font-bold text-fhdod-red-dark short:mb-1">{step}</p>
+      <h1 className="mb-5 text-[28px] leading-tight font-bold short:mb-3 short:text-[24px]">{text}</h1>
     </>
   );
 }

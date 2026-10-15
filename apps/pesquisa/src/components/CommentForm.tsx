@@ -25,11 +25,12 @@ export default function CommentForm({ onSend, onSkip, busy = false }: CommentFor
 
   return (
     <>
-      <h1 className="mb-2 text-[28px] leading-tight font-bold">Quer contar mais alguma coisa?</h1>
-      <p className="mb-4 text-muted">É opcional. Não pedimos seu nome nem nenhum dado seu.</p>
+      {/* Tela baixa (A20): espaços menores para o "Enviar" aparecer sem rolar */}
+      <h1 className="mb-2 text-[28px] leading-tight font-bold short:mb-1 short:text-[24px]">Quer contar mais alguma coisa?</h1>
+      <p className="mb-4 text-muted short:mb-2">É opcional. Não pedimos seu nome nem nenhum dado seu.</p>
 
-      <p className="mb-2 font-bold">Escolha um tipo, se quiser:</p>
-      <div role="group" aria-label="Tipo do comentário" className="mb-4 flex flex-col gap-2">
+      <p className="mb-2 font-bold short:mb-1">Escolha um tipo, se quiser:</p>
+      <div role="group" aria-label="Tipo do comentário" className="mb-4 flex flex-col gap-2 short:mb-2 short:gap-1">
         {TYPES.map((option) => {
           const selected = option.value === type;
           return (
@@ -40,7 +41,7 @@ export default function CommentForm({ onSend, onSkip, busy = false }: CommentFor
               // Tocar de novo no tipo escolhido desmarca
               onClick={() => setType(selected ? null : option.value)}
               className={[
-                'flex min-h-14 items-center rounded-xl bg-white px-4 text-left font-bold',
+                'flex min-h-14 items-center rounded-xl bg-white px-4 text-left font-bold short:min-h-[56px]',
                 'focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-ink',
                 selected ? 'border-3 border-ink' : 'border-2 border-line',
               ].join(' ')}
@@ -56,7 +57,7 @@ export default function CommentForm({ onSend, onSkip, busy = false }: CommentFor
         })}
       </div>
 
-      <label htmlFor="comment-text" className="mb-2 block font-bold">
+      <label htmlFor="comment-text" className="mb-2 block font-bold short:mb-1">
         Seu comentário:
       </label>
       <textarea
@@ -65,10 +66,10 @@ export default function CommentForm({ onSend, onSkip, busy = false }: CommentFor
         onChange={(event) => setText(event.target.value)}
         maxLength={2000}
         rows={4}
-        className="w-full resize-none rounded-xl border-2 border-line bg-white p-3 focus-visible:outline-3 focus-visible:outline-ink"
+        className="w-full resize-none rounded-xl border-2 border-line bg-white p-3 focus-visible:outline-3 focus-visible:outline-ink short:h-24"
       />
 
-      <BigButton className="mt-4" disabled={!hasText || busy} onClick={() => onSend({ type, text: text.trim() })}>
+      <BigButton className="mt-4 short:mt-2" disabled={!hasText || busy} onClick={() => onSend({ type, text: text.trim() })}>
         Enviar
       </BigButton>
       <SkipLink onClick={onSkip} disabled={busy}>

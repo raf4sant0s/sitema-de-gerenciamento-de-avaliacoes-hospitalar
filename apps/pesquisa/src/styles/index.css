@@ -2,6 +2,11 @@
 @import "@fontsource/atkinson-hyperlegible/400.css";
 @import "@fontsource/atkinson-hyperlegible/700.css";
 
+/* Modo "tela baixa" (tarefa A20): em celulares com menos de 760 px de altura, os espaços
+   diminuem para a pergunta, as 5 carinhas e o "pular" caberem sem rolar. O toque continua
+   com pelo menos 56 px e o texto com pelo menos 18 px (README, seção 11). Uso: short:gap-1 */
+@custom-variant short (@media (max-height: 760px));
+
 /* Cores e fonte do guia de estilos (docs/guia-de-estilos.md): identidade da FHDOD.
    Viram classes do Tailwind, por exemplo bg-fhdod-red, text-ink, bg-page. */
 @theme {

@@ -13,7 +13,7 @@ export default function SkipLink({ onClick, children = 'pular', disabled = false
       type="button"
       onClick={onClick}
       disabled={disabled}
-      className="mx-auto mt-4 min-h-14 px-6 text-muted underline focus-visible:outline-3 focus-visible:outline-ink"
+      className="mx-auto mt-4 min-h-14 px-6 text-muted underline focus-visible:outline-3 focus-visible:outline-ink short:mt-1 short:min-h-[56px]"
     >
       {children}
     </button>
