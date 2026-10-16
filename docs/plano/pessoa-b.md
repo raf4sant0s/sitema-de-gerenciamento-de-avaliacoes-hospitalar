@@ -47,7 +47,7 @@ Contexto, regras (RN), decisões (D) e contratos: [README](../../README.md). Pla
   - O que fazer: em `docs/decisoes.md`, escrever cada decisão com o porquê, ligando-a à persona do gestor. As justificativas aprovadas pela dupla estão no README (seção 4); aqui elas são explicadas com mais detalhe.
   - Commit: `docs: decisoes da gestao`
 
-- [ ] **B6 · Requisitos e matriz de rastreabilidade**
+- [x] **B6 · Requisitos e matriz de rastreabilidade**
   - Branch: `docs/requisitos`
   - O que fazer: `docs/requisitos.md` ligando cada pedido do briefing a um requisito (RF), à regra (RN), à tela, à rota da API e ao teste.
   - Commit: `docs: requisitos e rastreabilidade`
