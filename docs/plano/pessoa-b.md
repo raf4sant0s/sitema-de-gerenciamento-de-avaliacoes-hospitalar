@@ -110,7 +110,7 @@ Contexto, regras (RN), decisões (D) e contratos: [README](../../README.md). Pla
 
 ## Etapa 5 — Testes
 
-- [ ] **B16 · Testes da gestão**
+- [x] **B16 · Testes da gestão**
   - Branch: `test/gestao`
   - O que fazer: testes de integração de login, permissões dos 3 perfis, cadastros e comentários.
   - Commit: `test: gestao`

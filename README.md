@@ -449,6 +449,10 @@ npm run dev:gestao
 ```bash
 npm run test:gestao
 ```
+4. Rodar os testes E2E da gestão (o Playwright liga sozinho uma API de teste com banco em memória e o site, nas portas `3398` e `5198`; usa o Microsoft Edge do Windows e não toca no Supabase):
+```bash
+npm run test:e2e:gestao
+```
 
 Portas combinadas: `pesquisa` em `5173` e `gestao` em `5174` (são as que a API libera em `CORS_ORIGINS`). Os comandos do site `pesquisa` são da Pessoa A.
 
