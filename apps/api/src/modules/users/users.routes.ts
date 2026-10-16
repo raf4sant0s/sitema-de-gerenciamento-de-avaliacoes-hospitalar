@@ -33,7 +33,8 @@ export function createUsersRouter(service: UsersService) {
    *     security: [{ bearerAuth: [] }]
    *     responses:
    *       200: { description: Usuários, content: { application/json: { schema: { type: array, items: { $ref: '#/components/schemas/User' } } } } }
-   *       403: { description: "Visualizador (FORBIDDEN)" }
+   *       403: { description: "Visualizador (FORBIDDEN)", content: { application/json: { schema: { $ref: '#/components/schemas/Error' } } } }
+   *       401: { $ref: '#/components/responses/Unauthorized' }
    *   post:
    *     summary: Cadastra um usuário
    *     description: Super admin cadastra qualquer perfil (super admin sem setor). Admin de setor só cadastra visualizadores do seu setor.
@@ -54,10 +55,11 @@ export function createUsersRouter(service: UsersService) {
    *               sectorId: { type: integer, nullable: true }
    *     responses:
    *       201: { description: Usuário criado, content: { application/json: { schema: { $ref: '#/components/schemas/User' } } } }
-   *       400: { description: "Dado inválido ou setor faltando (VALIDATION_ERROR)" }
-   *       403: { description: "Perfil ou setor não permitido (FORBIDDEN)" }
-   *       404: { description: "Setor não existe (SECTOR_NOT_FOUND)" }
-   *       409: { description: "E-mail já cadastrado (EMAIL_TAKEN)" }
+   *       400: { description: "Dado inválido ou setor faltando (VALIDATION_ERROR)", content: { application/json: { schema: { $ref: '#/components/schemas/Error' } } } }
+   *       403: { description: "Perfil ou setor não permitido (FORBIDDEN)", content: { application/json: { schema: { $ref: '#/components/schemas/Error' } } } }
+   *       404: { description: "Setor não existe (SECTOR_NOT_FOUND)", content: { application/json: { schema: { $ref: '#/components/schemas/Error' } } } }
+   *       409: { description: "E-mail já cadastrado (EMAIL_TAKEN)", content: { application/json: { schema: { $ref: '#/components/schemas/Error' } } } }
+   *       401: { $ref: '#/components/responses/Unauthorized' }
    */
   router.get('/', controller.list);
   router.post('/', controller.create);
@@ -86,9 +88,11 @@ export function createUsersRouter(service: UsersService) {
    *               active: { type: boolean }
    *     responses:
    *       200: { description: Usuário alterado, content: { application/json: { schema: { $ref: '#/components/schemas/User' } } } }
-   *       403: { description: "Sem permissão, ou tentou desativar/mudar a si mesmo (FORBIDDEN)" }
-   *       404: { description: "Não existe (USER_NOT_FOUND)" }
-   *       409: { description: "E-mail já cadastrado (EMAIL_TAKEN)" }
+   *       403: { description: "Sem permissão, ou tentou desativar/mudar a si mesmo (FORBIDDEN)", content: { application/json: { schema: { $ref: '#/components/schemas/Error' } } } }
+   *       400: { $ref: '#/components/responses/BadRequest' }
+   *       404: { description: "Usuário não existe (USER_NOT_FOUND) ou setor não existe (SECTOR_NOT_FOUND)", content: { application/json: { schema: { $ref: '#/components/schemas/Error' } } } }
+   *       409: { description: "E-mail já cadastrado (EMAIL_TAKEN)", content: { application/json: { schema: { $ref: '#/components/schemas/Error' } } } }
+   *       401: { $ref: '#/components/responses/Unauthorized' }
    *   delete:
    *     summary: Desativa o usuário
    *     description: Não apaga; a pessoa deixa de conseguir entrar. Ninguém desativa a si mesmo.
@@ -97,8 +101,9 @@ export function createUsersRouter(service: UsersService) {
    *     parameters: [{ in: path, name: id, required: true, schema: { type: integer } }]
    *     responses:
    *       200: { description: Usuário desativado, content: { application/json: { schema: { $ref: '#/components/schemas/User' } } } }
-   *       403: { description: "Sem permissão ou a própria conta (FORBIDDEN)" }
-   *       404: { description: "Não existe (USER_NOT_FOUND)" }
+   *       403: { description: "Sem permissão ou a própria conta (FORBIDDEN)", content: { application/json: { schema: { $ref: '#/components/schemas/Error' } } } }
+   *       404: { description: "Não existe (USER_NOT_FOUND)", content: { application/json: { schema: { $ref: '#/components/schemas/Error' } } } }
+   *       401: { $ref: '#/components/responses/Unauthorized' }
    */
   router.put('/:id', controller.update);
   router.delete('/:id', controller.deactivate);

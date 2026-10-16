@@ -115,7 +115,7 @@ Contexto, regras (RN), decisões (D) e contratos: [README](../../README.md). Pla
   - O que fazer: testes de integração de login, permissões dos 3 perfis, cadastros e comentários.
   - Commit: `test: gestao`
 
-- [ ] **B17 · Swagger das suas rotas e relatório de testes**
+- [x] **B17 · Swagger das suas rotas e relatório de testes**
   - Branch: `docs/swagger-gestao`
   - O que fazer: documentar no Swagger as rotas de login, cadastros e comentários; `docs/testes.md` com o plano e o resultado dos testes dos dois.
   - Commit: `docs: swagger da gestao e relatorio de testes`

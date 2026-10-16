@@ -42,6 +42,9 @@ export function createSurveysRouter(service: SurveysService) {
    *     parameters: [{ in: query, name: sectorId, schema: { type: integer } }]
    *     responses:
    *       200: { description: Pesquisas, content: { application/json: { schema: { type: array, items: { $ref: '#/components/schemas/Survey' } } } } }
+   *       400: { $ref: '#/components/responses/BadRequest' }
+   *       401: { $ref: '#/components/responses/Unauthorized' }
+   *       403: { description: "Visualizador (FORBIDDEN)", content: { application/json: { schema: { $ref: '#/components/schemas/Error' } } } }
    *   post:
    *     summary: Cria uma pesquisa (desativada, já com a pergunta obrigatória)
    *     tags: [Pesquisas]
@@ -51,8 +54,10 @@ export function createSurveysRouter(service: SurveysService) {
    *       content: { application/json: { schema: { type: object, required: [sectorId, title], properties: { sectorId: { type: integer }, title: { type: string } } } } }
    *     responses:
    *       201: { description: Pesquisa criada, content: { application/json: { schema: { $ref: '#/components/schemas/Survey' } } } }
-   *       403: { description: "Setor de outra pessoa (FORBIDDEN)" }
-   *       404: { description: "Setor não existe (SECTOR_NOT_FOUND)" }
+   *       403: { description: "Setor de outra pessoa (FORBIDDEN)", content: { application/json: { schema: { $ref: '#/components/schemas/Error' } } } }
+   *       404: { description: "Setor não existe (SECTOR_NOT_FOUND)", content: { application/json: { schema: { $ref: '#/components/schemas/Error' } } } }
+   *       400: { $ref: '#/components/responses/BadRequest' }
+   *       401: { $ref: '#/components/responses/Unauthorized' }
    */
   router.get('/surveys', ...admins, controller.list);
   router.post('/surveys', ...admins, controller.create);
@@ -67,7 +72,9 @@ export function createSurveysRouter(service: SurveysService) {
    *     parameters: [{ in: path, name: id, required: true, schema: { type: integer } }]
    *     responses:
    *       200: { description: Pesquisa, content: { application/json: { schema: { $ref: '#/components/schemas/Survey' } } } }
-   *       404: { description: "Não existe (SURVEY_NOT_FOUND)" }
+   *       404: { description: "Não existe (SURVEY_NOT_FOUND)", content: { application/json: { schema: { $ref: '#/components/schemas/Error' } } } }
+   *       401: { $ref: '#/components/responses/Unauthorized' }
+   *       403: { $ref: '#/components/responses/Forbidden' }
    *   put:
    *     summary: Muda o título e/ou ativa/desativa
    *     description: Ativar uma pesquisa desativa a que estava ativa no mesmo setor (RN02).
@@ -79,6 +86,10 @@ export function createSurveysRouter(service: SurveysService) {
    *       content: { application/json: { schema: { type: object, properties: { title: { type: string }, active: { type: boolean } } } } }
    *     responses:
    *       200: { description: Pesquisa alterada, content: { application/json: { schema: { $ref: '#/components/schemas/Survey' } } } }
+   *       400: { $ref: '#/components/responses/BadRequest' }
+   *       401: { $ref: '#/components/responses/Unauthorized' }
+   *       403: { $ref: '#/components/responses/Forbidden' }
+   *       404: { description: "Não existe (SURVEY_NOT_FOUND)", content: { application/json: { schema: { $ref: '#/components/schemas/Error' } } } }
    */
   router.get('/surveys/:id', ...admins, controller.get);
   router.put('/surveys/:id', ...admins, controller.update);
@@ -93,6 +104,9 @@ export function createSurveysRouter(service: SurveysService) {
    *     parameters: [{ in: path, name: id, required: true, schema: { type: integer } }]
    *     responses:
    *       200: { description: Perguntas, content: { application/json: { schema: { type: array, items: { $ref: '#/components/schemas/Question' } } } } }
+   *       401: { $ref: '#/components/responses/Unauthorized' }
+   *       403: { $ref: '#/components/responses/Forbidden' }
+   *       404: { description: "Pesquisa não existe (SURVEY_NOT_FOUND)", content: { application/json: { schema: { $ref: '#/components/schemas/Error' } } } }
    *   post:
    *     summary: Nova pergunta opcional (vai para o fim das opcionais)
    *     tags: [Pesquisas]
@@ -103,6 +117,10 @@ export function createSurveysRouter(service: SurveysService) {
    *       content: { application/json: { schema: { type: object, required: [text, step], properties: { text: { type: string }, step: { type: string, enum: [GERAL, RECEPCAO, TRIAGEM, ENFERMAGEM, MEDICO] } } } } }
    *     responses:
    *       201: { description: Pergunta criada, content: { application/json: { schema: { $ref: '#/components/schemas/Question' } } } }
+   *       400: { $ref: '#/components/responses/BadRequest' }
+   *       401: { $ref: '#/components/responses/Unauthorized' }
+   *       403: { $ref: '#/components/responses/Forbidden' }
+   *       404: { description: "Pesquisa não existe (SURVEY_NOT_FOUND)", content: { application/json: { schema: { $ref: '#/components/schemas/Error' } } } }
    * /surveys/{id}/questions/order:
    *   put:
    *     summary: Reordena as perguntas opcionais
@@ -115,7 +133,10 @@ export function createSurveysRouter(service: SurveysService) {
    *       content: { application/json: { schema: { type: object, required: [ids], properties: { ids: { type: array, items: { type: integer } } } } } }
    *     responses:
    *       200: { description: Perguntas na nova ordem, content: { application/json: { schema: { type: array, items: { $ref: '#/components/schemas/Question' } } } } }
-   *       400: { description: "Lista incompleta ou com pergunta de fora (VALIDATION_ERROR)" }
+   *       400: { description: "Lista incompleta ou com pergunta de fora (VALIDATION_ERROR)", content: { application/json: { schema: { $ref: '#/components/schemas/Error' } } } }
+   *       401: { $ref: '#/components/responses/Unauthorized' }
+   *       403: { $ref: '#/components/responses/Forbidden' }
+   *       404: { description: "Pesquisa não existe (SURVEY_NOT_FOUND)", content: { application/json: { schema: { $ref: '#/components/schemas/Error' } } } }
    */
   router.get('/surveys/:id/questions', ...admins, controller.listQuestions);
   router.post('/surveys/:id/questions', ...admins, controller.createQuestion);
@@ -135,8 +156,10 @@ export function createSurveysRouter(service: SurveysService) {
    *       content: { application/json: { schema: { type: object, properties: { text: { type: string }, step: { type: string }, active: { type: boolean } } } } }
    *     responses:
    *       200: { description: Pergunta alterada, content: { application/json: { schema: { $ref: '#/components/schemas/Question' } } } }
-   *       400: { description: "Tentou desativar ou mudar a etapa da obrigatória (REQUIRED_QUESTION_LOCKED)" }
-   *       404: { description: "Não existe (QUESTION_NOT_FOUND)" }
+   *       400: { description: "Tentou desativar ou mudar a etapa da obrigatória (REQUIRED_QUESTION_LOCKED)", content: { application/json: { schema: { $ref: '#/components/schemas/Error' } } } }
+   *       404: { description: "Não existe (QUESTION_NOT_FOUND)", content: { application/json: { schema: { $ref: '#/components/schemas/Error' } } } }
+   *       401: { $ref: '#/components/responses/Unauthorized' }
+   *       403: { $ref: '#/components/responses/Forbidden' }
    *   delete:
    *     summary: Desativa a pergunta (as respostas antigas ficam guardadas)
    *     tags: [Pesquisas]
@@ -144,7 +167,10 @@ export function createSurveysRouter(service: SurveysService) {
    *     parameters: [{ in: path, name: id, required: true, schema: { type: integer } }]
    *     responses:
    *       200: { description: Pergunta desativada, content: { application/json: { schema: { $ref: '#/components/schemas/Question' } } } }
-   *       400: { description: "É a obrigatória (REQUIRED_QUESTION_LOCKED)" }
+   *       400: { description: "É a obrigatória (REQUIRED_QUESTION_LOCKED)", content: { application/json: { schema: { $ref: '#/components/schemas/Error' } } } }
+   *       401: { $ref: '#/components/responses/Unauthorized' }
+   *       403: { $ref: '#/components/responses/Forbidden' }
+   *       404: { description: "Não existe (QUESTION_NOT_FOUND)", content: { application/json: { schema: { $ref: '#/components/schemas/Error' } } } }
    */
   router.put('/questions/:id', ...admins, controller.updateQuestion);
   router.delete('/questions/:id', ...admins, controller.deactivateQuestion);

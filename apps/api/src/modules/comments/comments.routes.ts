@@ -50,6 +50,8 @@ export function createCommentsRouter(service: CommentsService) {
    *               properties:
    *                 items: { type: array, items: { $ref: '#/components/schemas/Comment' } }
    *                 total: { type: integer, example: 42 }
+   *       400: { $ref: '#/components/responses/BadRequest' }
+   *       401: { $ref: '#/components/responses/Unauthorized' }
    * /comments/{id}:
    *   patch:
    *     summary: Marca como tratado (com o que foi feito) ou reabre
@@ -69,9 +71,10 @@ export function createCommentsRouter(service: CommentsService) {
    *               treatmentNote: { type: string }
    *     responses:
    *       200: { description: Comentário alterado, content: { application/json: { schema: { $ref: '#/components/schemas/Comment' } } } }
-   *       400: { description: "Tratado sem dizer o que foi feito (VALIDATION_ERROR)" }
-   *       403: { description: "Visualizador ou setor de outra pessoa (FORBIDDEN)" }
-   *       404: { description: "Não existe (COMMENT_NOT_FOUND)" }
+   *       400: { description: "Tratado sem dizer o que foi feito (VALIDATION_ERROR)", content: { application/json: { schema: { $ref: '#/components/schemas/Error' } } } }
+   *       403: { description: "Visualizador ou setor de outra pessoa (FORBIDDEN)", content: { application/json: { schema: { $ref: '#/components/schemas/Error' } } } }
+   *       404: { description: "Não existe (COMMENT_NOT_FOUND)", content: { application/json: { schema: { $ref: '#/components/schemas/Error' } } } }
+   *       401: { $ref: '#/components/responses/Unauthorized' }
    */
   router.get('/', requireAuth, controller.list);
   router.patch('/:id', requireAuth, requireRole('SUPER_ADMIN', 'SECTOR_ADMIN'), controller.update);

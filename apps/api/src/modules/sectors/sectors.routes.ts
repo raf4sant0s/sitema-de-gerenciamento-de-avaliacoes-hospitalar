@@ -37,6 +37,7 @@ export function createSectorsRouter(service: SectorsService) {
    *         content:
    *           application/json:
    *             schema: { type: array, items: { $ref: '#/components/schemas/Sector' } }
+   *       401: { $ref: '#/components/responses/Unauthorized' }
    *   post:
    *     summary: Cria um setor (só super admin)
    *     description: O código de 6 caracteres é gerado pela API. O link (slug) não muda depois.
@@ -54,9 +55,10 @@ export function createSectorsRouter(service: SectorsService) {
    *               slug: { type: string, example: pronto-atendimento }
    *     responses:
    *       201: { description: Setor criado, content: { application/json: { schema: { $ref: '#/components/schemas/Sector' } } } }
-   *       400: { description: "Nome ou link inválido, ou link reservado (VALIDATION_ERROR)" }
-   *       403: { description: "Não é super admin (FORBIDDEN)" }
-   *       409: { description: "Link já usado por outro setor (SLUG_TAKEN)" }
+   *       400: { description: "Nome ou link inválido, ou link reservado (VALIDATION_ERROR)", content: { application/json: { schema: { $ref: '#/components/schemas/Error' } } } }
+   *       403: { description: "Não é super admin (FORBIDDEN)", content: { application/json: { schema: { $ref: '#/components/schemas/Error' } } } }
+   *       409: { description: "Link já usado por outro setor (SLUG_TAKEN)", content: { application/json: { schema: { $ref: '#/components/schemas/Error' } } } }
+   *       401: { $ref: '#/components/responses/Unauthorized' }
    */
   router.get('/', controller.list);
   router.post('/', requireRole('SUPER_ADMIN'), controller.create);
@@ -71,8 +73,9 @@ export function createSectorsRouter(service: SectorsService) {
    *     parameters: [{ in: path, name: id, required: true, schema: { type: integer } }]
    *     responses:
    *       200: { description: Setor, content: { application/json: { schema: { $ref: '#/components/schemas/Sector' } } } }
-   *       403: { description: "Setor de outra pessoa (FORBIDDEN)" }
-   *       404: { description: "Não existe (SECTOR_NOT_FOUND)" }
+   *       403: { description: "Setor de outra pessoa (FORBIDDEN)", content: { application/json: { schema: { $ref: '#/components/schemas/Error' } } } }
+   *       404: { description: "Não existe (SECTOR_NOT_FOUND)", content: { application/json: { schema: { $ref: '#/components/schemas/Error' } } } }
+   *       401: { $ref: '#/components/responses/Unauthorized' }
    *   put:
    *     summary: Edita nome e/ou situação (só super admin)
    *     description: O link (slug) e o código não podem mudar (decisão da dupla).
@@ -90,8 +93,10 @@ export function createSectorsRouter(service: SectorsService) {
    *               active: { type: boolean }
    *     responses:
    *       200: { description: Setor alterado, content: { application/json: { schema: { $ref: '#/components/schemas/Sector' } } } }
-   *       400: { description: "Campo inválido ou tentativa de mudar link/código (VALIDATION_ERROR)" }
-   *       404: { description: "Não existe (SECTOR_NOT_FOUND)" }
+   *       400: { description: "Campo inválido ou tentativa de mudar link/código (VALIDATION_ERROR)", content: { application/json: { schema: { $ref: '#/components/schemas/Error' } } } }
+   *       404: { description: "Não existe (SECTOR_NOT_FOUND)", content: { application/json: { schema: { $ref: '#/components/schemas/Error' } } } }
+   *       401: { $ref: '#/components/responses/Unauthorized' }
+   *       403: { description: "Não é super admin (FORBIDDEN)", content: { application/json: { schema: { $ref: '#/components/schemas/Error' } } } }
    *   delete:
    *     summary: Desativa o setor (só super admin)
    *     description: Não apaga nada; o setor fica inativo e a pesquisa dele para de abrir.
@@ -100,7 +105,9 @@ export function createSectorsRouter(service: SectorsService) {
    *     parameters: [{ in: path, name: id, required: true, schema: { type: integer } }]
    *     responses:
    *       200: { description: Setor desativado, content: { application/json: { schema: { $ref: '#/components/schemas/Sector' } } } }
-   *       404: { description: "Não existe (SECTOR_NOT_FOUND)" }
+   *       404: { description: "Não existe (SECTOR_NOT_FOUND)", content: { application/json: { schema: { $ref: '#/components/schemas/Error' } } } }
+   *       401: { $ref: '#/components/responses/Unauthorized' }
+   *       403: { description: "Não é super admin (FORBIDDEN)", content: { application/json: { schema: { $ref: '#/components/schemas/Error' } } } }
    */
   router.get('/:id', controller.get);
   router.put('/:id', requireRole('SUPER_ADMIN'), controller.update);
@@ -119,8 +126,10 @@ export function createSectorsRouter(service: SectorsService) {
    *       - { in: query, name: type, schema: { type: string, enum: [slug, code], default: slug }, description: "slug = link pelo nome; code = link pelo código curto" }
    *     responses:
    *       200: { description: Imagem PNG, content: { image/png: {} } }
-   *       403: { description: "Visualizador ou setor de outra pessoa (FORBIDDEN)" }
-   *       404: { description: "Não existe (SECTOR_NOT_FOUND)" }
+   *       403: { description: "Visualizador ou setor de outra pessoa (FORBIDDEN)", content: { application/json: { schema: { $ref: '#/components/schemas/Error' } } } }
+   *       404: { description: "Não existe (SECTOR_NOT_FOUND)", content: { application/json: { schema: { $ref: '#/components/schemas/Error' } } } }
+   *       400: { $ref: '#/components/responses/BadRequest' }
+   *       401: { $ref: '#/components/responses/Unauthorized' }
    */
   router.get('/:id/qrcode', requireRole('SUPER_ADMIN', 'SECTOR_ADMIN'), controller.qrCode);
 
