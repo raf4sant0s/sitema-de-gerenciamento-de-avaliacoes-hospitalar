@@ -106,7 +106,6 @@ erDiagram
         serial id PK
         text name
         text slug UK
-        char6 code UK
         boolean active
         timestamptz created_at
     }
@@ -219,7 +218,7 @@ O próprio banco recusa dados errados, mesmo que a aplicação tenha um erro:
 | Só uma pergunta obrigatória por pesquisa | Índice único parcial `questions_one_required_per_survey` (`WHERE required`) | RN05 |
 | Uma equipe por setor, dia e turno | `UNIQUE (sector_id, shift_date, shift)` em `schedules` | RN14 |
 | Uma nota por pergunta em cada resposta | `UNIQUE (response_id, question_id)` em `answers` (permite "trocar" a nota) | RN09 |
-| Link e código do setor sem repetição | `UNIQUE` em `sectors.slug` e `sectors.code` | RN01 |
+| Link do setor sem repetição | `UNIQUE` em `sectors.slug` | RN01 |
 | E-mail sem repetição | `UNIQUE` em `users.email` | RN16 |
 | Nada aponta para o que não existe | `REFERENCES` (chave estrangeira) em todas as ligações | — |
 | Operações "tudo ou nada" | Transações na API: criar pesquisa + obrigatória; ativar pesquisa; salvar escala + atualizar respostas; cada migration inteira | RN02, RN05, RN14 |
@@ -233,7 +232,7 @@ Essas regras foram testadas: antes de rodar no Supabase, a migration foi executa
 | Índice | Tabela | Para que serve |
 | --- | --- | --- |
 | Chave primária | Todas | Buscar uma linha pelo `id` |
-| `UNIQUE` de `slug` e de `code` | `sectors` | Abrir a pesquisa pelo link ou pelo código do QR Code (`/public/sectors/:slug`) |
+| `UNIQUE` de `slug` | `sectors` | Abrir a pesquisa pelo link do QR Code (`/public/sectors/:slug`) |
 | `UNIQUE` de `email` | `users` | Login |
 | `surveys_one_active_per_sector` | `surveys` | Achar a pesquisa ativa do setor (e garantir que é só uma) |
 | `UNIQUE (sector_id, shift_date, shift)` | `schedules` | Achar a equipe de plantão ao criar uma resposta (RN14) e ler a escala do mês |
@@ -278,6 +277,7 @@ Um teste automático (`apps/api/tests/migrations.test.ts`) roda todas as migrati
 | `001_cria_tabelas.sql` | Cria as 9 tabelas, com chaves, `CHECK`, `UNIQUE` e índices |
 | `002_equipes_ativas.sql` | Acrescenta `teams.active`, para equipes serem desativadas em vez de apagadas (tarefa B14) |
 | `003_indice_respostas_plantao.sql` | Cria o índice `responses_sector_shift` para o dashboard e a escala (seção 7) |
+| `004_remove_codigo_setor.sql` | Apaga `sectors.code`: o código curto do setor saiu, e cada setor ficou com um link só, `/avaliacao/<slug>` (RN01) |
 
 Como rodar (na raiz do projeto, com o `DATABASE_URL` no `apps/api/.env`):
 

@@ -15,7 +15,7 @@ const json = (status: number, body: unknown) =>
 
 const adminPA: AuthUser = { id: 2, name: 'Ana', role: 'SECTOR_ADMIN', sectorId: 1 };
 const viewerPA: AuthUser = { id: 3, name: 'Beto', role: 'VIEWER', sectorId: 1 };
-const sectors = [{ id: 1, name: 'Pronto Atendimento', slug: 'pa', code: 'PA7K2Q', active: true, createdAt: '', surveyUrl: '', shortUrl: '' }];
+const sectors = [{ id: 1, name: 'Pronto Atendimento', slug: 'pa', active: true, createdAt: '', surveyUrl: '' }];
 const teams: Team[] = [
   { id: 1, sectorId: 1, name: 'Equipe A', active: true },
   { id: 2, sectorId: 1, name: 'Equipe B', active: true },

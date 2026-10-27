@@ -36,8 +36,8 @@ beforeEach(() => {
   sectors.splice(
     0,
     sectors.length,
-    { id: 1, name: 'Pronto Atendimento', slug: 'pronto-atendimento', code: 'PA7K2Q', active: true, created_at: new Date() },
-    { id: 2, name: 'Raio-X', slug: 'raio-x', code: 'RX3M9T', active: true, created_at: new Date() },
+    { id: 1, name: 'Pronto Atendimento', slug: 'pronto-atendimento', active: true, created_at: new Date() },
+    { id: 2, name: 'Raio-X', slug: 'raio-x', active: true, created_at: new Date() },
   );
 });
 

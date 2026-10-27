@@ -6,11 +6,9 @@ export interface Sector {
   id: number;
   name: string;
   slug: string;
-  code: string;
   active: boolean;
   createdAt: string;
-  surveyUrl: string; // link da pesquisa pelo nome
-  shortUrl: string; // link da pesquisa pelo código curto
+  surveyUrl: string; // link da pesquisa: site/avaliacao/<slug> (RN01)
 }
 
 export function listSectors(): Promise<Sector[]> {
@@ -25,8 +23,7 @@ export function updateSector(id: number, data: { name?: string; active?: boolean
   return api<Sector>(`/sectors/${id}`, { method: 'PUT', body: JSON.stringify(data) });
 }
 
-// RN01: imagem do QR Code com o link pelo nome (slug) ou pelo código curto (code).
-export function downloadQrCode(sector: Sector, type: 'slug' | 'code'): Promise<void> {
-  const fileName = `qrcode-${sector.slug}${type === 'code' ? `-${sector.code}` : ''}.png`;
-  return downloadFile(`/sectors/${sector.id}/qrcode?type=${type}`, fileName);
+// RN01: imagem do QR Code com o link da pesquisa (/avaliacao/<slug>). Um QR Code por setor.
+export function downloadQrCode(sector: Sector): Promise<void> {
+  return downloadFile(`/sectors/${sector.id}/qrcode`, `qrcode-${sector.slug}.png`);
 }

@@ -32,7 +32,7 @@ async function tapFace(page: Page, face: string, nextQuestion: string) {
 }
 
 test('paciente responde tudo: carinhas, "pular", obrigatória por último, comentário e agradecimento', async ({ page }) => {
-  await page.goto('/pronto-atendimento');
+  await page.goto('/avaliacao/pronto-atendimento');
 
   await expect(page.getByRole('heading', { name: 'Como foi o atendimento na recepção?' })).toBeVisible();
   // RN03: nenhuma tela mostra contador ou progresso
@@ -70,7 +70,7 @@ test('paciente responde tudo: carinhas, "pular", obrigatória por último, comen
 test('paciente fecha no meio: o que já respondeu fica salvo (RN09)', async ({ page, context }) => {
   const before = (await savedResponses(page)).length;
 
-  await page.goto('/c/pa7k2q'); // pelo código curto, como se tivesse digitado (RN01)
+  await page.goto('/avaliacao/pronto-atendimento'); // o link do QR Code (RN01)
   await tapFace(page, 'Bom', 'Como foi a triagem?');
   await tapFace(page, 'Ótimo', 'Como foi o atendimento da enfermagem?');
 
@@ -85,7 +85,7 @@ test('paciente fecha no meio: o que já respondeu fica salvo (RN09)', async ({ p
 
 test('não dá para terminar sem a pergunta obrigatória (RN05)', async ({ page }) => {
   // Pela tela: pulando tudo o que dá, a última pergunta não tem "pular" e o comentário não aparece
-  await page.goto('/raio-x');
+  await page.goto('/avaliacao/raio-x');
   await expect(page.getByRole('heading', { name: 'Como foi o atendimento na recepção?' })).toBeVisible();
   await page.getByRole('button', { name: 'pular' }).click();
   await expect(page.getByRole('heading', { name: 'No geral, como você avalia o atendimento do hospital hoje?' })).toBeVisible();

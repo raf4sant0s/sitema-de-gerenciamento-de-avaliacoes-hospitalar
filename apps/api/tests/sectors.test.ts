@@ -1,10 +1,10 @@
 import type { Sector } from '@avaliacoes/schemas';
+import QRCode from 'qrcode';
 import request from 'supertest';
 import { beforeEach, describe, expect, it } from 'vitest';
 import { createApp } from '../src/app';
 import type { SectorsRepository } from '../src/database/repositories/sectors.repository';
 import { type AuthUser, signToken } from '../src/shared/auth';
-import { generateCode, SectorsService } from '../src/modules/sectors/sectors.service';
 
 // "Banco de mentira" de setores, só na memória: os testes não tocam no Supabase.
 let sectors: Sector[] = [];
@@ -18,9 +18,6 @@ const fakeSectors: SectorsRepository = {
   },
   async findBySlug(slug) {
     return sectors.find((sector) => sector.slug === slug) ?? null;
-  },
-  async findByCode(code) {
-    return sectors.find((sector) => sector.code === code) ?? null;
   },
   async create(data) {
     const sector: Sector = { id: sectors.length + 1, ...data, active: true, created_at: new Date() };
@@ -44,17 +41,9 @@ const auth = (user: AuthUser) => ({ Authorization: `Bearer ${signToken(user)}` }
 
 beforeEach(() => {
   sectors = [
-    { id: 1, name: 'Pronto Atendimento', slug: 'pronto-atendimento', code: 'PA7K2Q', active: true, created_at: new Date() },
-    { id: 2, name: 'Raio-X', slug: 'raio-x', code: 'RX3M9T', active: true, created_at: new Date() },
+    { id: 1, name: 'Pronto Atendimento', slug: 'pronto-atendimento', active: true, created_at: new Date() },
+    { id: 2, name: 'Raio-X', slug: 'raio-x', active: true, created_at: new Date() },
   ];
-});
-
-describe('código curto (RN01)', () => {
-  it('tem 6 caracteres, sem letras e números fáceis de confundir', () => {
-    for (let i = 0; i < 200; i++) {
-      expect(generateCode()).toMatch(/^[A-HJKMNP-Z2-9]{6}$/);
-    }
-  });
 });
 
 describe('GET /api/sectors', () => {
@@ -62,13 +51,15 @@ describe('GET /api/sectors', () => {
     expect((await request(app).get('/api/sectors')).status).toBe(401);
   });
 
-  it('super admin vê todos os setores, com os dois links da pesquisa', async () => {
+  it('super admin vê todos os setores, com o link da pesquisa /avaliacao/<slug> (RN01)', async () => {
     const response = await request(app).get('/api/sectors').set(auth(superAdmin));
 
     expect(response.status).toBe(200);
     expect(response.body.map((sector: { name: string }) => sector.name)).toEqual(['Pronto Atendimento', 'Raio-X']);
-    expect(response.body[0].surveyUrl).toBe('http://localhost:5173/pronto-atendimento');
-    expect(response.body[0].shortUrl).toBe('http://localhost:5173/c/PA7K2Q');
+    expect(response.body[0].surveyUrl).toBe('http://localhost:5173/avaliacao/pronto-atendimento');
+    // O código curto foi retirado (migration 004)
+    expect(response.body[0]).not.toHaveProperty('code');
+    expect(response.body[0]).not.toHaveProperty('shortUrl');
   });
 
   it('admin de setor e visualizador só veem o próprio setor (RN16)', async () => {
@@ -85,7 +76,7 @@ describe('GET /api/sectors', () => {
 });
 
 describe('POST /api/sectors', () => {
-  it('super admin cria o setor; a API gera o código de 6 caracteres', async () => {
+  it('super admin cria o setor, com o link da pesquisa', async () => {
     const response = await request(app)
       .post('/api/sectors')
       .set(auth(superAdmin))
@@ -93,8 +84,7 @@ describe('POST /api/sectors', () => {
 
     expect(response.status).toBe(201);
     expect(response.body).toMatchObject({ name: 'Internação', slug: 'internacao', active: true });
-    expect(response.body.code).toMatch(/^[A-Z0-9]{6}$/);
-    expect(response.body.surveyUrl).toBe('http://localhost:5173/internacao');
+    expect(response.body.surveyUrl).toBe('http://localhost:5173/avaliacao/internacao');
   });
 
   it('admin de setor e visualizador não criam setor (403)', async () => {
@@ -122,26 +112,18 @@ describe('POST /api/sectors', () => {
     }
   });
 
-  it('se o código sorteado já existir, sorteia outro', async () => {
-    // Banco onde o primeiro código sorteado já está em uso
-    const codes = ['PA7K2Q', 'NOVO22'];
-    const service = new SectorsService(fakeSectors, 'http://site', () => codes.shift()!);
-
-    const created = await service.create('Ambulatório', 'ambulatorio');
-    expect(created.code).toBe('NOVO22');
-  });
 });
 
 describe('PUT e DELETE /api/sectors/:id', () => {
-  it('super admin muda o nome; link e código continuam iguais', async () => {
+  it('super admin muda o nome; o link continua igual', async () => {
     const response = await request(app).put('/api/sectors/1').set(auth(superAdmin)).send({ name: 'PA Adulto' });
 
     expect(response.status).toBe(200);
-    expect(response.body).toMatchObject({ name: 'PA Adulto', slug: 'pronto-atendimento', code: 'PA7K2Q' });
+    expect(response.body).toMatchObject({ name: 'PA Adulto', slug: 'pronto-atendimento' });
   });
 
-  it('não deixa mudar o link nem o código (decisão da dupla)', async () => {
-    for (const body of [{ slug: 'outro-link' }, { code: 'AAAAAA' }, { name: 'X', slug: 'outro' }]) {
+  it('não deixa mudar o link (decisão da dupla)', async () => {
+    for (const body of [{ slug: 'outro-link' }, { name: 'X', slug: 'outro' }]) {
       const response = await request(app).put('/api/sectors/1').set(auth(superAdmin)).send(body);
       expect(response.status).toBe(400);
     }
@@ -170,14 +152,15 @@ describe('PUT e DELETE /api/sectors/:id', () => {
 });
 
 describe('GET /api/sectors/:id/qrcode (RN01)', () => {
-  it('super admin baixa a imagem PNG do QR Code', async () => {
-    const response = await request(app).get('/api/sectors/1/qrcode?type=code').set(auth(superAdmin));
+  it('super admin baixa a imagem PNG do QR Code, com o link /avaliacao/<slug>', async () => {
+    const response = await request(app).get('/api/sectors/1/qrcode').set(auth(superAdmin));
 
     expect(response.status).toBe(200);
     expect(response.headers['content-type']).toBe('image/png');
-    expect(response.headers['content-disposition']).toContain('qrcode-pronto-atendimento-PA7K2Q.png');
-    // Todo arquivo PNG começa com estes bytes
-    expect(response.body.subarray(0, 4)).toEqual(Buffer.from([0x89, 0x50, 0x4e, 0x47]));
+    expect(response.headers['content-disposition']).toContain('qrcode-pronto-atendimento.png');
+    // O QR Code de um texto é sempre igual: gerando o do link esperado, as duas imagens batem
+    const expected = await QRCode.toBuffer('http://localhost:5173/avaliacao/pronto-atendimento', { type: 'png', width: 600, margin: 2 });
+    expect(Buffer.compare(response.body, expected)).toBe(0);
   });
 
   it('admin baixa o do próprio setor, mas não o de outro', async () => {

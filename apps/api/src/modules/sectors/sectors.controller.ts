@@ -12,16 +12,14 @@ const createBody = z.object({
   slug: sectorSlugSchema,
 });
 
-// Editar: só nome e situação. strictObject recusa campos a mais, como "slug" e "code",
-// porque o link e o código não podem mudar depois de criados (decisão da dupla).
+// Editar: só nome e situação. strictObject recusa campos a mais, como "slug",
+// porque o link não pode mudar depois de criado (decisão da dupla).
 const updateBody = z
   .strictObject({
     name: nameSchema.optional(),
     active: z.boolean().optional(),
   })
   .refine((body) => body.name !== undefined || body.active !== undefined, 'Nada para alterar');
-
-const qrQuery = z.object({ type: z.enum(['slug', 'code']).default('slug') });
 
 function parse<T extends z.ZodType>(schema: T, data: unknown): z.infer<T> {
   const result = schema.safeParse(data);
@@ -66,8 +64,7 @@ export function createSectorsController(service: SectorsService) {
     },
 
     async qrCode(req: Request, res: Response) {
-      const { type } = parse(qrQuery, req.query);
-      const { png, fileName } = await service.qrCode(req.user!, sectorId(req), type);
+      const { png, fileName } = await service.qrCode(req.user!, sectorId(req));
       res.type('png');
       res.setHeader('Content-Disposition', `attachment; filename="${fileName}"`);
       res.send(png);

@@ -16,14 +16,9 @@ export class ResponsesService {
     private readonly notifier: Notifier = realtime,
   ) {}
 
-  // RN01: pelo link do setor. Setor inativo ou sem pesquisa ativa → 404 (README, seção 9).
+  // RN01: pelo link do setor (/avaliacao/<slug>). Setor inativo ou sem pesquisa ativa → 404 (README, seção 9).
   async getSurveyBySlug(slug: string): Promise<PublicSurvey> {
     return this.orNotFound(await this.repository.findSurveyBySlug(slug));
-  }
-
-  // RN01: pelo código curto. Aceita minúsculas, porque quem digita o código pode não usar maiúsculas.
-  async getSurveyByCode(code: string): Promise<PublicSurvey> {
-    return this.orNotFound(await this.repository.findSurveyByCode(code.toUpperCase()));
   }
 
   // RN09: a resposta nasce no primeiro toque, já com turno, data do plantão (RN13) e equipe (RN14).

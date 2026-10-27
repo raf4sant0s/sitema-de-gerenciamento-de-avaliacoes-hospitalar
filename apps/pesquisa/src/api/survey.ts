@@ -22,13 +22,9 @@ function send(method: 'POST' | 'PUT', body?: unknown): RequestInit {
   return { method, body: body === undefined ? undefined : JSON.stringify(body) };
 }
 
-// RN01: pelo link do setor (/pronto-atendimento) ou pelo código curto (/c/PA7K2Q)
+// RN01: pelo link do setor (/avaliacao/pronto-atendimento)
 export function getSurveyBySlug(slug: string) {
   return api<PublicSurvey>(`/public/sectors/${encodeURIComponent(slug)}`);
-}
-
-export function getSurveyByCode(code: string) {
-  return api<PublicSurvey>(`/public/sectors/by-code/${encodeURIComponent(code)}`);
 }
 
 // RN09: o primeiro toque cria a resposta e devolve o id dela

@@ -3,7 +3,7 @@ import type { SectorsRepository } from '../repositories/sectors.repository';
 import type { Pool } from 'pg';
 import { getPool } from './connection';
 
-const columns = 'id, name, slug, code, active, created_at';
+const columns = 'id, name, slug, active, created_at';
 
 // Implementação do SectorsRepository com SQL puro no PostgreSQL do Supabase.
 // Recebe uma função que devolve o banco: a API usa o Supabase; os testes, um PostgreSQL em memória (PGlite).
@@ -23,15 +23,11 @@ export class SupabaseSectorsRepository implements SectorsRepository {
     return this.findOne('slug = $1', slug);
   }
 
-  async findByCode(code: string): Promise<Sector | null> {
-    return this.findOne('code = $1', code);
-  }
-
-  async create(data: { name: string; slug: string; code: string }): Promise<Sector> {
-    const result = await this.db().query(
-      `INSERT INTO sectors (name, slug, code) VALUES ($1, $2, $3) RETURNING ${columns}`,
-      [data.name, data.slug, data.code],
-    );
+  async create(data: { name: string; slug: string }): Promise<Sector> {
+    const result = await this.db().query(`INSERT INTO sectors (name, slug) VALUES ($1, $2) RETURNING ${columns}`, [
+      data.name,
+      data.slug,
+    ]);
     return sectorSchema.parse(result.rows[0]);
   }
 

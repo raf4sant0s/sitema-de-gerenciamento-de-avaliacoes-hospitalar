@@ -55,7 +55,7 @@ beforeEach(async () => {
   db = await PGlite.create();
   for (const sql of migrations) await db.exec(sql);
   await db.exec(`
-    INSERT INTO sectors (name, slug, code) VALUES ('Pronto Atendimento', 'pronto-atendimento', 'PA7K2Q'), ('Raio-X', 'raio-x', 'RX3M9T');
+    INSERT INTO sectors (name, slug) VALUES ('Pronto Atendimento', 'pronto-atendimento'), ('Raio-X', 'raio-x');
     INSERT INTO surveys (sector_id, title) VALUES (1, 'PA'), (2, 'RX');
     INSERT INTO users (name, email, password_hash, role, sector_id) VALUES
       ('Carla', 'carla@h.com', 'x', 'SUPER_ADMIN', NULL), ('Ana', 'ana@h.com', 'x', 'SECTOR_ADMIN', 1);

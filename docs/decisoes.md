@@ -41,7 +41,7 @@ As decisões abaixo estão resumidas no README (seção 4). Aqui cada uma é exp
 
 ### D6 · Celular via QR Code como canal principal; tablet como apoio
 
-**O que é:** cada setor tem uma URL própria e um código curto, cada um com o seu QR Code (RN01). O paciente responde no próprio celular; um tablet no setor pode ser usado como apoio. O sistema não diferencia de onde veio a resposta (RN12).
+**O que é:** cada setor tem um link próprio, `/avaliacao/<setor>`, e um QR Code com esse link (RN01). O paciente responde no próprio celular; um tablet no setor pode ser usado como apoio. O sistema não diferencia de onde veio a resposta (RN12).
 
 **Por quê:**
 - Custo zero para o hospital: o paciente usa o próprio celular.
@@ -49,7 +49,7 @@ As decisões abaixo estão resumidas no README (seção 4). Aqui cada uma é exp
 
 **Ligação com a persona:** a Dona Cida recebe o QR Code na saída, e a filha aponta a câmera do celular. Ela pode responder com calma, sem ninguém olhando.
 
-**Onde aparece:** rotas `/:slug` e `/c/:code` do site `pesquisa`; telas pensadas para celular e tablet, só com toques e botões grandes (RF17).
+**Onde aparece:** rota `/avaliacao/:slug` do site `pesquisa` (até 27/10/2026 havia também o código curto `/c/:code`, retirado a pedido do professor para ficar mais simples); telas pensadas para celular e tablet, só com toques e botões grandes (RF17).
 
 ### D7 · Salvar a cada toque
 

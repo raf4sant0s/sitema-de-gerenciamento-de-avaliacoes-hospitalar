@@ -15,11 +15,9 @@ const sector = (id: number, name: string): Sector => ({
   id,
   name,
   slug: name.toLowerCase(),
-  code: 'ABC234',
   active: true,
   createdAt: '2026-10-14T12:00:00.000Z',
   surveyUrl: '',
-  shortUrl: '',
 });
 
 const person = (id: number, name: string, role: User['role'], sectorId: number | null): User => ({

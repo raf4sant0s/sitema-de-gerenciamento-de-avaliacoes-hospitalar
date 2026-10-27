@@ -61,10 +61,6 @@ export class SupabaseResponsesRepository implements ResponsesRepository {
     return this.findSurvey('sectors.slug = $1', slug);
   }
 
-  findSurveyByCode(code: string) {
-    return this.findSurvey('sectors.code = $1', code);
-  }
-
   async findQuestion(surveyId: number, questionId: number): Promise<SurveyQuestion | null> {
     const result = await this.db().query<SurveyQuestion>(
       `SELECT questions.id, questions.survey_id AS "surveyId", surveys.sector_id AS "sectorId", questions.required

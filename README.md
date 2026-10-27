@@ -52,7 +52,7 @@ Numeradas para serem citadas em código, testes e commits (ex.: `// RN07`).
 
 ### Pesquisa do paciente (site `pesquisa`)
 
-- **RN01** Cada setor tem URL própria `/<slug>` (ex.: `/pronto-atendimento`) e um código curto `/c/<CODIGO>` (6 caracteres). Cada um gera um QR Code. O link (slug) é gerado a partir do nome e pode ser ajustado antes de salvar; **depois de criado, o link e o código nunca mudam**, porque estão impressos nos QR Codes (decisão da dupla). O código é sorteado pela API, sem letras e números fáceis de confundir (0/O, 1/I/L). Os links `login`, `c` e `tv` são reservados.
+- **RN01** Cada setor tem **um** link da pesquisa, `/avaliacao/<slug>` (ex.: `/avaliacao/pronto-atendimento`), e **um** QR Code com esse link (pedido do professor e decisão da dupla em 27/10/2026: antes havia também um código curto `/c/<CODIGO>`, que foi retirado). O link (slug) é gerado a partir do nome e pode ser ajustado antes de salvar; **depois de criado, o link nunca muda**, porque está impresso no QR Code (decisão da dupla). Os links `login`, `c` e `tv` continuam reservados.
 - **RN02** Uma pesquisa ativa por setor. As perguntas aparecem **uma por tela**, na ordem cadastrada.
 - **RN03** **Nunca** mostrar o número de perguntas, "3 de 10" ou barra de progresso.
 - **RN04** **Todas** as perguntas são respondidas com **carinhas de 1 a 5** (Péssimo, Ruim, Regular, Bom, Ótimo).
@@ -253,7 +253,7 @@ Tabelas:
 
 | Tabela | Colunas |
 | --- | --- |
-| `sectors` | `id` serial PK · `name` text · `slug` text único · `code` char(6) único · `active` boolean (padrão true) · `created_at` timestamptz |
+| `sectors` | `id` serial PK · `name` text · `slug` text único · `active` boolean (padrão true) · `created_at` timestamptz (a coluna `code` foi apagada na migration 004) |
 | `users` | `id` serial PK · `name` text · `email` text único · `password_hash` text · `role` · `sector_id` → sectors (nulo só para `SUPER_ADMIN`) · `active` boolean · `created_at` |
 | `surveys` | `id` serial PK · `sector_id` → sectors · `title` text · `active` boolean (só 1 ativa por setor) · `created_at` |
 | `questions` | `id` serial PK · `survey_id` → surveys · `position` int · `text` text · `step` journey_step · `required` boolean (só 1 true por pesquisa) · `active` boolean |
@@ -293,7 +293,6 @@ Rotas fechadas recebem o token no cabeçalho `Authorization: Bearer <token>`. O 
 | Método | Rota | Corpo | Resposta |
 | --- | --- | --- | --- |
 | GET | `/public/sectors/:slug` | — | `{ sector: {id, name, slug}, survey: {id, questions: [{id, position, text, step, required}]} }` · 404 se setor inativo |
-| GET | `/public/sectors/by-code/:code` | — | igual ao anterior |
 | POST | `/public/responses` | `{ sectorId, surveyId, questionId, value }` | `201 { id }` · criada no 1º toque (RN09), calcula turno e equipe |
 | PUT | `/public/responses/:id/answers/:questionId` | `{ value }` | `200 { ok: true }` · 409 se a resposta não estiver `PARTIAL` |
 | POST | `/public/responses/:id/comment` | `{ type?, text }` | `201 { ok: true }` |
@@ -319,8 +318,8 @@ Na API, as rotas fechadas usam os middlewares de `src/shared/auth.ts`: `requireA
 
 | Método | Rota | Quem pode |
 | --- | --- | --- |
-| GET/POST | `/sectors` · GET/PUT/DELETE `/sectors/:id` | Super admin (admin de setor e visualizador só leem o próprio). POST: `{ name, slug }`, o código é gerado. PUT: só `{ name?, active? }` (link e código não mudam; 400 se enviados). DELETE desativa. Resposta: `{ id, name, slug, code, active, createdAt, surveyUrl, shortUrl }`. Erros: 409 `SLUG_TAKEN`, 404 `SECTOR_NOT_FOUND` |
-| GET | `/sectors/:id/qrcode?type=slug\|code` | Super admin e admin do setor (PNG) |
+| GET/POST | `/sectors` · GET/PUT/DELETE `/sectors/:id` | Super admin (admin de setor e visualizador só leem o próprio). POST: `{ name, slug }`. PUT: só `{ name?, active? }` (o link não muda; 400 se enviado). DELETE desativa. Resposta: `{ id, name, slug, active, createdAt, surveyUrl }` (`surveyUrl` = endereço do site da pesquisa + `/avaliacao/<slug>`). Erros: 409 `SLUG_TAKEN`, 404 `SECTOR_NOT_FOUND` |
+| GET | `/sectors/:id/qrcode` | Super admin e admin do setor (PNG com o link `/avaliacao/<slug>`) |
 | GET/POST | `/users` · PUT/DELETE `/users/:id` | Só o super admin (os outros perfis: 403). POST: `{ name, email, password, role, sectorId }`. PUT: `{ name?, email?, password?, role?, sectorId?, active? }` (password = redefinir). DELETE desativa. Resposta: `{ id, name, email, role, sectorId, active, createdAt }`, nunca a senha. Erros: 409 `EMAIL_TAKEN`, 404 `USER_NOT_FOUND`, 404 `SECTOR_NOT_FOUND`, 403 ao tentar desativar ou mudar o perfil de si mesmo |
 | GET/POST | `/surveys` · GET/PUT `/surveys/:id` | Super admin (todos, ou `?sectorId=`) e admin do setor (o seu). POST: `{ sectorId, title }` (nasce desativada, com a obrigatória). PUT: `{ title?, active? }`. Resposta: `{ id, sectorId, title, active, createdAt }`. Erros: 404 `SURVEY_NOT_FOUND`, 404 `SECTOR_NOT_FOUND` |
 | GET/POST | `/surveys/:id/questions` · PUT/DELETE `/questions/:id` | Super admin e admin do setor. POST: `{ text, step }` (sempre opcional, vai para o fim). PUT: `{ text?, step?, active? }`. DELETE desativa. Resposta: `{ id, surveyId, position, text, step, required, active, answerCount }`. Erros: 404 `QUESTION_NOT_FOUND`, 400 `REQUIRED_QUESTION_LOCKED` (desativar ou mudar a etapa da obrigatória) |
@@ -365,8 +364,7 @@ O evento só avisa; a tela busca os dados de novo pela API.
 
 | Rota | Tela |
 | --- | --- |
-| `/:slug` | Pesquisa do setor (ex.: `/pronto-atendimento`) |
-| `/c/:code` | Pesquisa pelo código curto |
+| `/avaliacao/:slug` | Pesquisa do setor (ex.: `/avaliacao/pronto-atendimento`) |
 
 Telas internas: perguntas opcionais (uma por tela) → pergunta obrigatória → comentário (sempre aparece, RN11) → agradecimento.
 

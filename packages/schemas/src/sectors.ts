@@ -1,12 +1,12 @@
 import { z } from 'zod';
 import { idSchema, timestampSchema } from './common';
 
-// Tabela sectors (README, seção 8). RN01: cada setor tem um slug (link) e um código de 6 caracteres.
+// Tabela sectors (README, seção 8). RN01: cada setor tem um slug, o link /avaliacao/<slug>.
+// O código curto de 6 caracteres foi apagado (migration 004).
 export const sectorSchema = z.object({
   id: idSchema,
   name: z.string().min(1),
   slug: z.string().min(1),
-  code: z.string().length(6),
   active: z.boolean(),
   created_at: timestampSchema,
 });
@@ -17,7 +17,7 @@ export type Sector = z.infer<typeof sectorSchema>;
 // Regras do link (slug) do setor, usadas pela API e pelo site de gestão (tarefa B11).
 // ---------------------------------------------------------------------
 
-// Endereços que já são telas do site da pesquisa: nenhum setor pode usar (plano, B11).
+// Links que nenhum setor pode usar (plano, B11; RN01).
 export const RESERVED_SLUGS = ['login', 'c', 'tv'];
 
 // Link válido: só letras minúsculas sem acento, números e hífen entre as palavras.

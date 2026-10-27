@@ -55,9 +55,6 @@ export function fakeSectorsRepository(sectors: Sector[]): SectorsRepository {
     async findBySlug(slug) {
       return sectors.find((sector) => sector.slug === slug) ?? null;
     },
-    async findByCode(code) {
-      return sectors.find((sector) => sector.code === code) ?? null;
-    },
     async create(data) {
       const sector: Sector = { id: sectors.length + 1, ...data, active: true, created_at: new Date() };
       sectors.push(sector);

@@ -8,10 +8,10 @@ export default function App() {
     <BrowserRouter>
       <Routes>
         <Route path="/" element={<HomePage />} />
-        {/* RN01: código curto de 6 caracteres, ex.: /c/PA7K2Q */}
-        <Route path="/c/:code" element={<SurveyPage />} />
-        {/* RN01: link do setor, ex.: /pronto-atendimento */}
-        <Route path="/:slug" element={<SurveyPage />} />
+        {/* RN01: link do setor, ex.: /avaliacao/pronto-atendimento (um link e um QR Code por setor) */}
+        <Route path="/avaliacao/:slug" element={<SurveyPage />} />
+        {/* Qualquer outro endereço: tela inicial, que pede para ler o QR Code do setor */}
+        <Route path="*" element={<HomePage />} />
       </Routes>
     </BrowserRouter>
   );

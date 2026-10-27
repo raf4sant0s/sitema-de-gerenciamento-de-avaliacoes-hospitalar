@@ -3,7 +3,6 @@ import { useParams } from 'react-router-dom';
 import { ApiError } from '../api/client';
 import {
   completeResponse,
-  getSurveyByCode,
   getSurveyBySlug,
   saveAnswer,
   sendComment,
@@ -36,11 +35,11 @@ const SAVE_ERROR = 'Não foi possível salvar. Confira a internet e toque de nov
 
 type Phase = 'loading' | 'not-found' | 'load-error' | 'questions' | 'comment' | 'thanks';
 
-// Pesquisa do setor, aberta pelo link (/pronto-atendimento) ou pelo código curto (/c/PA7K2Q) (RN01).
+// Pesquisa do setor, aberta pelo link /avaliacao/<slug> (ex.: /avaliacao/pronto-atendimento) (RN01).
 // Ordem das telas (README, seção 10): perguntas opcionais, uma por tela (RN02) → obrigatória por último (RN05)
 // → comentário, que sempre aparece (RN11) → agradecimento.
 export default function SurveyPage() {
-  const { slug, code } = useParams();
+  const { slug } = useParams();
 
   const [data, setData] = useState<PublicSurvey | null>(null);
   const [phase, setPhase] = useState<Phase>('loading');
@@ -53,8 +52,7 @@ export default function SurveyPage() {
 
   useEffect(() => {
     let cancelled = false;
-    const load = code ? getSurveyByCode(code) : getSurveyBySlug(slug ?? '');
-    load
+    getSurveyBySlug(slug ?? '')
       .then((survey) => {
         if (cancelled) return;
         setData(survey);
@@ -67,7 +65,7 @@ export default function SurveyPage() {
     return () => {
       cancelled = true;
     };
-  }, [slug, code]);
+  }, [slug]);
 
   const questions = data?.survey.questions ?? [];
   const question = questions[index];

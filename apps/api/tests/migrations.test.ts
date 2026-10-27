@@ -36,6 +36,12 @@ describe('migrations do banco', () => {
       'users',
     ]);
 
+    // Migration 004: o código curto dos setores foi apagado (RN01)
+    const sectorColumns = (
+      await db.query<{ column_name: string }>("SELECT column_name FROM information_schema.columns WHERE table_name = 'sectors' ORDER BY 1")
+    ).rows.map((row) => row.column_name);
+    expect(sectorColumns).toEqual(['active', 'created_at', 'id', 'name', 'slug']);
+
     const indexes = (await db.query<{ indexname: string }>("SELECT indexname FROM pg_indexes WHERE schemaname = 'public'")).rows.map(
       (row) => row.indexname,
     );
@@ -58,7 +64,7 @@ describe('migrations do banco', () => {
       await db.exec(fs.readFileSync(path.join(folder, file), 'utf8'));
     }
     await db.exec(`
-      INSERT INTO sectors (name, slug, code) SELECT 'Setor ' || n, 'setor-' || n, 'COD00' || n FROM generate_series(1, 4) n;
+      INSERT INTO sectors (name, slug) SELECT 'Setor ' || n, 'setor-' || n FROM generate_series(1, 4) n;
       INSERT INTO surveys (sector_id, title) SELECT id, 'P' FROM sectors;
       INSERT INTO responses (sector_id, survey_id, shift_date, shift, overall_score)
       SELECT (n % 4) + 1, (n % 4) + 1, DATE '2026-01-01' + (n % 270), (ARRAY['MANHA','TARDE','NOITE'])[(n % 3) + 1], (n % 5) + 1

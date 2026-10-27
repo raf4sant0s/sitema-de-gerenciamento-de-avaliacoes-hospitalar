@@ -79,10 +79,10 @@ describe('SQL de usuários', () => {
 });
 
 describe('SQL de setores', () => {
-  it('cria com código sorteado, lista em ordem alfabética, renomeia e desativa', async () => {
+  it('cria com o link da pesquisa, lista em ordem alfabética, renomeia e desativa', async () => {
     const created = await request(app).post('/api/sectors').set(auth(superAdmin)).send({ name: 'Ala B', slug: 'ala-b' });
     expect(created.status).toBe(201);
-    expect(created.body.code).toMatch(/^[A-HJKMNP-Z2-9]{6}$/);
+    expect(created.body.surveyUrl).toMatch(/\/avaliacao\/ala-b$/);
 
     const names = (await request(app).get('/api/sectors').set(auth(superAdmin))).body.map((sector: { name: string }) => sector.name);
     expect(names).toEqual([...names].sort((a: string, b: string) => a.localeCompare(b)));

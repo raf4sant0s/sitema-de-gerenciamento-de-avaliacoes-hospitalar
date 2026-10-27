@@ -68,24 +68,6 @@ export function createResponsesRouter(service = new ResponsesService(new Supabas
 
   /**
    * @openapi
-   * /public/sectors/by-code/{code}:
-   *   get:
-   *     summary: Pesquisa ativa de um setor, pelo código curto de 6 caracteres (RN01)
-   *     tags: [Pesquisa (pública)]
-   *     parameters:
-   *       - { in: path, name: code, required: true, schema: { type: string }, example: PA7K2Q }
-   *     responses:
-   *       200:
-   *         description: Setor e perguntas
-   *         content: { application/json: { schema: { $ref: '#/components/schemas/PublicSurvey' } } }
-   *       404:
-   *         description: Código inexistente, setor inativo ou sem pesquisa ativa
-   *         content: { application/json: { schema: { $ref: '#/components/schemas/Error' } } }
-   */
-  router.get('/public/sectors/by-code/:code', controller.getByCode);
-
-  /**
-   * @openapi
    * /public/responses:
    *   post:
    *     summary: Cria a resposta no primeiro toque numa carinha (RN09)

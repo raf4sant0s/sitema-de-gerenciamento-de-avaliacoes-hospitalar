@@ -14,10 +14,10 @@ const now = new Date();
 const uuid = '6f1c2a3b-4d5e-4f60-8a71-b2c3d4e5f601';
 
 describe('schemas das tabelas', () => {
-  it('setor válido passa; código com tamanho diferente de 6 é recusado (RN01)', () => {
-    const sector = { id: 1, name: 'Pronto Atendimento', slug: 'pronto-atendimento', code: 'PA7K2Q', active: true, created_at: now };
+  it('setor válido passa; sem link (slug) é recusado (RN01)', () => {
+    const sector = { id: 1, name: 'Pronto Atendimento', slug: 'pronto-atendimento', active: true, created_at: now };
     expect(sectorSchema.safeParse(sector).success).toBe(true);
-    expect(sectorSchema.safeParse({ ...sector, code: 'PA7' }).success).toBe(false);
+    expect(sectorSchema.safeParse({ ...sector, slug: '' }).success).toBe(false);
   });
 
   it('só aceita os 3 perfis (RN16)', () => {

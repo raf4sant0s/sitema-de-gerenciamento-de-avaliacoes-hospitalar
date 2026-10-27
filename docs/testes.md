@@ -2,7 +2,7 @@
 
 Plano e resultado dos testes automáticos do sistema (README, seção 16; requisito RNF04). Feito na tarefa B17, com os testes das duas pessoas.
 
-**Resultado em 27/10/2026: 300 testes, 300 passando, nenhum falhando.**
+**Resultado em 27/10/2026: 298 testes, 298 passando, nenhum falhando.**
 
 ## 1. Como testamos
 
@@ -36,11 +36,11 @@ Na pasta raiz do projeto (PowerShell). Nenhum precisa do `.env` nem da internet.
 | Estágio | Testes | Passando |
 | --- | --- | --- |
 | Unitário | 25 | 25 |
-| Integração da API com banco de mentira (regras, permissões e documentação) | 100 | 100 |
+| Integração da API com banco de mentira (regras, permissões e documentação) | 98 | 98 |
 | Integração da API com SQL de verdade (banco em memória) | 92 | 92 |
 | Integração das telas (sites com a API simulada) | 74 | 74 |
 | E2E no navegador | 9 | 9 |
-| **Total** | **300** | **300** |
+| **Total** | **298** | **298** |
 
 ## 4. Resultado por arquivo
 
@@ -52,7 +52,7 @@ A = Estefanie · B = Rafaela.
 | --- | --- | --- | --- |
 | `apps/api/tests/shift.test.ts` | A | 6 | Turnos (RN13): manhã, tarde, noite; madrugada pertence ao plantão da noite anterior, inclusive na virada do mês e do ano; usa o horário de Brasília |
 | `apps/api/tests/abandonment.test.ts` | A | 3 | Rotina de abandono (RN10): roda a cada minuto, não para a API se o banco falhar e não começa duas vezes ao mesmo tempo |
-| `packages/schemas/tests/schemas.test.ts` | B | 10 | Schemas Zod: código de 6 caracteres e link do setor, inclusive os reservados (RN01); perfis e setor de cada perfil (RN16); etapas (RN06); carinha de 1 a 5 (RN04); resposta nasce parcial (RN09); comentário (RN11, RN17) |
+| `packages/schemas/tests/schemas.test.ts` | B | 10 | Schemas Zod: setor precisa de link, e o link não pode ser reservado (RN01); perfis e setor de cada perfil (RN16); etapas (RN06); carinha de 1 a 5 (RN04); resposta nasce parcial (RN09); comentário (RN11, RN17) |
 | `apps/api/tests/schemas-package.test.ts` | B | 1 | A API usa o pacote de schemas compartilhado |
 | `apps/gestao/src/auth/menu.test.ts` | B | 5 | Quem vê cada aba (RN16): só o super admin vê Setores e Usuários; o TV Wall não está no menu, é só um link (RN18) |
 
@@ -63,7 +63,7 @@ A = Estefanie · B = Rafaela.
 | `apps/api/tests/app.test.ts` | B | 3 | API no ar, erro 404 no formato padrão, Swagger abre em `/api/docs` |
 | `apps/api/tests/auth.test.ts` | B | 14 | Login: token de 8 horas; mesma mensagem para senha errada, e-mail inexistente e usuário desativado; token inválido ou vencido → 401; os filtros de perfil e de setor usados por todas as rotas fechadas (RN16) |
 | `apps/api/tests/users.test.ts` | B | 24 | Usuários (RN16): só o super admin vê, cadastra, altera e desativa usuários, de qualquer perfil; admin de setor e visualizador recebem 403; ninguém desativa a si mesmo; senha nunca é devolvida; "Minha senha" |
-| `apps/api/tests/sectors.test.ts` | B | 18 | Setores (RN01): código de 6 caracteres sem letras confusas; link reservado → 400; link e código nunca mudam; QR Code em PNG só para os admins, cada um do seu setor |
+| `apps/api/tests/sectors.test.ts` | B | 16 | Setores (RN01): link `/avaliacao/<slug>`, sem código curto; link reservado → 400; o link nunca muda; o QR Code é exatamente o do link da pesquisa, só para os admins, cada um do seu setor |
 | `apps/api/tests/realtime.test.ts` | A | 3 | Tempo real: sem login não conecta; cada perfil só recebe avisos do próprio setor; o canal público do TV Wall conecta sem login e só recebe respostas, nunca comentários (RN18) |
 | `apps/api/tests/swagger.test.ts` | B | 38 | A documentação bate com a API: cada uma das 36 rotas com cadeado responde 401 sem login e documenta o 401; nenhuma referência quebrada |
 
@@ -71,8 +71,8 @@ A = Estefanie · B = Rafaela.
 
 | Arquivo | Dono | Testes | O que confere |
 | --- | --- | --- | --- |
-| `apps/api/tests/migrations.test.ts` | B | 2 | Todas as migrations rodam em ordem e criam as 9 tabelas e os índices; a busca do dashboard usa o índice da migration 003 |
-| `apps/api/tests/responses.test.ts` | A | 16 | Pesquisa do paciente: obrigatória por último (RN05); primeiro toque cria a resposta (RN09); turno e equipe calculados (RN13, RN14); terminar sem a obrigatória → 400 `REQUIRED_MISSING` |
+| `apps/api/tests/migrations.test.ts` | B | 2 | Todas as migrations rodam em ordem e criam as 9 tabelas e os índices; a coluna do código curto foi apagada (migration 004); a busca do dashboard usa o índice da migration 003 |
+| `apps/api/tests/responses.test.ts` | A | 16 | Pesquisa do paciente: obrigatória por último (RN05); o link pelo código curto não existe mais (RN01); primeiro toque cria a resposta (RN09); turno e equipe calculados (RN13, RN14); terminar sem a obrigatória → 400 `REQUIRED_MISSING` |
 | `apps/api/tests/dashboard.test.ts` | A | 27 | Indicadores (RN20, RN21), "dados insuficientes" abaixo de 5 respostas (RN15), filtros e setor de cada perfil (RN22), Excel (RN19); TV Wall sem login só com percentuais, sem comentários, quantidades ou equipes (RN18, D5); relatório do setor em PDF, conferindo o texto escrito no arquivo e quem pode baixar (RN23) |
 | `apps/api/tests/surveys.test.ts` | B | 11 | Pesquisa nasce desativada e com a obrigatória (RN05); ativar uma desativa a outra do setor (RN02); ordem das perguntas |
 | `apps/api/tests/schedules.test.ts` | B | 11 | Equipes desativadas, não apagadas; salvar a escala passa as respostas para a equipe (RN14); equipe de outro setor → nada é gravado |
@@ -85,7 +85,7 @@ A = Estefanie · B = Rafaela.
 | Arquivo | Dono | Testes | O que confere |
 | --- | --- | --- | --- |
 | `apps/gestao/src/App.test.tsx` | B | 7 | Login, menu do perfil, "Sem permissão" ao abrir uma tela proibida pelo endereço; o TV Wall abre pelo link sem login e sem menu (RN18) |
-| `apps/gestao/src/pages/setores/SectorsPage.test.tsx` | B | 7 | Link gerado a partir do nome; desativar pede confirmação |
+| `apps/gestao/src/pages/setores/SectorsPage.test.tsx` | B | 7 | Link `/avaliacao/<slug>` e um só botão de QR Code (RN01); link gerado a partir do nome; desativar pede confirmação |
 | `apps/gestao/src/pages/usuarios/UsersPage.test.tsx` | B | 9 | Super admin escolhe perfil e setor; senha com 8 caracteres ou mais; a própria conta não pode ser desativada; tela "Minha senha" |
 | `apps/gestao/src/pages/pesquisas/Surveys.test.tsx` | B | 6 | Ativar avisa que a outra pesquisa será desativada; obrigatória por último e travada; aviso ao mudar pergunta já respondida |
 | `apps/gestao/src/pages/escala/SchedulePage.test.tsx` | B | 4 | Equipe desativada não aparece como opção; salvar mostra quantas respostas mudaram de equipe; visualizador só olha |
@@ -94,7 +94,7 @@ A = Estefanie · B = Rafaela.
 | `apps/gestao/src/pages/tv-wall/TvWallPage.test.tsx` | A | 7 | Barras em percentual, últimos 30 dias, filtros de período e setor, nenhum comentário nem quantidade (RN18, D5); atualização ao vivo só pelo setor da tela |
 | `apps/gestao/src/components/charts/FaceDistribution.test.tsx` | A | 1 | Respostas por carinha do dashboard, da melhor para a pior, com quantidade e % (RN20) |
 | `apps/gestao/src/components/ui/SectorReportDownload.test.tsx` | B | 3 | "Baixar relatório (PDF)": começa no mês atual, baixa o mês escolhido, fica desligado sem setor, mostra o erro da API (RN23) |
-| `apps/pesquisa/src/pages/SurveyPage.test.tsx` | A | 8 | Uma pergunta por tela, sem contador (RN02, RN03); salvar a cada toque (RN09); comentário depois da obrigatória (RN11) |
+| `apps/pesquisa/src/pages/SurveyPage.test.tsx` | A | 8 | Abre pelo link `/avaliacao/<slug>` (RN01); uma pergunta por tela, sem contador (RN02, RN03); salvar a cada toque (RN09); comentário depois da obrigatória (RN11) |
 | `apps/pesquisa/src/components/FaceScale.test.tsx` | A | 3 | 5 carinhas com o rótulo em texto, sem depender só da cor, da melhor para a pior: Ótimo em cima (RN04) |
 | `apps/pesquisa/src/components/SkipLink.test.tsx` | A | 1 | "Pular" discreto (RN07) |
 | `apps/pesquisa/src/components/SurveyFrame.test.tsx` | A | 1 | Aviso de pesquisa anônima, sem contador (RN03, RN08) |

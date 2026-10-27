@@ -32,8 +32,8 @@ function poolFrom(pglite: PGlite): Pool {
 }
 
 const sectors: Sector[] = [
-  { id: 1, name: 'Pronto Atendimento', slug: 'pronto-atendimento', code: 'PA7K2Q', active: true, created_at: new Date() },
-  { id: 2, name: 'Raio-X', slug: 'raio-x', code: 'RX3M9T', active: true, created_at: new Date() },
+  { id: 1, name: 'Pronto Atendimento', slug: 'pronto-atendimento', active: true, created_at: new Date() },
+  { id: 2, name: 'Raio-X', slug: 'raio-x', active: true, created_at: new Date() },
 ];
 
 let db: PGlite;
@@ -48,7 +48,7 @@ beforeEach(async () => {
   db = await PGlite.create();
   for (const sql of migrations) await db.exec(sql);
   await db.exec(`
-    INSERT INTO sectors (name, slug, code) VALUES ('Pronto Atendimento', 'pronto-atendimento', 'PA7K2Q'), ('Raio-X', 'raio-x', 'RX3M9T');
+    INSERT INTO sectors (name, slug) VALUES ('Pronto Atendimento', 'pronto-atendimento'), ('Raio-X', 'raio-x');
     INSERT INTO surveys (sector_id, title) VALUES (1, 'Pesquisa do PA');
   `);
   const pool = poolFrom(db);

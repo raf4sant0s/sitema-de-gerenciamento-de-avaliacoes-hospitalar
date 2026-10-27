@@ -41,7 +41,6 @@ export interface NewResponse {
 
 export interface ResponsesRepository {
   findSurveyBySlug(slug: string): Promise<PublicSurvey | null>;
-  findSurveyByCode(code: string): Promise<PublicSurvey | null>;
   findQuestion(surveyId: number, questionId: number): Promise<SurveyQuestion | null>;
   findTeamId(sectorId: number, shiftDate: string, shift: Shift): Promise<number | null>;
 

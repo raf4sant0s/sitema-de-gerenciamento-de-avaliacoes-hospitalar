@@ -6,12 +6,12 @@
 -- rodam juntos, em ordem, numa transação só. Por isso não há BEGIN/COMMIT.
 -- =====================================================================
 
--- RN01: cada setor tem um link (slug) e um código curto de 6 caracteres.
-INSERT INTO sectors (name, slug, code) VALUES
-  ('Pronto Atendimento', 'pronto-atendimento', 'PA7K2Q'),
-  ('Internação',         'internacao',         'IN4M8R'),
-  ('Raio-X',             'raio-x',             'RX3B9T'),
-  ('Ambulatório',        'ambulatorio',        'AM6C2W');
+-- RN01: cada setor tem um link (slug): /avaliacao/<slug>.
+INSERT INTO sectors (name, slug) VALUES
+  ('Pronto Atendimento', 'pronto-atendimento'),
+  ('Internação',         'internacao'),
+  ('Raio-X',             'raio-x'),
+  ('Ambulatório',        'ambulatorio');
 
 -- RN02: uma pesquisa ativa por setor.
 INSERT INTO surveys (sector_id, title)

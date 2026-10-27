@@ -14,7 +14,7 @@ const json = (status: number, body: unknown) =>
   new Response(JSON.stringify(body), { status, headers: { 'Content-Type': 'application/json' } });
 
 const superAdmin: AuthUser = { id: 1, name: 'Carla', role: 'SUPER_ADMIN', sectorId: null };
-const sectors = [{ id: 1, name: 'Pronto Atendimento', slug: 'pa', code: 'PA7K2Q', active: true, createdAt: '', surveyUrl: '', shortUrl: '' }];
+const sectors = [{ id: 1, name: 'Pronto Atendimento', slug: 'pa', active: true, createdAt: '', surveyUrl: '' }];
 
 const survey = (id: number, title: string, active: boolean): Survey => ({ id, sectorId: 1, title, active, createdAt: '' });
 const question = (id: number, text: string, extra: Partial<Question> = {}): Question => ({

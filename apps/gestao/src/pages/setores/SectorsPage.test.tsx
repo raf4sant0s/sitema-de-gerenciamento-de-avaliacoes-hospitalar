@@ -10,11 +10,9 @@ const pa: Sector = {
   id: 1,
   name: 'Pronto Atendimento',
   slug: 'pronto-atendimento',
-  code: 'PA7K2Q',
   active: true,
   createdAt: '2026-10-14T12:00:00.000Z',
-  surveyUrl: 'http://localhost:5173/pronto-atendimento',
-  shortUrl: 'http://localhost:5173/c/PA7K2Q',
+  surveyUrl: 'http://localhost:5173/avaliacao/pronto-atendimento',
 };
 
 const json = (status: number, body: unknown) =>
@@ -26,7 +24,7 @@ beforeEach(() => {
   fetchMock = vi.fn(async (_url: string, options?: RequestInit) => {
     if (options?.method === 'POST') {
       const body = JSON.parse(String(options.body));
-      return json(201, { ...pa, id: 2, name: body.name, slug: body.slug, code: 'NOVO22' });
+      return json(201, { ...pa, id: 2, name: body.name, slug: body.slug, surveyUrl: `http://localhost:5173/avaliacao/${body.slug}` });
     }
     if (options?.method === 'PUT') {
       return json(200, { ...pa, ...JSON.parse(String(options.body)) });
@@ -43,12 +41,13 @@ afterEach(() => {
 });
 
 describe('tela de setores (B11)', () => {
-  it('mostra os setores com link, código e situação', async () => {
+  it('mostra os setores com o link /avaliacao/<slug>, um botão de QR Code e a situação (RN01)', async () => {
     render(<SectorsPage />);
 
     const card = (await screen.findByRole('heading', { name: 'Pronto Atendimento' })).closest('li')!;
-    expect(within(card).getByText('http://localhost:5173/pronto-atendimento')).toBeTruthy();
-    expect(within(card).getByText('PA7K2Q')).toBeTruthy();
+    expect(within(card).getByText('http://localhost:5173/avaliacao/pronto-atendimento')).toBeTruthy();
+    expect(within(card).getAllByRole('button', { name: /QR Code/ })).toHaveLength(1);
+    expect(within(card).queryByText(/Código curto/)).toBeNull();
     expect(within(card).getByText('Ativo')).toBeTruthy();
   });
 

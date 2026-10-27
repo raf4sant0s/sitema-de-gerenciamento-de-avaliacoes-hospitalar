@@ -12,10 +12,15 @@ import { type AuthUser, signToken } from '../src/shared/auth';
 import { fakeSectorsRepository } from './fakes';
 
 // Testes de integração das pesquisas e perguntas (tarefa B13).
-// O SQL roda de verdade num PostgreSQL em memória (PGlite) com a migration do projeto:
+// O SQL roda de verdade num PostgreSQL em memória (PGlite) com todas as migrations do projeto, em ordem:
 // o banco compartilhado do Supabase nunca é tocado.
 
-const migration = fs.readFileSync(path.join(__dirname, '..', '..', '..', 'database', 'migrations', '001_cria_tabelas.sql'), 'utf8');
+const migrationsFolder = path.join(__dirname, '..', '..', '..', 'database', 'migrations');
+const migrations = fs
+  .readdirSync(migrationsFolder)
+  .filter((file) => file.endsWith('.sql'))
+  .sort()
+  .map((file) => fs.readFileSync(path.join(migrationsFolder, file), 'utf8'));
 
 // Faz o PGlite parecer o Pool da biblioteca pg (só o que o repositório usa).
 function poolFrom(pglite: PGlite): Pool {
@@ -24,8 +29,8 @@ function poolFrom(pglite: PGlite): Pool {
 }
 
 const sectors: Sector[] = [
-  { id: 1, name: 'Pronto Atendimento', slug: 'pronto-atendimento', code: 'PA7K2Q', active: true, created_at: new Date() },
-  { id: 2, name: 'Raio-X', slug: 'raio-x', code: 'RX3M9T', active: true, created_at: new Date() },
+  { id: 1, name: 'Pronto Atendimento', slug: 'pronto-atendimento', active: true, created_at: new Date() },
+  { id: 2, name: 'Raio-X', slug: 'raio-x', active: true, created_at: new Date() },
 ];
 
 let db: PGlite;
@@ -38,8 +43,8 @@ const auth = (user: AuthUser) => ({ Authorization: `Bearer ${signToken(user)}` }
 
 beforeEach(async () => {
   db = await PGlite.create();
-  await db.exec(migration);
-  await db.exec("INSERT INTO sectors (name, slug, code) VALUES ('Pronto Atendimento', 'pronto-atendimento', 'PA7K2Q'), ('Raio-X', 'raio-x', 'RX3M9T')");
+  for (const migration of migrations) await db.exec(migration);
+  await db.exec("INSERT INTO sectors (name, slug) VALUES ('Pronto Atendimento', 'pronto-atendimento'), ('Raio-X', 'raio-x')");
   const pool = poolFrom(db);
   app = createApp({ surveys: new SupabaseSurveysRepository(() => pool), sectors: fakeSectorsRepository(sectors) });
 });

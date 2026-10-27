@@ -7,8 +7,7 @@ export interface SectorsRepository {
   list(): Promise<Sector[]>;
   findById(id: number): Promise<Sector | null>;
   findBySlug(slug: string): Promise<Sector | null>;
-  findByCode(code: string): Promise<Sector | null>;
-  create(data: { name: string; slug: string; code: string }): Promise<Sector>;
-  // Só o nome e a situação mudam. Link (slug) e código nunca mudam (decisão da dupla).
+  create(data: { name: string; slug: string }): Promise<Sector>;
+  // Só o nome e a situação mudam. O link (slug) nunca muda (decisão da dupla).
   update(id: number, data: { name?: string; active?: boolean }): Promise<Sector | null>;
 }

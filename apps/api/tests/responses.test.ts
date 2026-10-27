@@ -59,7 +59,7 @@ beforeAll(async () => {
   app.use(errorHandler);
 }, 60_000);
 
-describe('GET /api/public/sectors/:slug e /by-code/:code (RN01, RN02, RN05)', () => {
+describe('GET /api/public/sectors/:slug (RN01, RN02, RN05)', () => {
   it('devolve o setor e as perguntas, com a obrigatória por último', async () => {
     const res = await request(app).get('/api/public/sectors/pronto-atendimento');
 
@@ -70,17 +70,16 @@ describe('GET /api/public/sectors/:slug e /by-code/:code (RN01, RN02, RN05)', ()
     expect(res.body.survey.questions.at(-1).required).toBe(true);
   });
 
-  it('encontra o setor pelo código curto, mesmo digitado em minúsculas', async () => {
-    const res = await request(app).get('/api/public/sectors/by-code/pa7k2q');
-
-    expect(res.status).toBe(200);
-    expect(res.body.sector.slug).toBe('pronto-atendimento');
+  it('o link pelo código curto não existe mais (RN01, migration 004)', async () => {
+    const res = await request(app).get('/api/public/sectors/by-code/PA7K2Q');
+    expect(res.status).toBe(404);
+    expect(res.body.sector).toBeUndefined();
   });
 
   it('setor inexistente ou inativo → 404 no formato padrão', async () => {
     await db.query("UPDATE sectors SET active = FALSE WHERE slug = 'ambulatorio'");
 
-    for (const url of ['/api/public/sectors/nao-existe', '/api/public/sectors/ambulatorio', '/api/public/sectors/by-code/AM6C2W']) {
+    for (const url of ['/api/public/sectors/nao-existe', '/api/public/sectors/ambulatorio']) {
       const res = await request(app).get(url);
       expect(res.status).toBe(404);
       expect(res.body.error.code).toBe('SECTOR_NOT_FOUND');

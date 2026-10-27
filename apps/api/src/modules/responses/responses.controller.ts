@@ -49,10 +49,6 @@ export function createResponsesController(service: ResponsesService) {
       res.json(await service.getSurveyBySlug(String(req.params.slug)));
     },
 
-    async getByCode(req: Request, res: Response) {
-      res.json(await service.getSurveyByCode(String(req.params.code)));
-    },
-
     async create(req: Request, res: Response) {
       const body = parse(createResponseBody, req.body);
       const id = await service.createResponse(body);

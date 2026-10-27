@@ -13,7 +13,6 @@ vi.mock('../api/survey', async (importOriginal) => {
   return {
     ...original,
     getSurveyBySlug: vi.fn(),
-    getSurveyByCode: vi.fn(),
     startResponse: vi.fn(),
     saveAnswer: vi.fn(),
     sendComment: vi.fn(),
@@ -35,12 +34,11 @@ const SURVEY: PublicSurvey = {
   },
 };
 
-function openSurvey(url = '/pronto-atendimento') {
+function openSurvey(url = '/avaliacao/pronto-atendimento') {
   render(
     <MemoryRouter initialEntries={[url]}>
       <Routes>
-        <Route path="/c/:code" element={<SurveyPage />} />
-        <Route path="/:slug" element={<SurveyPage />} />
+        <Route path="/avaliacao/:slug" element={<SurveyPage />} />
       </Routes>
     </MemoryRouter>,
   );
@@ -51,7 +49,6 @@ const findQuestion = (text: string) => screen.findByRole('heading', { name: text
 
 beforeEach(() => {
   api.getSurveyBySlug.mockResolvedValue(SURVEY);
-  api.getSurveyByCode.mockResolvedValue(SURVEY);
   api.startResponse.mockResolvedValue('resposta-1');
   api.saveAnswer.mockResolvedValue({ ok: true });
   api.sendComment.mockResolvedValue({ ok: true });
@@ -156,16 +153,16 @@ describe('SurveyPage', () => {
     expect(screen.getByRole('heading', { name: 'Como foi o atendimento na recepção?' })).toBeTruthy();
   });
 
-  it('abre pelo código curto (RN01)', async () => {
-    openSurvey('/c/PA7K2Q');
+  it('abre pelo link /avaliacao/<slug> e pede à API a pesquisa daquele setor (RN01)', async () => {
+    openSurvey('/avaliacao/raio-x');
 
     await findQuestion('Como foi o atendimento na recepção?');
-    expect(api.getSurveyByCode).toHaveBeenCalledWith('PA7K2Q');
+    expect(api.getSurveyBySlug).toHaveBeenCalledWith('raio-x');
   });
 
   it('setor inexistente mostra "Pesquisa não encontrada"', async () => {
     api.getSurveyBySlug.mockRejectedValue(new ApiError(404, 'SECTOR_NOT_FOUND', 'Setor não encontrado'));
-    openSurvey('/nao-existe');
+    openSurvey('/avaliacao/nao-existe');
 
     await findQuestion('Pesquisa não encontrada');
   });
