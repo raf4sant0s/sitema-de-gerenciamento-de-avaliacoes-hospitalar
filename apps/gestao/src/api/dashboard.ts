@@ -87,24 +87,20 @@ export function exportExcel(filters: DashboardFilters) {
   return downloadFile(`/dashboard/export.xlsx${query(filters)}`, `avaliacoes${period ? `_${period}` : ''}.xlsx`);
 }
 
-// TV Wall (RN18, A16): só o super admin. Comentários de todos os tipos e situações, os mais novos primeiro.
-export interface TvComment {
-  id: number;
-  sectorId: number;
-  sectorName: string;
-  type: 'ELOGIO' | 'RECLAMACAO' | 'SUGESTAO' | null;
-  text: string;
-  status: 'NEW' | 'TREATED';
-  createdAt: string;
+// TV Wall público, sem login (RN18, D5). Só percentuais inteiros de 0 a 100:
+// nunca comentários, quantidades de respostas ou equipes. Satisfeito = Bom ou Ótimo.
+export interface PublicTv {
+  sectors: { id: number; name: string }[];
+  overall: { satisfied: number; distribution: Record<'1' | '2' | '3' | '4' | '5', number> } | null;
+  steps: { step: JourneyStep; satisfied: number }[];
+  breakdown: { by: 'sector' | 'shift'; items: { key: string; label: string; satisfied: number }[] };
 }
 
-export interface TvData {
-  summary: DashboardSummary;
-  sectors: BreakdownRow[];
-  comments: TvComment[];
-  totalComments: number;
+export function getPublicTv(filters: Pick<DashboardFilters, 'from' | 'to' | 'sectorId'>) {
+  return api<PublicTv>(`/public/tv${query(filters)}`);
 }
 
-export function getTv(period: Pick<DashboardFilters, 'from' | 'to'>) {
-  return api<TvData>(`/dashboard/tv${query(period)}`);
+// RN23: baixa o relatório do setor num mês ("AAAA-MM"), em PDF, para imprimir. Só os admins.
+export function downloadSectorReport(sector: { id: number; slug: string }, month: string) {
+  return downloadFile(`/dashboard/report.pdf?sectorId=${sector.id}&month=${month}`, `relatorio-${sector.slug}-${month}.pdf`);
 }

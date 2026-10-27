@@ -5,7 +5,7 @@ import { afterAll, afterEach, beforeAll, describe, expect, it } from 'vitest';
 import { type AuthUser, signToken } from '../src/shared/auth';
 import { attachRealtime, closeRealtime, realtime } from '../src/shared/realtime';
 
-// Tempo real (tarefa A15): quem se conecta, e quem recebe cada aviso (RN16).
+// Tempo real (tarefa A15): quem se conecta, e quem recebe cada aviso (RN16, RN18).
 
 const superAdmin: AuthUser = { id: 1, name: 'Carla', role: 'SUPER_ADMIN', sectorId: null };
 const viewerPA: AuthUser = { id: 3, name: 'Beto', role: 'VIEWER', sectorId: 1 };
@@ -15,10 +15,10 @@ let server: Server;
 let url = '';
 const sockets: Socket[] = [];
 
-// Conecta como alguém e espera a conexão terminar (ou dar erro).
-function open(token: string | undefined): Promise<Socket> {
+// Conecta como alguém e espera a conexão terminar (ou dar erro). namespace "/tv" = canal do TV Wall.
+function open(token: string | undefined, namespace = ''): Promise<Socket> {
   return new Promise((resolve, reject) => {
-    const socket = connect(url, { auth: token ? { token } : {}, transports: ['websocket'], reconnection: false });
+    const socket = connect(url + namespace, { auth: token ? { token } : {}, transports: ['websocket'], reconnection: false });
     sockets.push(socket);
     socket.on('connect', () => resolve(socket));
     socket.on('connect_error', (error) => reject(error));
@@ -70,5 +70,15 @@ describe('tempo real (Socket.IO)', () => {
     ]);
     expect(pa).toEqual([{ event: 'response:changed', payload: { sectorId: 1 } }]);
     expect(rx).toEqual([{ event: 'comment:created', payload: { sectorId: 2 } }]);
+  });
+
+  it('canal do TV Wall: conecta sem login e só recebe respostas, nunca comentários (RN18)', async () => {
+    const tv = inbox(await open(undefined, '/tv'));
+
+    realtime.notify('response:changed', 1);
+    realtime.notify('comment:created', 2);
+    await wait(200);
+
+    expect(tv).toEqual([{ event: 'response:changed', payload: { sectorId: 1 } }]);
   });
 });

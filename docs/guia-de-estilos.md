@@ -72,18 +72,19 @@ Entrelinha: 1,5 para textos e 1,25 para títulos (proposta).
 
 | Valor | Rótulo | Cor |
 | --- | --- | --- |
-| 1 | Péssimo | `#C62828` |
-| 2 | Ruim | `#E65100` |
-| 3 | Regular | `#F9A825` |
-| 4 | Bom | `#7CB342` |
-| 5 | Ótimo | `#2E7D32` |
+| 5 | Ótimo | `#81C784` |
+| 4 | Bom | `#AED581` |
+| 3 | Regular | `#FFD54F` |
+| 2 | Ruim | `#FFB74D` |
+| 1 | Péssimo | `#E57373` |
 
 Regras:
 - **Sempre** com o rótulo em texto embaixo, nunca só a cor (README, seção 11; RN04).
 - O rótulo fica na cor **Texto** (`#2B2B2B`), não na cor da carinha. Amarelo e verde-claro têm pouco contraste com o fundo (menos de 2,5:1).
 - Pelo mesmo motivo, o contorno, os olhos e a boca da carinha são desenhados na cor **Texto**. Assim a expressão fica visível mesmo para quem não distingue as cores (proposta).
-- Ordem fixa da esquerda para a direita: 1 (Péssimo) → 5 (Ótimo).
-- No celular, as cinco carinhas ficam numa linha só, se couberem com a área mínima de toque. Se não couberem, ficam em coluna (proposta).
+- Cores **suaves** (decisão da dupla, 27/10/2026: as cores fortes de antes pesavam na tela). Como a cor é clara, o contorno escuro e o rótulo em texto continuam obrigatórios.
+- Ordem fixa **da melhor para a pior**: 5 (Ótimo) em cima e 1 (Péssimo) embaixo, na pesquisa, no dashboard, no TV Wall e no relatório em PDF (decisão da dupla, 27/10/2026).
+- Na pesquisa, as cinco carinhas ficam em coluna, uma embaixo da outra, porque em linha o rótulo de 18 px não cabe no celular.
 
 ## 5. Toque e espaçamento
 

@@ -1,23 +1,27 @@
+import type { JourneyStep } from '@avaliacoes/schemas';
 import { useEffect, useRef, useState } from 'react';
 import { ApiError } from '../../api/client';
-import { typeLabels } from '../../api/comments';
-import { getTv, type TvComment, type TvData } from '../../api/dashboard';
-import { Face, faceFor, formatAverage } from '../../components/charts/faces';
-import { useRealtime } from '../dashboard/useRealtime';
+import { getPublicTv, type PublicTv } from '../../api/dashboard';
+import { FACES } from '../../components/charts/faces';
+import { usePublicTvRealtime } from '../dashboard/useRealtime';
+import PercentBars from './PercentBars';
 
-// TV Wall (README, seção 10; RN18, D5; tarefa A16). Só o super admin abre (auth/menu.ts e a API).
-// Tela grande, para ler de longe: fundo escuro, letras grandes, nota geral, setores e
-// TODOS os comentários (de todos os tipos e situações), os mais novos primeiro.
-// Atualiza sozinha com o tempo real (A15).
+// TV Wall (README, seção 10; RN18, D5). Página própria, num link separado (/tv), que abre
+// SEM login e não aparece no menu. É só para visualizar, numa tela grande: fundo escuro e letras grandes.
+// Só gráficos de barra em percentual: nunca comentários, número de respostas ou equipes.
+// Filtros: período (começa nos últimos 30 dias) e setor. Atualiza sozinha com o tempo real (A15).
 
 const PERIOD_DAYS = 30;
 
-// Cor da faixa de cada tipo de comentário. O nome do tipo sempre vai escrito junto (nunca só a cor).
-const TYPE_COLORS: Record<NonNullable<TvComment['type']> | 'NONE', string> = {
-  ELOGIO: '#66BB6A',
-  RECLAMACAO: '#EF5350',
-  SUGESTAO: '#FFCA28',
-  NONE: '#9E9E9E',
+// Satisfeito = Bom ou Ótimo. Mesma cor do "Bom" das carinhas.
+const SATISFIED_COLOR = '#AED581';
+
+const STEP_LABELS: Record<JourneyStep, string> = {
+  RECEPCAO: 'Recepção',
+  TRIAGEM: 'Triagem',
+  ENFERMAGEM: 'Enfermagem',
+  MEDICO: 'Médico',
+  GERAL: 'Avaliação geral',
 };
 
 function isoDaysAgo(days: number): string {
@@ -27,17 +31,14 @@ function isoDaysAgo(days: number): string {
   return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`;
 }
 
-const dateTime = (iso: string) =>
-  new Date(iso).toLocaleString('pt-BR', {
-    day: '2-digit',
-    month: '2-digit',
-    hour: '2-digit',
-    minute: '2-digit',
-    timeZone: 'America/Sao_Paulo',
-  });
+const field =
+  'min-h-12 rounded-lg border border-[#5A5A5A] bg-[#383838] px-3 text-lg text-white focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-white';
 
 export default function TvWallPage() {
-  const [data, setData] = useState<TvData | null>(null);
+  const [from, setFrom] = useState(() => isoDaysAgo(PERIOD_DAYS - 1));
+  const [to, setTo] = useState(() => isoDaysAgo(0));
+  const [sectorId, setSectorId] = useState<number | undefined>(undefined);
+  const [data, setData] = useState<PublicTv | null>(null);
   const [error, setError] = useState('');
   const [refresh, setRefresh] = useState(0);
   const [now, setNow] = useState(() => new Date());
@@ -45,10 +46,10 @@ export default function TvWallPage() {
   const wall = useRef<HTMLDivElement>(null);
   const refreshTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  // Busca os dados ao abrir e a cada aviso de tempo real.
+  // Busca os dados ao abrir, ao mudar um filtro e a cada aviso de tempo real.
   useEffect(() => {
     let cancelled = false;
-    getTv({ from: isoDaysAgo(PERIOD_DAYS - 1), to: isoDaysAgo(0) })
+    getPublicTv({ from: from || undefined, to: to || undefined, sectorId })
       .then((tv) => {
         if (cancelled) return;
         setData(tv);
@@ -60,10 +61,12 @@ export default function TvWallPage() {
     return () => {
       cancelled = true;
     };
-  }, [refresh]);
+  }, [from, to, sectorId, refresh]);
 
-  // A15: resposta ou comentário novo em qualquer setor → busca de novo (vários avisos seguidos viram uma busca só).
-  const live = useRealtime(['response:changed', 'comment:created'], () => {
+  // A15: resposta nova no setor da tela (ou em qualquer setor, no hospital todo) → busca de novo.
+  // Vários avisos seguidos viram uma busca só.
+  const live = usePublicTvRealtime((changedSector) => {
+    if (sectorId !== undefined && changedSector !== sectorId) return;
     if (refreshTimer.current) return;
     refreshTimer.current = setTimeout(() => {
       refreshTimer.current = null;
@@ -88,17 +91,13 @@ export default function TvWallPage() {
     else void wall.current?.requestFullscreen();
   }
 
-  const summary = data?.summary;
+  const sectorName = data?.sectors.find((sector) => sector.id === sectorId)?.name;
 
   return (
-    <div
-      ref={wall}
-      className={`flex flex-col overflow-hidden rounded-xl bg-[#1F1F1F] text-xl text-white ${fullscreen ? 'h-screen rounded-none' : 'min-h-[calc(100vh-3rem)]'}`}
-    >
+    <div ref={wall} className="flex min-h-screen flex-col bg-[#1F1F1F] text-xl text-white">
       <header className="flex flex-wrap items-center gap-x-6 gap-y-2 border-b-[6px] border-fhdod-red bg-white px-6 py-3 text-ink">
         <img src="/logo-fhdod.png" alt="FHDOD" className="h-11" />
-        <h1 className="text-2xl font-bold">Painel do hospital</h1>
-        <p className="text-muted">Últimos {PERIOD_DAYS} dias</p>
+        <h1 className="text-2xl font-bold">{sectorName ?? 'Painel do hospital'}</h1>
         <p className="ml-auto text-2xl font-bold" aria-label="Data e hora">
           {now.toLocaleDateString('pt-BR')} · {now.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}
         </p>
@@ -117,87 +116,93 @@ export default function TvWallPage() {
         </button>
       </header>
 
+      {/* Filtros: período e setor */}
+      <form
+        aria-label="Filtros"
+        onSubmit={(event) => event.preventDefault()}
+        className="flex flex-wrap items-end gap-4 px-5 pt-5"
+      >
+        <label className="flex flex-col gap-1 text-base font-bold text-[#CFCFCF]">
+          De
+          <input type="date" className={field} value={from} max={to || undefined} onChange={(e) => setFrom(e.target.value)} />
+        </label>
+        <label className="flex flex-col gap-1 text-base font-bold text-[#CFCFCF]">
+          Até
+          <input type="date" className={field} value={to} min={from || undefined} onChange={(e) => setTo(e.target.value)} />
+        </label>
+        <label className="flex flex-col gap-1 text-base font-bold text-[#CFCFCF]">
+          Setor
+          <select
+            className={field}
+            value={sectorId ?? ''}
+            onChange={(e) => setSectorId(e.target.value ? Number(e.target.value) : undefined)}
+          >
+            <option value="">Hospital todo</option>
+            {data?.sectors.map((sector) => (
+              <option key={sector.id} value={sector.id}>
+                {sector.name}
+              </option>
+            ))}
+          </select>
+        </label>
+        <p className="ml-auto text-base text-[#CFCFCF]">Satisfeitos = respostas Bom ou Ótimo</p>
+      </form>
+
       {error && (
-        <p role="alert" className="m-6 flex items-start gap-2 rounded-xl bg-white p-4 font-bold text-error">
+        <p role="alert" className="m-5 flex items-start gap-2 rounded-xl bg-white p-4 font-bold text-error">
           <span aria-hidden="true">⚠</span>
           <span>{error}</span>
         </p>
       )}
 
-      {!data && !error && <p className="m-6 text-[#CFCFCF]">Carregando...</p>}
+      {!data && !error && <p className="m-5 text-[#CFCFCF]">Carregando...</p>}
 
-      {summary && data && (
-        <div className="grid min-h-0 flex-1 gap-5 p-5 lg:grid-cols-[1fr_1.15fr]">
-          <div className="flex min-h-0 flex-col gap-5">
-            {/* RN20: nota geral do hospital */}
-            <section className="rounded-xl bg-[#2C2C2C] p-6">
-              <h2 className="mb-3 text-[#CFCFCF]">Nota geral</h2>
-              <div className="flex flex-wrap items-center gap-6">
-                {summary.overallAverage !== null && <Face value={faceFor(summary.overallAverage)} className="h-24 w-24" />}
-                <p className="text-7xl leading-none font-bold">
-                  {formatAverage(summary.overallAverage)} <span className="text-3xl font-normal text-[#BDBDBD]">de 5</span>
-                </p>
-                <p className="text-[#E0E0E0]">
-                  {summary.totalResponses} respostas
-                  <br />
-                  {summary.complete} completas
-                </p>
-              </div>
-            </section>
+      {data && !data.overall && <p className="m-5 rounded-xl bg-[#2C2C2C] p-6 text-[#CFCFCF]">Sem respostas no período.</p>}
 
-            {/* Nota de cada setor */}
-            <section className="flex-1 rounded-xl bg-[#2C2C2C] p-6">
-              <h2 className="mb-3 text-[#CFCFCF]">Por setor</h2>
-              {data.sectors.length === 0 ? (
-                <p className="text-[#CFCFCF]">Sem respostas no período.</p>
-              ) : (
-                <ul className="grid gap-3 sm:grid-cols-2">
-                  {data.sectors.map((sector) => (
-                    <li key={sector.key} className="flex items-center gap-3 rounded-lg bg-[#383838] px-4 py-3">
-                      {sector.average !== null && <Face value={faceFor(sector.average)} className="h-10 w-10" />}
-                      <span className="leading-tight">
-                        {sector.label}
-                        <span className="block text-base text-[#BDBDBD]">{sector.count} respostas</span>
-                      </span>
-                      <b className="ml-auto text-3xl">{formatAverage(sector.average)}</b>
-                    </li>
-                  ))}
-                </ul>
-              )}
-            </section>
-          </div>
+      {data?.overall && (
+        <div className="grid flex-1 gap-5 p-5 lg:grid-cols-3">
+          {/* Avaliação geral: % de satisfeitos e % de cada carinha */}
+          <section className="rounded-xl bg-[#2C2C2C] p-6">
+            <h2 className="mb-3 text-[#CFCFCF]">Avaliação geral</h2>
+            <p className="mb-5">
+              <b className="text-7xl leading-none">{data.overall.satisfied}%</b>{' '}
+              <span className="text-2xl text-[#E0E0E0]">satisfeitos</span>
+            </p>
+            <PercentBars
+              rows={[...FACES].reverse().map((face) => ({
+                key: String(face.value),
+                label: face.label,
+                percent: data.overall!.distribution[String(face.value) as '1'],
+                color: face.color,
+                face: face.value,
+              }))}
+            />
+          </section>
 
-          {/* RN18 / D5: todos os comentários, sem exceção */}
-          <section className="flex min-h-0 flex-col rounded-xl bg-[#2C2C2C] p-6">
-            <h2 className="mb-3 text-[#CFCFCF]">Comentários · mais recentes primeiro</h2>
-            {data.comments.length === 0 ? (
-              <p className="text-[#CFCFCF]">Nenhum comentário no período.</p>
-            ) : (
-              <ul className="flex min-h-0 flex-1 flex-col gap-3 overflow-y-auto pr-1" aria-label="Comentários">
-                {data.comments.map((comment) => (
-                  <li
-                    key={comment.id}
-                    className="rounded-lg border-l-[6px] bg-[#383838] px-4 py-3"
-                    style={{ borderLeftColor: TYPE_COLORS[comment.type ?? 'NONE'] }}
-                  >
-                    <p className="mb-1 flex flex-wrap items-center gap-x-3 text-base text-[#BDBDBD]">
-                      <b className="text-white">{comment.type ? typeLabels[comment.type] : 'Sem tipo'}</b>
-                      <span>{comment.sectorName}</span>
-                      <span>{dateTime(comment.createdAt)}</span>
-                      {comment.status === 'TREATED' && (
-                        <span className="rounded-full bg-[#2E7D32] px-2 font-bold text-white">✓ Tratado</span>
-                      )}
-                    </p>
-                    <p className="leading-snug">{comment.text}</p>
-                  </li>
-                ))}
-              </ul>
-            )}
-            {data.totalComments > data.comments.length && (
-              <p className="mt-3 text-base text-[#BDBDBD]">
-                Mostrando os {data.comments.length} mais recentes de {data.totalComments}.
-              </p>
-            )}
+          <section className="rounded-xl bg-[#2C2C2C] p-6">
+            <h2 className="mb-3 text-[#CFCFCF]">Satisfeitos por etapa</h2>
+            <PercentBars
+              rows={data.steps.map((step) => ({
+                key: step.step,
+                label: STEP_LABELS[step.step],
+                percent: step.satisfied,
+                color: SATISFIED_COLOR,
+              }))}
+            />
+          </section>
+
+          <section className="rounded-xl bg-[#2C2C2C] p-6">
+            <h2 className="mb-3 text-[#CFCFCF]">
+              {data.breakdown.by === 'sector' ? 'Satisfeitos por setor' : 'Satisfeitos por turno'}
+            </h2>
+            <PercentBars
+              rows={data.breakdown.items.map((item) => ({
+                key: item.key,
+                label: item.label,
+                percent: item.satisfied,
+                color: SATISFIED_COLOR,
+              }))}
+            />
           </section>
         </div>
       )}

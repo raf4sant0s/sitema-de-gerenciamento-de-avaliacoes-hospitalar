@@ -20,8 +20,8 @@ Cada pedido recebeu um código: **P** = funcionalidade do enunciado, **C** = dor
 
 | ID | Requisito | Regras e decisões | Situação |
 | --- | --- | --- | --- |
-| RF01 | Super admin cadastra setores e admins de setor | RN16, D8 | Feito e testado |
-| RF02 | Admins cadastram pesquisas, perguntas e visualizadores | RN02, RN05, RN16 | Feito e testado |
+| RF01 | Super admin cadastra setores e todos os usuários | RN16, D8 | Feito e testado |
+| RF02 | Admins cadastram pesquisas e perguntas | RN02, RN05, RN16 | Feito e testado |
 | RF03 | URL e QR Code por setor | RN01 | Feito e testado |
 | RF04 | Uma pergunta por tela, sem contador | RN02, RN03 | Feito e testado |
 | RF05 | Carinhas de 1 a 5; uma obrigatória na última tela; "pular" discreto | RN04, RN05, RN07, D1, D2 | Feito e testado |
@@ -34,9 +34,10 @@ Cada pedido recebeu um código: **P** = funcionalidade do enunciado, **C** = dor
 | RF12 | Perfis de acesso | RN16, D8 | Feito e testado |
 | RF13 | Comentários: ler e marcar como tratado | RN17 | Feito e testado |
 | RF14 | Dashboard em tempo real com filtros e navegação | RN20, RN21, RN22 | Feito e testado |
-| RF15 | TV Wall só do super admin | RN18, D5 | Feito e testado |
+| RF15 | TV Wall público, só com percentuais | RN18, D5 | Feito e testado |
 | RF16 | Exportar Excel | RN19 | Feito e testado |
 | RF17 | Celular e tablet, só toques, botões grandes | README seção 11, D6 | Feito; tamanhos de tela conferidos à mão (tarefa A20) |
+| RF18 | Relatório do setor em PDF, por mês | RN23 | Feito e testado |
 
 ### Requisitos não funcionais
 
@@ -66,7 +67,7 @@ Nos testes, os nomes são dos arquivos em `apps/api/tests/` (API), `apps/gestao/
 | P07 | Cruzar a avaliação com a escala mensal (setor + data + turno) para identificar a equipe | RF11 | RN13, RN14, RN15, D4 | Gestão: Escala | `GET/PUT /schedules`, `GET/POST /teams` | `shift`, `schedules`, `responses`, `gestao-integracao`, `SchedulePage` | ✅ |
 | P08 | Perfis de acesso (Super Admin, Admin de Setor, Gestão, Ouvidoria, Visualizador) | RF12 | RN16, D8 | Gestão: Login, menu, Usuários | `POST /auth/login`, `/users` | `auth`, `users`, `gestao-integracao`, `menu`, `App`, E2E gestão | 🔁 A dupla decidiu por **3 perfis** (D8): super admin, admin de setor e visualizador. Ver pendência 6.1 |
 | P09 | Dashboard em tempo real, navegando do hospital até o setor, turno e equipe | RF14 | RN20, RN21, RN22 | Gestão: Dashboard | `/dashboard/summary`, `/questions`, `/steps`, `/breakdown`, `/timeline`; evento `response:changed` | `dashboard`, `realtime`, `DashboardPage` | ✅ |
-| P10 | TV Wall com indicadores para exibição em tela | RF15 | RN18, D5 | Gestão: TV Wall | `GET /dashboard/tv` | `dashboard`, `gestao-integracao`, `TvWallPage`, E2E gestão | ✅ |
+| P10 | TV Wall com indicadores para exibição em tela | RF15 | RN18, D5 | Gestão: TV Wall (`/tv`, sem login) | `GET /public/tv` | `dashboard`, `TvWallPage`, E2E gestão | ✅ Só gráficos em percentual, com filtro de período e setor |
 | P11 | Exportação dos dados em Excel | RF16 | RN19 | Gestão: Dashboard (botão "Exportar Excel") | `GET /dashboard/export.xlsx` | `dashboard` | ✅ |
 
 ### 3.2 Dores do cliente
@@ -77,7 +78,7 @@ Nos testes, os nomes são dos arquivos em `apps/api/tests/` (API), `apps/gestao/
 | C02 | Formulários incompletos, muitos sem data | Cada toque é salvo na hora; a data, a hora e o turno são gravados sozinhos | RN09, RN12, D7 | ✅ |
 | C03 | Reclamações escritas no verso da folha | Tela de comentário com o tipo (elogio, reclamação ou sugestão) | RN11 | ✅ |
 | C04 | Não se sabe o setor, o turno ou a equipe | Cada setor tem o seu link; o turno é calculado; a equipe vem da escala | RN01, RN12, RN13, RN14 | ✅ |
-| C05 | Só os insatisfeitos respondem e os elogios se perdem | Pesquisa rápida e anônima; o elogio tem tipo próprio e aparece no TV Wall e nos comentários | D3, RN11, RN18 | ✅ Ver pendência 6.2 |
+| C05 | Só os insatisfeitos respondem e os elogios se perdem | Pesquisa rápida e anônima; o elogio tem tipo próprio e aparece para os gestores na aba Comentários | D3, RN11, RN17 | ✅ Ver pendência 6.2 |
 | C06 | Horas transcrevendo o papel para planilhas | As respostas vão direto para o dashboard; Excel pronto com os filtros | RN19, RN22 | ✅ |
 
 ### 3.3 Pedidos da reunião com o cliente
@@ -92,7 +93,7 @@ Nos testes, os nomes são dos arquivos em `apps/api/tests/` (API), `apps/gestao/
 | R06 | Telefone e observação no final, com aceite da LGPD (para todos ou só para nota baixa) | RN08, RN11, D3 | Pesquisa: tela de comentário | `POST /public/responses/:id/comment` | `responses` | 🔁 Sem telefone (D3). A tela de comentário aparece **para todos** no final (RN11). Como nenhum dado pessoal é guardado, não há aceite da LGPD. Ver pendência 6.3 |
 | R07 | O que fazer se o paciente só cancelar | RN10, RN11 | Pesquisa | — | `responses`, `abandonment`, `SurveyPage` | ✅ O comentário pode ficar em branco; quem fecha no meio vira "abandonada" depois de 30 minutos, e o que respondeu conta nos indicadores |
 | R08 | Dashboard com filtro por setor; setores cadastrados pelo ADM | RN22, RF01 | Gestão: Dashboard, Setores | `/dashboard/*`, `/sectors` | `dashboard`, `sectors` | ✅ |
-| R09 | O dashboard não é a mesma coisa que o TV Wall | RN18, D5 | Gestão: Dashboard (`/`) e TV Wall (`/tv`) | `/dashboard/summary` e `/dashboard/tv` | `DashboardPage`, `TvWallPage` | ✅ Telas separadas |
+| R09 | O dashboard não é a mesma coisa que o TV Wall | RN18, D5 | Gestão: Dashboard (`/`) e TV Wall (`/tv`) | `/dashboard/summary` e `/public/tv` | `DashboardPage`, `TvWallPage` | ✅ Telas separadas |
 | R10 | Cada pesquisa com URL separada: `site/setor` ou código | RN01 | Pesquisa: `/:slug` e `/c/:code` | `GET /public/sectors/:slug`, `GET /public/sectors/by-code/:code` | `responses`, `SurveyPage` | ✅ |
 | R11 | Tela do ADM com cada reclamação, para marcar "entrei em contato", fechar o chamado e relatar o que aconteceu | RN17, D3 | Gestão: Comentários | `GET /comments`, `PATCH /comments/:id` | `comments`, `gestao-integracao`, `CommentsPage`, E2E gestão | 🔁 O gestor marca como **tratado**, escrevendo obrigatoriamente o que foi feito, e pode reabrir. Sem telefone (D3), não há contato de volta com o paciente |
 | R12 | Cada manifestação da Ouvidoria com um número | — | — | — | — | ❓ Ver pendência 6.4 |
@@ -114,7 +115,7 @@ O enunciado pede no mínimo quatro. A dupla respondeu cinco das sete questões, 
 | Como estimular quem teve uma boa experiência a responder? | Não escolhida | Ver pendência 6.2 |
 | Como vincular a avaliação à equipe sem responsabilizar injustamente um profissional? | **D4** (pela escala, nunca por pessoa; mínimo de 5 respostas) | Escala, Dashboard |
 | LGPD: quais dados guardar, por quanto tempo e quem vê o telefone? | **D3** (nenhum dado pessoal; não há telefone) | Pesquisa, banco |
-| O que pode aparecer num TV Wall exposto ao público? | **D5** (aba só do super admin, com todos os comentários) | TV Wall |
+| O que pode aparecer num TV Wall exposto ao público? | **D5** (link público, só com gráficos em percentual; sem comentários, números ou equipes) | TV Wall |
 | Totem, tablet ou celular? | **D6** (celular pelo QR Code; tablet como apoio) | Pesquisa |
 
 Também foram decididos: **D7** (salvar a cada toque) e **D8** (três perfis).

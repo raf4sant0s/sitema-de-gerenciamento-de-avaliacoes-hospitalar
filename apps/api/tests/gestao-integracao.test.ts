@@ -43,9 +43,9 @@ describe('login (B9)', () => {
     // Um visualizador novo, desativado logo em seguida, não consegue mais entrar (RN16)
     const created = await request(app)
       .post('/api/users')
-      .set(as(tokens.sectorAdmin))
+      .set(as(tokens.superAdmin))
       .send({ name: 'Visualizador temporário', email: 'temporario@example.com', password: 'senha-inicial', role: 'VIEWER', sectorId: paId });
-    await request(app).delete(`/api/users/${created.body.id}`).set(as(tokens.sectorAdmin));
+    await request(app).delete(`/api/users/${created.body.id}`).set(as(tokens.superAdmin));
     const off = await request(app).post('/api/auth/login').send({ email: 'temporario@example.com', password: 'senha-inicial' });
     expect(off.status).toBe(401);
   });
@@ -98,25 +98,35 @@ describe('permissões dos 3 perfis (RN16, D8)', () => {
     expect([team.status, schedule.status, treat.status]).toEqual([403, 403, 403]);
   });
 
-  it('o admin de setor só cadastra visualizadores do próprio setor', async () => {
-    const admin = await request(app)
+  it('só o super admin mexe em usuários: o admin de setor não vê, não cadastra nem desativa ninguém (RN16)', async () => {
+    const list = await request(app).get('/api/users').set(as(tokens.sectorAdmin));
+    const viewer = await request(app)
       .post('/api/users')
       .set(as(tokens.sectorAdmin))
-      .send({ name: 'Outro admin', email: 'outro.admin@example.com', password: 'senha-inicial', role: 'SECTOR_ADMIN', sectorId: paId });
-    const otherSector = await request(app)
-      .post('/api/users')
-      .set(as(tokens.sectorAdmin))
-      .send({ name: 'Visualizador de fora', email: 'fora@example.com', password: 'senha-inicial', role: 'VIEWER', sectorId: otherSectorId });
+      .send({ name: 'Visualizador novo', email: 'novo.viewer@example.com', password: 'senha-inicial', role: 'VIEWER', sectorId: paId });
+    const viewerId = (await db.query<{ id: number }>("SELECT id FROM users WHERE role = 'VIEWER' LIMIT 1")).rows[0].id;
+    const off = await request(app).delete(`/api/users/${viewerId}`).set(as(tokens.sectorAdmin));
 
-    expect([admin.status, otherSector.status]).toEqual([403, 403]);
+    expect([list.status, viewer.status, off.status]).toEqual([403, 403, 403]);
+
+    // O super admin cadastra o visualizador do Pronto Atendimento
+    const bySuper = await request(app)
+      .post('/api/users')
+      .set(as(tokens.superAdmin))
+      .send({ name: 'Visualizador novo', email: 'novo.viewer@example.com', password: 'senha-inicial', role: 'VIEWER', sectorId: paId });
+    expect(bySuper.status).toBe(201);
   });
 
-  it('TV Wall: só o super admin (RN18, D5)', async () => {
-    const superAdmin = await request(app).get('/api/dashboard/tv').set(as(tokens.superAdmin));
-    const sectorAdmin = await request(app).get('/api/dashboard/tv').set(as(tokens.sectorAdmin));
-    const viewer = await request(app).get('/api/dashboard/tv').set(as(tokens.viewer));
+  it('TV Wall: abre sem login, com todos os dados de exemplo, e nenhum comentário aparece (RN18, D5)', async () => {
+    const tv = await request(app).get('/api/public/tv');
+    expect(tv.status).toBe(200);
+    expect(tv.body.overall.satisfied).toBeGreaterThanOrEqual(0);
 
-    expect([superAdmin.status, sectorAdmin.status, viewer.status]).toEqual([200, 403, 403]);
+    // Nenhum texto de comentário dos dados de exemplo sai na TV
+    const comments = (await db.query<{ text: string }>('SELECT text FROM comments')).rows;
+    expect(comments.length).toBeGreaterThan(0);
+    const text = JSON.stringify(tv.body);
+    for (const comment of comments) expect(text).not.toContain(comment.text);
   });
 });
 

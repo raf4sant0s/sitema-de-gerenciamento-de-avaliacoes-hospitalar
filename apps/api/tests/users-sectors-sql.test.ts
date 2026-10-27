@@ -38,7 +38,7 @@ beforeEach(async () => {
 }, TIMEOUT);
 
 describe('SQL de usuários', () => {
-  it('cadastra, lista, filtra por setor e perfil, altera e entra (login) no banco de verdade', async () => {
+  it('cadastra, lista em ordem alfabética, altera e entra (login) no banco de verdade', async () => {
     const created = await request(app)
       .post('/api/users')
       .set(auth(superAdmin))
@@ -54,10 +54,9 @@ describe('SQL de usuários', () => {
 
     expect(created.status).toBe(201);
 
-    // Admin de setor: o SQL filtra por setor E por perfil (só os visualizadores do Pronto Atendimento)
-    const ana: AuthUser = { id: created.body.id, name: 'Ana', role: 'SECTOR_ADMIN', sectorId: paId };
-    const listed = await request(app).get('/api/users').set(auth(ana));
-    expect(listed.body.map((user: { name: string }) => user.name)).toEqual(['Beto']);
+    // Só o super admin lista, todos em ordem alfabética
+    const listed = await request(app).get('/api/users').set(auth(superAdmin));
+    expect(listed.body.map((user: { name: string }) => user.name)).toEqual(['Ana', 'Beto', 'Carla', 'Davi']);
 
     // Alteração com várias colunas e senha nova
     const changed = await request(app)

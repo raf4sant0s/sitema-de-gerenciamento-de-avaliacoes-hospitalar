@@ -46,6 +46,21 @@ export interface BreakdownRow {
   count: number;
 }
 
+// TV Wall (RN18): % de satisfeitos, de 0 a 100, sem dizer quantas respostas houve.
+// Satisfeito = carinha Bom ou Ótimo (4 ou 5).
+export interface StepSatisfaction {
+  step: JourneyStep;
+  satisfied: number;
+}
+
+export type SatisfactionBy = 'sector' | 'shift';
+
+export interface SatisfactionRow {
+  key: string;
+  label: string;
+  satisfied: number;
+}
+
 export interface TimelinePoint {
   date: string; // AAAA-MM-DD (data do plantão)
   average: number;
@@ -80,6 +95,9 @@ export interface DashboardRepository {
   steps(filters: DashboardFilters): Promise<StepIndicator[]>;
   breakdown(by: BreakdownBy, filters: DashboardFilters): Promise<BreakdownRow[]>;
   timeline(filters: DashboardFilters): Promise<TimelinePoint[]>;
+  // TV Wall (RN18): % de satisfeitos por etapa e pela nota geral, por setor ou por turno.
+  satisfactionBySteps(filters: DashboardFilters): Promise<StepSatisfaction[]>;
+  satisfactionBy(by: SatisfactionBy, filters: DashboardFilters): Promise<SatisfactionRow[]>;
   exportResponses(filters: DashboardFilters): Promise<ExportResponseRow[]>;
   exportAnswers(filters: DashboardFilters): Promise<ExportAnswerRow[]>;
 }

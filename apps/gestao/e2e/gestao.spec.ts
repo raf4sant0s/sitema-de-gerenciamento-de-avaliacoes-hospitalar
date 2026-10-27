@@ -21,28 +21,41 @@ test('senha errada mostra a mensagem e não entra', async ({ page }) => {
   await expect(page).toHaveURL(/\/login$/);
 });
 
-test('super admin vê todas as abas e abre o TV Wall (RN18, D5)', async ({ page }) => {
+test('super admin vê todas as abas; o TV Wall não está no menu (RN18)', async ({ page }) => {
   await login(page, TEST_USERS.superAdmin);
 
   await expect(page.getByRole('heading', { name: 'Dashboard' })).toBeVisible();
-  for (const tab of ['Dashboard', 'TV Wall', 'Comentários', 'Setores', 'Usuários', 'Pesquisas', 'Escala']) {
+  for (const tab of ['Dashboard', 'Comentários', 'Setores', 'Usuários', 'Pesquisas', 'Escala']) {
     await expect(menu(page).getByRole('link', { name: tab })).toBeVisible();
   }
-
-  await menu(page).getByRole('link', { name: 'TV Wall' }).click();
-  await expect(page.getByRole('heading', { name: 'Painel do hospital' })).toBeVisible();
+  await expect(menu(page).getByRole('link', { name: 'TV Wall' })).toHaveCount(0);
 });
 
-test('admin de setor não vê o TV Wall nem Setores, e pelo endereço recebe "Sem permissão" (RN16, RN18)', async ({ page }) => {
+test('TV Wall abre pelo link sem login, só com percentuais, e filtra por setor (RN18, D5)', async ({ page }) => {
+  await page.goto('/tv');
+
+  await expect(page.getByRole('heading', { name: 'Painel do hospital' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Satisfeitos por setor' })).toBeVisible();
+  await expect(page.getByText('satisfeitos', { exact: true })).toBeVisible();
+  // Nada de comentários nem de quantidade de respostas
+  await expect(page.getByText(/coment/i)).toHaveCount(0);
+  await expect(page.getByText(/\d+\s*respostas?/i)).toHaveCount(0);
+
+  await page.getByLabel('Setor').selectOption({ label: 'Pronto Atendimento' });
+  await expect(page.getByRole('heading', { name: 'Pronto Atendimento', level: 1 })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Satisfeitos por turno' })).toBeVisible();
+});
+
+test('admin de setor não vê Setores nem Usuários, e pelo endereço recebe "Sem permissão" (RN16)', async ({ page }) => {
   await login(page, TEST_USERS.sectorAdmin);
   await expect(page.getByRole('heading', { name: 'Dashboard' })).toBeVisible();
 
-  await expect(menu(page).getByRole('link', { name: 'TV Wall' })).toHaveCount(0);
   await expect(menu(page).getByRole('link', { name: 'Setores' })).toHaveCount(0);
-  await expect(menu(page).getByRole('link', { name: 'Usuários' })).toBeVisible();
+  await expect(menu(page).getByRole('link', { name: 'Usuários' })).toHaveCount(0);
+  await expect(menu(page).getByRole('link', { name: 'Pesquisas' })).toBeVisible();
 
-  // Digitar o endereço não adianta
-  await page.goto('/tv');
+  // Digitar o endereço não adianta: só o super admin mexe em usuários
+  await page.goto('/usuarios');
   await expect(page.getByRole('heading', { name: 'Sem permissão' })).toBeVisible();
 });
 

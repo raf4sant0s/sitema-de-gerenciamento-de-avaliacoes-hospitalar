@@ -1,3 +1,4 @@
+import { inflateSync } from 'node:zlib';
 import type { PGlite } from '@electric-sql/pglite';
 import ExcelJS from 'exceljs';
 import request from 'supertest';
@@ -5,6 +6,7 @@ import { beforeAll, describe, expect, it } from 'vitest';
 import { createApp } from '../src/app';
 import { SupabaseCommentsRepository } from '../src/database/supabase/comments.repository';
 import { SupabaseDashboardRepository } from '../src/database/supabase/dashboard.repository';
+import { SupabaseSectorsRepository } from '../src/database/supabase/sectors.repository';
 import { type AuthUser, signToken } from '../src/shared/auth';
 import { createTestDatabase, poolFrom } from './pglite';
 
@@ -80,7 +82,7 @@ beforeAll(async () => {
   await insertResponse(rx, { shift: 'TARDE', date: '2026-10-02', teamId: rxA, status: 'COMPLETE', overall: 4 });
   await insertResponse(rx, { shift: 'TARDE', date: '2026-10-02', teamId: rxA, status: 'ABANDONED', recepcao: 3 });
 
-  // Comentários para o TV Wall (A16): um elogio, uma reclamação já tratada e um sem tipo.
+  // Comentários: o TV Wall NUNCA pode mostrá-los (RN18). Um elogio, uma reclamação já tratada e um sem tipo.
   const comment = (responseIndex: number, type: string | null, text: string, status: string, createdAt: string) =>
     db.query('INSERT INTO comments (response_id, type, text, status, created_at) VALUES ($1, $2, $3, $4, $5)', [
       responseIds[responseIndex],
@@ -94,7 +96,11 @@ beforeAll(async () => {
   await comment(5, null, 'Foi tudo normal.', 'NEW', '2026-10-02T20:00:00-03:00');
 
   const pool = () => poolFrom(db);
-  app = createApp({ dashboard: new SupabaseDashboardRepository(pool), comments: new SupabaseCommentsRepository(pool) });
+  app = createApp({
+    dashboard: new SupabaseDashboardRepository(pool),
+    comments: new SupabaseCommentsRepository(pool),
+    sectors: new SupabaseSectorsRepository(pool),
+  });
 }, 60_000);
 
 describe('GET /api/dashboard/summary (RN20)', () => {
@@ -232,37 +238,70 @@ describe('GET /api/dashboard/timeline', () => {
   });
 });
 
-describe('GET /api/dashboard/tv (RN18, A16)', () => {
-  it('super admin vê o hospital todo, a nota por setor e TODOS os comentários, os mais novos primeiro', async () => {
-    const res = await request(app).get('/api/dashboard/tv').set(auth(superAdmin));
+describe('GET /api/public/tv: TV Wall sem login (RN18, D5)', () => {
+  it('abre sem login: hospital todo, só percentuais, comparando os setores', async () => {
+    const res = await request(app).get('/api/public/tv');
 
     expect(res.status).toBe(200);
-    expect(res.body.summary).toMatchObject({ overallAverage: 3.4, totalResponses: 10 });
-    expect(res.body.sectors.map((s: { label: string }) => s.label)).toEqual(['Pronto Atendimento', 'Raio-X']);
-    expect(res.body.totalComments).toBe(3);
-    expect(res.body.comments.map((c: { type: string | null; status: string; sectorName: string }) => [c.type, c.status, c.sectorName])).toEqual([
-      [null, 'NEW', 'Pronto Atendimento'],
-      ['RECLAMACAO', 'TREATED', 'Raio-X'],
-      ['ELOGIO', 'NEW', 'Pronto Atendimento'],
+    // Notas gerais: 1, 2, 3, 4, 5, 4, 4 (PA) e 4 (RX) → 8 notas, 5 satisfeitas (Bom ou Ótimo)
+    expect(res.body.overall).toEqual({ satisfied: 63, distribution: { 1: 13, 2: 13, 3: 13, 4: 50, 5: 13 } });
+    expect(res.body.steps).toEqual([
+      { step: 'RECEPCAO', satisfied: 0 }, // 2, 2, 2, 2, 2, 1 e 3: nenhuma 4 ou 5
+      { step: 'GERAL', satisfied: 63 },
     ]);
-    // Na TV não aparece quem tratou nem a anotação interna
-    expect(res.body.comments[1]).not.toHaveProperty('treatedBy');
-    expect(res.body.comments[1]).not.toHaveProperty('treatmentNote');
+    expect(res.body.breakdown).toEqual({
+      by: 'sector',
+      items: [
+        { key: String(ids.pa), label: 'Pronto Atendimento', satisfied: 57 }, // 4 de 7
+        { key: String(ids.rx), label: 'Raio-X', satisfied: 100 },
+      ],
+    });
+    // Setores ativos, para o filtro da tela
+    expect(res.body.sectors).toEqual(expect.arrayContaining([{ id: ids.pa, name: 'Pronto Atendimento' }]));
   });
 
-  it('o período filtra os indicadores e os comentários', async () => {
-    const res = await request(app).get('/api/dashboard/tv?from=2026-10-02').set(auth(superAdmin));
+  it('nunca mostra comentários, quantidades de respostas nem equipes (D5)', async () => {
+    const res = await request(app).get('/api/public/tv');
+    const text = JSON.stringify(res.body);
 
-    expect(res.body.summary.totalResponses).toBe(5);
-    expect(res.body.totalComments).toBe(2);
-  });
-
-  it('admin de setor e visualizador não abrem o TV Wall → 403 (D5)', async () => {
-    for (const user of [adminPA(), viewerPA()]) {
-      const res = await request(app).get('/api/dashboard/tv').set(auth(user));
-      expect(res.status).toBe(403);
-      expect(res.body.error.code).toBe('FORBIDDEN');
+    for (const forbidden of ['count', 'total', 'average', 'comment', 'team', 'Médico muito atencioso', 'Equipe']) {
+      expect(text).not.toContain(forbidden);
     }
+  });
+
+  it('com um setor: só ele, comparando os turnos', async () => {
+    const res = await request(app).get(`/api/public/tv?sectorId=${ids.pa}`);
+
+    expect(res.body.overall).toEqual({ satisfied: 57, distribution: { 1: 14, 2: 14, 3: 14, 4: 43, 5: 14 } });
+    expect(res.body.breakdown).toEqual({
+      by: 'shift',
+      items: [
+        { key: 'MANHA', label: 'Manhã', satisfied: 40 }, // 1, 2, 3, 4, 5 → 2 de 5
+        { key: 'NOITE', label: 'Noite', satisfied: 100 },
+      ],
+    });
+  });
+
+  it('o período filtra; sem nenhuma nota geral, overall é null', async () => {
+    const since2 = await request(app).get('/api/public/tv?from=2026-10-02');
+    expect(since2.body.overall).toEqual({ satisfied: 100, distribution: { 1: 0, 2: 0, 3: 0, 4: 100, 5: 0 } });
+
+    const empty = await request(app).get('/api/public/tv?from=2030-01-01');
+    expect(empty.body).toMatchObject({ overall: null, steps: [], breakdown: { by: 'sector', items: [] } });
+  });
+
+  it('setor que não existe → 404; período invertido → 400', async () => {
+    const missing = await request(app).get('/api/public/tv?sectorId=9999');
+    expect(missing.status).toBe(404);
+    expect(missing.body.error.code).toBe('SECTOR_NOT_FOUND');
+
+    const inverted = await request(app).get('/api/public/tv?from=2026-10-05&to=2026-10-01');
+    expect(inverted.status).toBe(400);
+  });
+
+  it('a rota antiga do TV Wall com comentários não existe mais', async () => {
+    const res = await request(app).get('/api/dashboard/tv').set(auth(superAdmin));
+    expect(res.status).toBe(404);
   });
 });
 
@@ -333,5 +372,77 @@ describe('GET /api/dashboard/export.xlsx (RN19, A17)', () => {
 
     const other = await download(viewerPA(), `?sectorId=${ids.rx}`);
     expect(other.res.status).toBe(403);
+  });
+});
+
+describe('GET /api/dashboard/report.pdf: relatório do setor (RN23)', () => {
+  // Lê os textos escritos dentro do PDF: abre cada trecho comprimido e junta os textos em <hexadecimal>.
+  function pdfText(pdf: Buffer): string {
+    const raw = pdf.toString('latin1');
+    let text = '';
+    for (const match of raw.matchAll(/stream\r?\n([\s\S]*?)\r?\nendstream/g)) {
+      let content: string;
+      try {
+        content = inflateSync(Buffer.from(match[1], 'latin1')).toString('latin1');
+      } catch {
+        continue; // trecho que não é texto (ex.: fonte)
+      }
+      for (const line of content.matchAll(/\[(.*?)\] TJ/g)) {
+        text += [...line[1].matchAll(/<([0-9a-f]+)>/gi)].map((hex) => Buffer.from(hex[1], 'hex').toString('latin1')).join('');
+        text += '\n';
+      }
+    }
+    return text;
+  }
+
+  async function download(user: AuthUser | null, query: string) {
+    const req = request(app).get(`/api/dashboard/report.pdf${query}`).buffer(true).parse((res, callback) => {
+      const chunks: Buffer[] = [];
+      res.on('data', (chunk: Buffer) => chunks.push(chunk));
+      res.on('end', () => callback(null, Buffer.concat(chunks)));
+    });
+    return user ? req.set(auth(user)) : req;
+  }
+
+  it('super admin baixa o PDF do setor no mês, com nota geral, carinhas, turnos e equipes', async () => {
+    const res = await download(superAdmin, `?sectorId=${ids.pa}&month=2026-10`);
+
+    expect(res.status).toBe(200);
+    expect(res.headers['content-type']).toContain('application/pdf');
+    expect(res.headers['content-disposition']).toContain('relatorio-pronto-atendimento-2026-10.pdf');
+    expect((res.body as Buffer).subarray(0, 5).toString()).toBe('%PDF-');
+
+    const text = pdfText(res.body);
+    expect(text).toContain('Relatório do setor: Pronto Atendimento');
+    expect(text).toContain('outubro de 2026');
+    expect(text).toContain('3,3 de 5'); // notas 1, 2, 3, 4, 5, 4, 4 → 23 / 7
+    expect(text).toContain('8 respostas: 7 completas, 1 em andamento e 0 abandonadas');
+    expect(text).toContain('3 (43%)'); // 3 respostas "Bom" de 7
+    expect(text).toContain('Manhã');
+    expect(text).toContain('Equipe A');
+    expect(text).toContain('Dados insuficientes'); // Equipe B: 2 respostas (RN15, D4)
+    expect(text).not.toContain('Raio-X');
+  });
+
+  it('mês sem respostas: o PDF avisa', async () => {
+    const res = await download(superAdmin, `?sectorId=${ids.pa}&month=2026-09`);
+
+    expect(res.status).toBe(200);
+    expect(pdfText(res.body)).toContain('Nenhuma resposta neste mês.');
+  });
+
+  it('admin de setor baixa só o do próprio setor; visualizador não baixa (403); sem login 401', async () => {
+    expect((await download(adminPA(), `?sectorId=${ids.pa}&month=2026-10`)).status).toBe(200);
+    expect((await download(adminPA(), `?sectorId=${ids.rx}&month=2026-10`)).status).toBe(403);
+    expect((await download(viewerPA(), `?sectorId=${ids.pa}&month=2026-10`)).status).toBe(403);
+    expect((await download(null, `?sectorId=${ids.pa}&month=2026-10`)).status).toBe(401);
+  });
+
+  it('setor e mês são obrigatórios e conferidos (400); setor que não existe → 404', async () => {
+    expect((await download(superAdmin, `?month=2026-10`)).status).toBe(400);
+    expect((await download(superAdmin, `?sectorId=${ids.pa}`)).status).toBe(400);
+    expect((await download(superAdmin, `?sectorId=${ids.pa}&month=2026-13`)).status).toBe(400);
+    const missing = await download(superAdmin, `?sectorId=9999&month=2026-10`);
+    expect(missing.status).toBe(404);
   });
 });

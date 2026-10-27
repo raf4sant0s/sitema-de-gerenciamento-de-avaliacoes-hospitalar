@@ -204,48 +204,6 @@ export function createDashboardRouter(service: DashboardService) {
 
   /**
    * @openapi
-   * /dashboard/tv:
-   *   get:
-   *     summary: TV Wall (só super admin, RN18)
-   *     description: Indicadores do hospital inteiro, nota por setor e todos os comentários (de todos os tipos e situações), dos mais recentes para os mais antigos, até 50 de uma vez.
-   *     tags: [Dashboard]
-   *     security: [{ bearerAuth: [] }]
-   *     parameters:
-   *       - $ref: '#/components/parameters/DashFrom'
-   *       - $ref: '#/components/parameters/DashTo'
-   *     responses:
-   *       200:
-   *         description: Dados do TV Wall
-   *         content:
-   *           application/json:
-   *             schema:
-   *               type: object
-   *               properties:
-   *                 summary: { type: object, description: "Mesmo formato do /dashboard/summary" }
-   *                 sectors: { type: array, items: { type: object }, description: "Mesmo formato do /dashboard/breakdown?by=sector" }
-   *                 comments:
-   *                   type: array
-   *                   items:
-   *                     type: object
-   *                     properties:
-   *                       id: { type: integer }
-   *                       sectorId: { type: integer }
-   *                       sectorName: { type: string, example: Pronto Atendimento }
-   *                       type: { type: string, nullable: true, enum: [ELOGIO, RECLAMACAO, SUGESTAO] }
-   *                       text: { type: string }
-   *                       status: { type: string, enum: [NEW, TREATED] }
-   *                       createdAt: { type: string, format: date-time }
-   *                 totalComments: { type: integer, example: 67 }
-   *       400: { $ref: '#/components/responses/DashBadRequest' }
-   *       401: { $ref: '#/components/responses/DashUnauthorized' }
-   *       403:
-   *         description: "Não é super admin (FORBIDDEN, RN18)"
-   *         content: { application/json: { schema: { $ref: '#/components/schemas/Error' } } }
-   */
-  router.get('/tv', requireRole('SUPER_ADMIN'), controller.tv);
-
-  /**
-   * @openapi
    * /dashboard/export.xlsx:
    *   get:
    *     summary: Baixa as respostas em Excel, com os filtros do dashboard (RN19)
@@ -269,6 +227,93 @@ export function createDashboardRouter(service: DashboardService) {
    *       403: { $ref: '#/components/responses/DashForbidden' }
    */
   router.get('/export.xlsx', controller.exportExcel);
+
+  /**
+   * @openapi
+   * /dashboard/report.pdf:
+   *   get:
+   *     summary: Baixa o relatório do setor num mês, em PDF (RN23)
+   *     description: "Para imprimir: nota geral, respostas por carinha, nota por turno e por equipe (equipe com menos de 5 respostas: dados insuficientes, D4). Nenhum dado pessoal nem comentário. Super admin: qualquer setor. Admin de setor: só o próprio. Visualizador: 403."
+   *     tags: [Dashboard]
+   *     security: [{ bearerAuth: [] }]
+   *     parameters:
+   *       - { in: query, name: sectorId, required: true, schema: { type: integer, example: 1 } }
+   *       - { in: query, name: month, required: true, schema: { type: string, example: "2026-10" }, description: "Mês no formato AAAA-MM" }
+   *     responses:
+   *       200:
+   *         description: Arquivo .pdf
+   *         content:
+   *           application/pdf:
+   *             schema: { type: string, format: binary }
+   *       400: { $ref: '#/components/responses/DashBadRequest' }
+   *       401: { $ref: '#/components/responses/DashUnauthorized' }
+   *       403:
+   *         description: "Visualizador, ou admin de setor pedindo outro setor (FORBIDDEN)"
+   *         content: { application/json: { schema: { $ref: '#/components/schemas/Error' } } }
+   *       404:
+   *         description: "Setor não existe (SECTOR_NOT_FOUND)"
+   *         content: { application/json: { schema: { $ref: '#/components/schemas/Error' } } }
+   */
+  router.get('/report.pdf', requireRole('SUPER_ADMIN', 'SECTOR_ADMIN'), controller.sectorReport);
+
+  return router;
+}
+
+// TV Wall público (RN18, D5): fica em /api/public/tv e NÃO exige login.
+// Só devolve percentuais de 0 a 100: nunca comentários, quantidades de respostas ou equipes.
+export function createPublicTvRouter(service: DashboardService) {
+  const router = Router();
+  const controller = createDashboardController(service);
+
+  /**
+   * @openapi
+   * /public/tv:
+   *   get:
+   *     summary: TV Wall, sem login (RN18)
+   *     description: "Só percentuais inteiros de 0 a 100 (satisfeito = Bom ou Ótimo). Nunca comentários, número de respostas ou equipes (D5). Sem sectorId: hospital todo, comparando os setores; com sectorId: o setor, comparando os turnos."
+   *     tags: [TV Wall (pública)]
+   *     parameters:
+   *       - $ref: '#/components/parameters/DashFrom'
+   *       - $ref: '#/components/parameters/DashTo'
+   *       - { in: query, name: sectorId, schema: { type: integer }, description: "Setor ativo. Sem ele: hospital todo" }
+   *     responses:
+   *       200:
+   *         description: Percentuais do período
+   *         content:
+   *           application/json:
+   *             schema:
+   *               type: object
+   *               properties:
+   *                 sectors:
+   *                   type: array
+   *                   description: Setores ativos, para o filtro da tela
+   *                   items: { type: object, properties: { id: { type: integer, example: 1 }, name: { type: string, example: Pronto Atendimento } } }
+   *                 overall:
+   *                   type: object
+   *                   nullable: true
+   *                   description: "Avaliação geral. null quando não há nenhuma no período"
+   *                   properties:
+   *                     satisfied: { type: integer, example: 78, description: "% de Bom + Ótimo" }
+   *                     distribution:
+   *                       type: object
+   *                       description: "% de cada carinha, de 1 (Péssimo) a 5 (Ótimo)"
+   *                       example: { "1": 5, "2": 7, "3": 10, "4": 38, "5": 40 }
+   *                 steps:
+   *                   type: array
+   *                   items: { type: object, properties: { step: { type: string, enum: [GERAL, RECEPCAO, TRIAGEM, ENFERMAGEM, MEDICO] }, satisfied: { type: integer, example: 81 } } }
+   *                 breakdown:
+   *                   type: object
+   *                   properties:
+   *                     by: { type: string, enum: [sector, shift] }
+   *                     items:
+   *                       type: array
+   *                       items: { type: object, properties: { key: { type: string, example: "MANHA" }, label: { type: string, example: Manhã }, satisfied: { type: integer, example: 74 } } }
+   *       400: { $ref: '#/components/responses/DashBadRequest' }
+   *       404:
+   *         description: "Setor não existe ou está inativo (SECTOR_NOT_FOUND)"
+   *         content: { application/json: { schema: { $ref: '#/components/schemas/Error' } } }
+   */
+  router.get('/public/tv', controller.publicTv);
 
   return router;
 }

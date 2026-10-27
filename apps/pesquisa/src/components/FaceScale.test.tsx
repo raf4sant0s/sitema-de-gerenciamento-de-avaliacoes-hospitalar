@@ -6,11 +6,11 @@ import FaceScale from './FaceScale';
 afterEach(cleanup);
 
 describe('FaceScale', () => {
-  it('mostra as 5 carinhas com o rótulo em texto, de Péssimo a Ótimo (RN04)', () => {
+  it('mostra as 5 carinhas com o rótulo em texto, da melhor para a pior: Ótimo em cima (RN04)', () => {
     render(<FaceScale question="Como foi a recepção?" onSelect={() => {}} />);
 
     const labels = screen.getAllByRole('button').map((button) => button.textContent);
-    expect(labels).toEqual(['Péssimo', 'Ruim', 'Regular', 'Bom', 'Ótimo']);
+    expect(labels).toEqual(['Ótimo', 'Bom', 'Regular', 'Ruim', 'Péssimo']);
   });
 
   it('avisa o valor de 1 a 5 da carinha tocada', async () => {

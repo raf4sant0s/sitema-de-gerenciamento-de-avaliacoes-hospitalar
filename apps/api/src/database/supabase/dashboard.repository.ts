@@ -8,7 +8,10 @@ import type {
   ExportAnswerRow,
   ExportResponseRow,
   QuestionIndicator,
+  SatisfactionBy,
+  SatisfactionRow,
   StepIndicator,
+  StepSatisfaction,
   TimelinePoint,
 } from '../repositories/dashboard.repository';
 import { getPool } from './connection';
@@ -39,6 +42,9 @@ function buildWhere(filters: DashboardFilters, extra: string[] = []) {
 }
 
 const average = (value: string | number | null) => (value === null ? null : Number(value));
+
+// % de satisfeitos (carinha 4 ou 5), inteiro de 0 a 100 (TV Wall, RN18).
+const SATISFIED = (column: string) => `ROUND(100.0 * AVG(CASE WHEN ${column} >= 4 THEN 1 ELSE 0 END))::int`;
 
 export class SupabaseDashboardRepository implements DashboardRepository {
   constructor(private readonly db: () => Pool = getPool) {}
@@ -165,6 +171,47 @@ export class SupabaseDashboardRepository implements DashboardRepository {
       params,
     );
     return result.rows.map((row) => ({ date: row.date, average: Number(row.average), count: row.count }));
+  }
+
+  // TV Wall (RN18): % de satisfeitos (Bom ou Ótimo) em cada etapa da jornada, de 0 a 100.
+  // Perguntas puladas não têm linha em answers, então não entram (como na média, RN21).
+  async satisfactionBySteps(filters: DashboardFilters): Promise<StepSatisfaction[]> {
+    const { where, params } = buildWhere(filters);
+    const result = await this.db().query(
+      `SELECT q.step, ${SATISFIED('a.value')} AS satisfied
+       FROM answers a
+       JOIN responses r ON r.id = a.response_id
+       JOIN questions q ON q.id = a.question_id
+       ${where}
+       GROUP BY q.step
+       ORDER BY array_position(ARRAY['RECEPCAO', 'TRIAGEM', 'ENFERMAGEM', 'MEDICO', 'GERAL'], q.step)`,
+      params,
+    );
+    return result.rows.map((row) => ({ step: row.step, satisfied: row.satisfied }));
+  }
+
+  // TV Wall (RN18): % de satisfeitos na nota geral, por setor ou por turno. Nunca por equipe.
+  async satisfactionBy(by: SatisfactionBy, filters: DashboardFilters): Promise<SatisfactionRow[]> {
+    const { where, params } = buildWhere(filters, ['r.overall_score IS NOT NULL']);
+    const satisfied = `${SATISFIED('r.overall_score')} AS satisfied`;
+
+    const sql = {
+      sector: `SELECT se.id::text AS key, se.name AS label, ${satisfied}
+               FROM responses r JOIN sectors se ON se.id = r.sector_id
+               ${where}
+               GROUP BY se.id, se.name
+               ORDER BY se.name`,
+      shift: `SELECT r.shift AS key,
+                     CASE r.shift WHEN 'MANHA' THEN 'Manhã' WHEN 'TARDE' THEN 'Tarde' ELSE 'Noite' END AS label,
+                     ${satisfied}
+              FROM responses r
+              ${where}
+              GROUP BY r.shift
+              ORDER BY array_position(ARRAY['MANHA', 'TARDE', 'NOITE'], r.shift)`,
+    }[by];
+
+    const result = await this.db().query(sql, params);
+    return result.rows.map((row) => ({ key: row.key, label: row.label, satisfied: row.satisfied }));
   }
 
   // RN19: uma linha por resposta, com os mesmos filtros do dashboard. Mais antigas primeiro.

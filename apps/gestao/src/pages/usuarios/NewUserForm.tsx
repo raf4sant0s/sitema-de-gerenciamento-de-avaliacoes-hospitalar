@@ -3,7 +3,6 @@ import { type FormEvent, useState } from 'react';
 import { ApiError } from '../../api/client';
 import type { Sector } from '../../api/sectors';
 import { createUser, type User } from '../../api/users';
-import { useAuth } from '../../auth/AuthContext';
 import ErrorMessage from '../../components/ui/ErrorMessage';
 import { input, primaryButton } from '../../components/ui/styles';
 import UserFields from './UserFields';
@@ -12,14 +11,11 @@ import UserFields from './UserFields';
 // Decisão da dupla: quem cadastra digita a senha inicial e passa para a pessoa,
 // que depois troca em "Minha senha".
 export default function NewUserForm({ sectors, onCreated }: { sectors: Sector[]; onCreated: (user: User) => void }) {
-  const { user: me } = useAuth();
-  const myRole = me!.role;
-
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [role, setRole] = useState<Role>('VIEWER');
-  const [sectorId, setSectorId] = useState<number | null>(myRole === 'SUPER_ADMIN' ? null : me!.sectorId);
+  const [sectorId, setSectorId] = useState<number | null>(null);
   const [error, setError] = useState('');
   const [sending, setSending] = useState(false);
 
@@ -52,7 +48,6 @@ export default function NewUserForm({ sectors, onCreated }: { sectors: Sector[];
   return (
     <form onSubmit={handleSubmit} className="rounded-xl border border-line bg-white p-4" noValidate>
       <h2 className="text-xl font-bold">Novo usuário</h2>
-      {myRole === 'SECTOR_ADMIN' && <p className="mt-1 text-muted">Você pode cadastrar visualizadores do seu setor.</p>}
 
       <div className="mt-4 grid gap-4 md:grid-cols-2">
         <div>
@@ -76,7 +71,6 @@ export default function NewUserForm({ sectors, onCreated }: { sectors: Sector[];
 
         <UserFields
           idPrefix="new"
-          myRole={myRole}
           role={role}
           sectorId={sectorId}
           sectors={sectors}

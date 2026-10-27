@@ -1,4 +1,4 @@
-import { type Role, userSchema, type User } from '@avaliacoes/schemas';
+import { userSchema, type User } from '@avaliacoes/schemas';
 import type { NewUser, UserChanges, UsersRepository } from '../repositories/users.repository';
 import type { Pool } from 'pg';
 import { getPool } from './connection';
@@ -21,21 +21,8 @@ export class SupabaseUsersRepository implements UsersRepository {
     return result.rows[0] ? userSchema.parse(result.rows[0]) : null;
   }
 
-  async list(filter: { sectorId?: number; role?: Role } = {}): Promise<User[]> {
-    // Monta o WHERE só com os filtros que vieram. Os valores vão como $1, $2 (nunca colados no SQL).
-    const conditions: string[] = [];
-    const values: unknown[] = [];
-    if (filter.sectorId !== undefined) {
-      values.push(filter.sectorId);
-      conditions.push(`sector_id = $${values.length}`);
-    }
-    if (filter.role !== undefined) {
-      values.push(filter.role);
-      conditions.push(`role = $${values.length}`);
-    }
-    const where = conditions.length ? `WHERE ${conditions.join(' AND ')}` : '';
-
-    const result = await this.db().query(`SELECT ${columns} FROM users ${where} ORDER BY name`, values);
+  async list(): Promise<User[]> {
+    const result = await this.db().query(`SELECT ${columns} FROM users ORDER BY name`);
     return result.rows.map((row) => userSchema.parse(row));
   }
 

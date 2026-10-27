@@ -9,6 +9,8 @@ import { saveSession } from './auth/session';
 // O dashboard (página inicial, A14) busca indicadores na API. Aqui ele vira só um título,
 // para estes testes continuarem testando apenas o login e o menu. O dashboard tem os próprios testes.
 vi.mock('./pages/dashboard/DashboardPage', () => ({ default: () => <h1>Dashboard</h1> }));
+// O TV Wall (A16) tem os próprios testes; aqui só importa se ele abre ou não.
+vi.mock('./pages/tv-wall/TvWallPage', () => ({ default: () => <h1>Painel do hospital</h1> }));
 
 function apiResponds(status: number, body: unknown) {
   vi.stubGlobal(
@@ -61,25 +63,36 @@ describe('login e menu do site de gestão', () => {
     expect((await screen.findByRole('alert')).textContent).toContain('E-mail ou senha incorretos');
   });
 
-  it('visualizador que abre o endereço do TV Wall vê "sem permissão" (RN18)', async () => {
+  it('visualizador que abre o endereço de Usuários vê "sem permissão" (RN16)', async () => {
     const viewer = { id: 3, name: 'Beto', role: 'VIEWER' as const, sectorId: 10 };
     saveSession({ token: 'token-do-viewer', user: viewer });
     apiResponds(200, { user: viewer });
-    window.history.pushState({}, '', '/tv');
+    window.history.pushState({}, '', '/usuarios');
 
     render(<App />);
 
     expect(await screen.findByText('Sem permissão')).toBeTruthy();
   });
 
-  it('super admin vê a aba TV Wall', async () => {
+  it('o TV Wall abre pelo link sem login, sem menu (RN18)', async () => {
+    window.history.pushState({}, '', '/tv');
+
+    render(<App />);
+
+    expect(await screen.findByRole('heading', { name: 'Painel do hospital' })).toBeTruthy();
+    expect(screen.queryByRole('button', { name: 'Entrar' })).toBeNull();
+    expect(screen.queryByRole('navigation', { name: 'Menu principal' })).toBeNull();
+  });
+
+  it('nem o super admin tem o TV Wall no menu: ele é só um link (RN18)', async () => {
     const superAdmin = { id: 1, name: 'Carla', role: 'SUPER_ADMIN' as const, sectorId: null };
     saveSession({ token: 'token-do-super', user: superAdmin });
     apiResponds(200, { user: superAdmin });
 
     render(<App />);
 
-    expect(await screen.findByRole('link', { name: 'TV Wall' })).toBeTruthy();
+    expect(await screen.findByRole('link', { name: 'Setores' })).toBeTruthy();
+    expect(screen.queryByRole('link', { name: 'TV Wall' })).toBeNull();
   });
 
   it('botão Sair apaga o login e volta para a tela de entrar', async () => {

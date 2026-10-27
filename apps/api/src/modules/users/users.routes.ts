@@ -4,12 +4,12 @@ import { createUsersController } from './users.controller';
 import type { UsersService } from './users.service';
 
 // Rotas de usuários (README, seção 9). Ficam em /api/users.
-// Super admin: todos os usuários. Admin de setor: só os visualizadores do seu setor. Visualizador: nenhuma.
+// Só o super admin (RN16, ajuste de 27/10/2026). Admin de setor e visualizador: 403.
 export function createUsersRouter(service: UsersService) {
   const router = Router();
   const controller = createUsersController(service);
 
-  router.use(requireAuth, requireRole('SUPER_ADMIN', 'SECTOR_ADMIN'));
+  router.use(requireAuth, requireRole('SUPER_ADMIN'));
 
   /**
    * @openapi
@@ -28,16 +28,16 @@ export function createUsersRouter(service: UsersService) {
    * /users:
    *   get:
    *     summary: Lista os usuários
-   *     description: Super admin vê todos; admin de setor, só os visualizadores do seu setor.
+   *     description: Só o super admin. Vê todos os usuários (RN16).
    *     tags: [Usuários]
    *     security: [{ bearerAuth: [] }]
    *     responses:
    *       200: { description: Usuários, content: { application/json: { schema: { type: array, items: { $ref: '#/components/schemas/User' } } } } }
-   *       403: { description: "Visualizador (FORBIDDEN)", content: { application/json: { schema: { $ref: '#/components/schemas/Error' } } } }
+   *       403: { description: "Não é super admin (FORBIDDEN)", content: { application/json: { schema: { $ref: '#/components/schemas/Error' } } } }
    *       401: { $ref: '#/components/responses/Unauthorized' }
    *   post:
    *     summary: Cadastra um usuário
-   *     description: Super admin cadastra qualquer perfil (super admin sem setor). Admin de setor só cadastra visualizadores do seu setor.
+   *     description: Só o super admin. Cadastra qualquer perfil (super admin sem setor; os outros precisam de setor).
    *     tags: [Usuários]
    *     security: [{ bearerAuth: [] }]
    *     requestBody:
@@ -56,7 +56,7 @@ export function createUsersRouter(service: UsersService) {
    *     responses:
    *       201: { description: Usuário criado, content: { application/json: { schema: { $ref: '#/components/schemas/User' } } } }
    *       400: { description: "Dado inválido ou setor faltando (VALIDATION_ERROR)", content: { application/json: { schema: { $ref: '#/components/schemas/Error' } } } }
-   *       403: { description: "Perfil ou setor não permitido (FORBIDDEN)", content: { application/json: { schema: { $ref: '#/components/schemas/Error' } } } }
+   *       403: { description: "Não é super admin (FORBIDDEN)", content: { application/json: { schema: { $ref: '#/components/schemas/Error' } } } }
    *       404: { description: "Setor não existe (SECTOR_NOT_FOUND)", content: { application/json: { schema: { $ref: '#/components/schemas/Error' } } } }
    *       409: { description: "E-mail já cadastrado (EMAIL_TAKEN)", content: { application/json: { schema: { $ref: '#/components/schemas/Error' } } } }
    *       401: { $ref: '#/components/responses/Unauthorized' }

@@ -3,11 +3,11 @@
 export type FaceValue = 1 | 2 | 3 | 4 | 5;
 
 export const FACES: { value: FaceValue; label: string; color: string; mouth: string }[] = [
-  { value: 1, label: 'Péssimo', color: '#C62828', mouth: 'M20 48 Q32 36 44 48' },
-  { value: 2, label: 'Ruim', color: '#E65100', mouth: 'M21 46 Q32 41 43 46' },
-  { value: 3, label: 'Regular', color: '#F9A825', mouth: 'M21 44 L43 44' },
-  { value: 4, label: 'Bom', color: '#7CB342', mouth: 'M21 41 Q32 49 43 41' },
-  { value: 5, label: 'Ótimo', color: '#2E7D32', mouth: 'M19 39 Q32 54 45 39' },
+  { value: 1, label: 'Péssimo', color: '#E57373', mouth: 'M20 48 Q32 36 44 48' },
+  { value: 2, label: 'Ruim', color: '#FFB74D', mouth: 'M21 46 Q32 41 43 46' },
+  { value: 3, label: 'Regular', color: '#FFD54F', mouth: 'M21 44 L43 44' },
+  { value: 4, label: 'Bom', color: '#AED581', mouth: 'M21 41 Q32 49 43 41' },
+  { value: 5, label: 'Ótimo', color: '#81C784', mouth: 'M19 39 Q32 54 45 39' },
 ];
 
 // Carinha mais perto de uma média (ex.: 3,7 → Bom).

@@ -4,10 +4,9 @@ import { roleLabels } from '../../auth/session';
 import { input } from '../../components/ui/styles';
 
 // Campos de perfil e setor, usados no cadastro e na edição de usuários (RN16).
-// Super admin escolhe qualquer perfil; admin de setor só cria visualizadores do próprio setor.
+// Só o super admin abre a tela de usuários, então todos os perfis e setores estão sempre liberados.
 export default function UserFields({
   idPrefix,
-  myRole,
   role,
   sectorId,
   sectors,
@@ -15,14 +14,13 @@ export default function UserFields({
   onSectorChange,
 }: {
   idPrefix: string;
-  myRole: Role;
   role: Role;
   sectorId: number | null;
   sectors: Sector[];
   onRoleChange: (role: Role) => void;
   onSectorChange: (sectorId: number | null) => void;
 }) {
-  const roles: Role[] = myRole === 'SUPER_ADMIN' ? ['SUPER_ADMIN', 'SECTOR_ADMIN', 'VIEWER'] : ['VIEWER'];
+  const roles: Role[] = ['SUPER_ADMIN', 'SECTOR_ADMIN', 'VIEWER'];
 
   return (
     <>
@@ -33,7 +31,6 @@ export default function UserFields({
         <select
           id={`${idPrefix}-role`}
           value={role}
-          disabled={roles.length === 1}
           onChange={(event) => onRoleChange(event.target.value as Role)}
           className={`mt-1 ${input}`}
         >
@@ -54,7 +51,6 @@ export default function UserFields({
           <select
             id={`${idPrefix}-sector`}
             value={sectorId ?? ''}
-            disabled={myRole !== 'SUPER_ADMIN'}
             onChange={(event) => onSectorChange(event.target.value ? Number(event.target.value) : null)}
             className={`mt-1 ${input}`}
           >

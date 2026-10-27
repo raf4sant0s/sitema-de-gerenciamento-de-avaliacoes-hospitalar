@@ -52,9 +52,8 @@ describe('GET /api/users', () => {
     expect(JSON.stringify(response.body)).not.toContain('password');
   });
 
-  it('admin de setor só vê os visualizadores do seu setor', async () => {
-    const response = await request(app).get('/api/users').set(auth(adminPA));
-    expect(response.body.map((user: { name: string }) => user.name)).toEqual(['Beto']);
+  it('admin de setor não vê a lista de usuários (403; só o super admin, ajuste de 27/10/2026)', async () => {
+    expect((await request(app).get('/api/users').set(auth(adminPA))).status).toBe(403);
   });
 
   it('visualizador não acessa usuários (403)', async () => {
@@ -100,19 +99,17 @@ describe('POST /api/users', () => {
     expect(response.body.error.code).toBe('SECTOR_NOT_FOUND');
   });
 
-  it('admin de setor cadastra visualizador no próprio setor (mesmo sem mandar o setor)', async () => {
-    const response = await request(app).post('/api/users').set(auth(adminPA)).send(novo({ role: 'VIEWER' }));
+  it('admin de setor não cadastra ninguém, nem visualizador do próprio setor (403)', async () => {
+    const viewer = await request(app).post('/api/users').set(auth(adminPA)).send(novo({ role: 'VIEWER', sectorId: 1 }));
+    const asAdmin = await request(app).post('/api/users').set(auth(adminPA)).send(novo({ role: 'SECTOR_ADMIN', sectorId: 1 }));
 
-    expect(response.status).toBe(201);
-    expect(response.body).toMatchObject({ role: 'VIEWER', sectorId: 1 });
+    expect([viewer.status, asAdmin.status]).toEqual([403, 403]);
+    expect(users).toHaveLength(5);
   });
 
-  it('admin de setor não cadastra admin nem visualizador de outro setor (403)', async () => {
-    const asAdmin = await request(app).post('/api/users').set(auth(adminPA)).send(novo({ role: 'SECTOR_ADMIN', sectorId: 1 }));
-    const otherSector = await request(app).post('/api/users').set(auth(adminPA)).send(novo({ role: 'VIEWER', sectorId: 2 }));
-
-    expect(asAdmin.status).toBe(403);
-    expect(otherSector.status).toBe(403);
+  it('visualizador não cadastra ninguém (403)', async () => {
+    const response = await request(app).post('/api/users').set(auth(viewerPA)).send(novo({ role: 'VIEWER', sectorId: 1 }));
+    expect(response.status).toBe(403);
   });
 
   it('e-mail repetido (mesmo com maiúsculas) devolve 409', async () => {
@@ -152,15 +149,16 @@ describe('PUT e DELETE /api/users/:id', () => {
     expect(await bcrypt.compare('senha-nova-123', users[2].password_hash)).toBe(true);
   });
 
-  it('admin de setor altera visualizador do seu setor, mas não de outro setor nem outro admin', async () => {
-    expect((await request(app).put('/api/users/3').set(auth(adminPA)).send({ name: 'Beto Silva' })).status).toBe(200);
-    expect((await request(app).put('/api/users/4').set(auth(adminPA)).send({ name: 'X' })).status).toBe(403);
-    expect((await request(app).put('/api/users/5').set(auth(adminPA)).send({ name: 'X' })).status).toBe(403);
+  it('admin de setor não altera nem o visualizador do próprio setor (403)', async () => {
+    expect((await request(app).put('/api/users/3').set(auth(adminPA)).send({ name: 'Beto Silva' })).status).toBe(403);
+    expect((await request(app).put('/api/users/3').set(auth(adminPA)).send({ password: 'senha-nova-123' })).status).toBe(403);
+    expect(users[2].name).toBe('Beto');
   });
 
-  it('admin de setor não promove visualizador a admin', async () => {
-    const response = await request(app).put('/api/users/3').set(auth(adminPA)).send({ role: 'SECTOR_ADMIN' });
+  it('admin de setor não desativa ninguém (403)', async () => {
+    const response = await request(app).delete('/api/users/3').set(auth(adminPA));
     expect(response.status).toBe(403);
+    expect(users[2].active).toBe(true);
   });
 
   it('ninguém desativa a si mesmo nem muda o próprio perfil (decisão da dupla)', async () => {

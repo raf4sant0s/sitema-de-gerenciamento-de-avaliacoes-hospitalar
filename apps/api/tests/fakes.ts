@@ -13,11 +13,8 @@ export function fakeUsersRepository(users: User[]): UsersRepository {
     async findById(id) {
       return users.find((user) => user.id === id) ?? null;
     },
-    async list(filter = {}) {
-      return users
-        .filter((user) => filter.sectorId === undefined || user.sector_id === filter.sectorId)
-        .filter((user) => filter.role === undefined || user.role === filter.role)
-        .sort((a, b) => a.name.localeCompare(b.name));
+    async list() {
+      return [...users].sort((a, b) => a.name.localeCompare(b.name));
     },
     async create(data) {
       const user: User = {

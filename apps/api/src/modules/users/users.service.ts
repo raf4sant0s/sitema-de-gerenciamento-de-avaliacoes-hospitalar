@@ -39,8 +39,8 @@ export interface CreateUserInput {
 export type UpdateUserInput = Partial<CreateUserInput> & { active?: boolean };
 
 // Regras dos usuários do site de gestão (tarefa B12; RN16).
-// - Super admin cadastra qualquer perfil, inclusive outro super admin (decisão da dupla).
-// - Admin de setor só cadastra e altera visualizadores do próprio setor.
+// - Só o super admin mexe em usuários (a rota já barra os outros perfis; ajuste de 27/10/2026).
+// - Ele cadastra qualquer perfil, inclusive outro super admin (decisão da dupla).
 // - Ninguém desativa a si mesmo nem muda o próprio perfil ou setor (decisão da dupla).
 export class UsersService {
   constructor(
@@ -48,14 +48,12 @@ export class UsersService {
     private readonly sectors: SectorsRepository,
   ) {}
 
-  async list(me: AuthUser): Promise<UserView[]> {
-    const list =
-      me.role === 'SUPER_ADMIN' ? await this.users.list() : await this.users.list({ sectorId: me.sectorId!, role: 'VIEWER' });
-    return list.map(toUserView);
+  async list(): Promise<UserView[]> {
+    return (await this.users.list()).map(toUserView);
   }
 
-  async create(me: AuthUser, input: CreateUserInput): Promise<UserView> {
-    const data = this.applyRoleRules(me, input.role, input.sectorId);
+  async create(input: CreateUserInput): Promise<UserView> {
+    const data = this.applyRoleRules(input.role, input.sectorId);
     await this.checkSectorExists(data.sectorId);
     await this.checkEmailFree(input.email);
 
@@ -70,7 +68,8 @@ export class UsersService {
   }
 
   async update(me: AuthUser, id: number, input: UpdateUserInput): Promise<UserView> {
-    const target = await this.findManageable(me, id);
+    const target = await this.users.findById(id);
+    if (!target) throw this.notFound();
     const isMe = target.id === me.id;
 
     // Proteção contra se trancar para fora (decisão da dupla).
@@ -102,7 +101,7 @@ export class UsersService {
       const role = input.role ?? target.role;
       // Ao virar super admin, o setor some; nos outros perfis, mantém o atual se não vier um novo.
       const sectorId = input.sectorId !== undefined ? input.sectorId : role === 'SUPER_ADMIN' ? null : target.sector_id;
-      const data = this.applyRoleRules(me, role, sectorId);
+      const data = this.applyRoleRules(role, sectorId);
       await this.checkSectorExists(data.sectorId);
       changes.role = data.role;
       changes.sectorId = data.sectorId;
@@ -118,35 +117,14 @@ export class UsersService {
     return this.update(me, id, { active: false });
   }
 
-  // Confere perfil + setor de quem está sendo criado ou alterado.
-  private applyRoleRules(me: AuthUser, role: Role, sectorId: number | null): { role: Role; sectorId: number | null } {
-    if (me.role === 'SECTOR_ADMIN') {
-      if (role !== 'VIEWER') {
-        throw new AppError(403, 'FORBIDDEN', 'Admin de setor só cadastra visualizadores');
-      }
-      if (sectorId !== null && sectorId !== me.sectorId) {
-        throw new AppError(403, 'FORBIDDEN', 'Você só pode cadastrar visualizadores do seu setor');
-      }
-      return { role, sectorId: me.sectorId };
-    }
-
-    // Super admin: o super admin não tem setor; os outros perfis precisam de um (RN16).
+  // Confere perfil + setor de quem está sendo criado ou alterado:
+  // o super admin não tem setor; os outros perfis precisam de um (RN16).
+  private applyRoleRules(role: Role, sectorId: number | null): { role: Role; sectorId: number | null } {
     if (role === 'SUPER_ADMIN') return { role, sectorId: null };
     if (sectorId === null) {
       throw new AppError(400, 'VALIDATION_ERROR', 'Escolha o setor deste usuário');
     }
     return { role, sectorId };
-  }
-
-  // O super admin mexe em qualquer usuário; o admin de setor, só nos visualizadores do seu setor.
-  private async findManageable(me: AuthUser, id: number): Promise<User> {
-    const user = await this.users.findById(id);
-    if (!user) throw this.notFound();
-
-    if (me.role === 'SECTOR_ADMIN' && (user.role !== 'VIEWER' || user.sector_id !== me.sectorId)) {
-      throw new AppError(403, 'FORBIDDEN', 'Você só pode alterar visualizadores do seu setor');
-    }
-    return user;
   }
 
   private async checkSectorExists(sectorId: number | null) {

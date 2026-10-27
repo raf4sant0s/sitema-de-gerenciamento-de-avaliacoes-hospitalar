@@ -75,7 +75,7 @@ afterEach(() => {
 });
 
 const superAdmin: AuthUser = { id: 1, name: 'Carla', role: 'SUPER_ADMIN', sectorId: null };
-const adminPA: AuthUser = { id: 2, name: 'Ana', role: 'SECTOR_ADMIN', sectorId: 1 };
+const adminPA: AuthUser = { id: 2, name: 'Ana', role: 'SECTOR_ADMIN', sectorId: 1 }; // usado em "Minha senha"
 const sectors = [sector(1, 'Pronto Atendimento'), sector(2, 'Raio-X')];
 
 describe('tela de usuários (B12)', () => {
@@ -104,11 +104,12 @@ describe('tela de usuários (B12)', () => {
     expect(screen.queryByLabelText('Setor')).toBeNull();
   });
 
-  it('admin de setor só cadastra visualizador, já no próprio setor', async () => {
-    const fetchMock = fakeApi(adminPA, [], [sectors[0]]);
+  it('super admin cadastra um visualizador no setor escolhido', async () => {
+    const fetchMock = fakeApi(superAdmin, [], sectors);
     renderAs(<UsersPage />);
 
-    expect((await screen.findByLabelText('Perfil') as HTMLSelectElement).disabled).toBe(true);
+    await userEvent.selectOptions(await screen.findByLabelText('Perfil'), 'VIEWER');
+    await userEvent.selectOptions(screen.getByLabelText('Setor'), 'Raio-X');
     await userEvent.type(screen.getByLabelText('Nome'), 'Gil');
     await userEvent.type(screen.getByLabelText('E-mail'), 'gil@hospital.com');
     await userEvent.type(screen.getByLabelText('Senha inicial'), 'senha-inicial');
@@ -121,15 +122,16 @@ describe('tela de usuários (B12)', () => {
       email: 'gil@hospital.com',
       password: 'senha-inicial',
       role: 'VIEWER',
-      sectorId: 1,
+      sectorId: 2,
     });
   });
 
   it('o botão de cadastrar só libera com senha de 8 caracteres ou mais', async () => {
-    fakeApi(adminPA, [], [sectors[0]]);
+    fakeApi(superAdmin, [], sectors);
     renderAs(<UsersPage />);
 
-    await userEvent.type(await screen.findByLabelText('Nome'), 'Gil');
+    await userEvent.selectOptions(await screen.findByLabelText('Setor'), 'Pronto Atendimento');
+    await userEvent.type(screen.getByLabelText('Nome'), 'Gil');
     await userEvent.type(screen.getByLabelText('E-mail'), 'gil@hospital.com');
     await userEvent.type(screen.getByLabelText('Senha inicial'), '1234567');
     const button = screen.getByRole('button', { name: 'Cadastrar usuário' }) as HTMLButtonElement;

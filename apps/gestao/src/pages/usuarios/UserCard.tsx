@@ -53,7 +53,7 @@ export default function UserCard({
     event.preventDefault();
     const changes: UserChanges = { name: name.trim(), email: email.trim() };
     // A própria pessoa não muda o próprio perfil nem setor (decisão da dupla)
-    if (!isMe && me!.role === 'SUPER_ADMIN') {
+    if (!isMe) {
       changes.role = role;
       changes.sectorId = role === 'SUPER_ADMIN' ? null : sectorId;
     }
@@ -121,10 +121,9 @@ export default function UserCard({
               className={`mt-1 ${input}`}
             />
           </div>
-          {!isMe && me!.role === 'SUPER_ADMIN' && (
+          {!isMe && (
             <UserFields
               idPrefix={`edit-${user.id}`}
-              myRole={me!.role}
               role={role}
               sectorId={sectorId}
               sectors={sectors}

@@ -20,11 +20,11 @@
   --color-error: #C62828;
 
   /* Carinhas de 1 a 5 (RN04) */
-  --color-face-1: #C62828;
-  --color-face-2: #E65100;
-  --color-face-3: #F9A825;
-  --color-face-4: #7CB342;
-  --color-face-5: #2E7D32;
+  --color-face-1: #E57373;
+  --color-face-2: #FFB74D;
+  --color-face-3: #FFD54F;
+  --color-face-4: #AED581;
+  --color-face-5: #81C784;
 }
 
 /* Texto mínimo de 16px neste site (README, seção 11) */

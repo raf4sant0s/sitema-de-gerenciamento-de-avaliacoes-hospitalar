@@ -1,18 +1,20 @@
-import type { CommentsRepository } from '../../database/repositories/comments.repository';
 import type {
   BreakdownBy,
   DashboardFilters,
   DashboardRepository,
 } from '../../database/repositories/dashboard.repository';
+import type { SectorsRepository } from '../../database/repositories/sectors.repository';
 import { assertSectorAccess, type AuthUser } from '../../shared/auth';
 import { AppError } from '../../shared/errors';
+import { monthRange } from '../schedules/schedules.service';
 import { buildExportWorkbook } from './excel';
+import { buildSectorReportPdf } from './report-pdf';
 
 // RN15: indicador por equipe só aparece com 5 ou mais respostas.
 export const MIN_RESPONSES_PER_TEAM = 5;
 
-// TV Wall: quantos comentários mostrar de uma vez (os mais recentes). Cabe na tela grande.
-export const TV_COMMENTS = 50;
+// Percentual inteiro de 0 a 100 (TV Wall, RN18).
+const percent = (part: number, total: number) => (total ? Math.round((part * 100) / total) : 0);
 
 function checkPeriod(filters: Pick<DashboardFilters, 'from' | 'to'>) {
   if (filters.from && filters.to && filters.from > filters.to) {
@@ -21,11 +23,11 @@ function checkPeriod(filters: Pick<DashboardFilters, 'from' | 'to'>) {
 }
 
 // Regras do dashboard. Usa só as interfaces dos repositórios, nunca o banco direto.
-// Os comentários do TV Wall vêm do repositório de comentários da Pessoa B (B15), sem SQL repetido.
+// Os setores do filtro do TV Wall vêm do repositório de setores da Pessoa B (B11).
 export class DashboardService {
   constructor(
     private readonly repository: DashboardRepository,
-    private readonly comments?: CommentsRepository,
+    private readonly sectors?: SectorsRepository,
   ) {}
 
   // RN22 / RN16: o super admin vê todos os setores. Admin de setor e visualizador só o próprio:
@@ -85,33 +87,71 @@ export class DashboardService {
     return { file, fileName: `avaliacoes${period ? `_${period}` : ''}.xlsx` };
   }
 
-  // RN18 / D5: TV Wall do super admin (a rota já barra os outros perfis).
-  // Hospital inteiro: só o período vale como filtro. Comentários de todos os tipos e situações,
-  // sem exceção, dos mais recentes para os mais antigos.
-  async tv(filters: Pick<DashboardFilters, 'from' | 'to'>) {
-    if (!this.comments) throw new Error('DashboardService sem o repositório de comentários');
-    const period = { from: filters.from, to: filters.to };
-    checkPeriod(period);
+  // RN23: relatório do setor num mês, em PDF. A rota só deixa os admins entrarem; aqui o admin de
+  // setor fica preso ao próprio setor (RN16). Equipe com menos de 5 respostas: "dados insuficientes" (RN15, D4).
+  async sectorReport(user: AuthUser, sectorId: number, month: string): Promise<{ file: Buffer; fileName: string }> {
+    if (!this.sectors) throw new Error('DashboardService sem o repositório de setores');
+    assertSectorAccess(user, sectorId);
+    const sector = await this.sectors.findById(sectorId);
+    if (!sector) throw new AppError(404, 'SECTOR_NOT_FOUND', 'Setor não encontrado');
 
-    const [summary, sectors, page] = await Promise.all([
-      this.repository.summary(period),
-      this.repository.breakdown('sector', period),
-      this.comments.list({ from: period.from, to: period.to, limit: TV_COMMENTS, offset: 0 }),
+    const filters = { ...monthRange(month), sectorId };
+    const [summary, shifts, teams] = await Promise.all([
+      this.repository.summary(filters),
+      this.repository.breakdown('shift', filters),
+      this.repository.breakdown('team', filters),
     ]);
 
-    return {
+    const file = await buildSectorReportPdf({
+      sectorName: sector.name,
+      month,
       summary,
-      sectors,
-      comments: page.items.map((comment) => ({
-        id: comment.id,
-        sectorId: comment.sectorId,
-        sectorName: comment.sectorName,
-        type: comment.type,
-        text: comment.text,
-        status: comment.status,
-        createdAt: comment.createdAt,
+      shifts: shifts.map((row) => ({ label: row.label, average: row.average, count: row.count })),
+      // "Equipe A · Pronto Atendimento" vira só "Equipe A": o setor já está no título
+      teams: teams.map((row) => ({
+        label: row.label.split(' · ')[0],
+        average: row.count < MIN_RESPONSES_PER_TEAM ? null : row.average,
+        count: row.count,
       })),
-      totalComments: page.total,
+    });
+    return { file, fileName: `relatorio-${sector.slug}-${month}.pdf` };
+  }
+
+  // RN18 / D5: TV Wall público, sem login. Só percentuais de 0 a 100: nunca comentários,
+  // quantidades de respostas ou equipes. Sem setor: hospital todo, comparando os setores;
+  // com setor: só ele, comparando os turnos.
+  async publicTv(filters: Pick<DashboardFilters, 'from' | 'to' | 'sectorId'>) {
+    if (!this.sectors) throw new Error('DashboardService sem o repositório de setores');
+    checkPeriod(filters);
+
+    const activeSectors = (await this.sectors.list()).filter((sector) => sector.active);
+    if (filters.sectorId !== undefined && !activeSectors.some((sector) => sector.id === filters.sectorId)) {
+      throw new AppError(404, 'SECTOR_NOT_FOUND', 'Setor não encontrado');
+    }
+
+    const scoped = { from: filters.from, to: filters.to, sectorId: filters.sectorId };
+    const by = scoped.sectorId === undefined ? 'sector' : 'shift';
+    const [summary, steps, items] = await Promise.all([
+      this.repository.summary(scoped),
+      this.repository.satisfactionBySteps(scoped),
+      this.repository.satisfactionBy(by, scoped),
+    ]);
+
+    // As quantidades da nota geral viram percentuais aqui e nunca saem da API.
+    const d = summary.distribution;
+    const total = d[1] + d[2] + d[3] + d[4] + d[5];
+    const overall = total
+      ? {
+          satisfied: percent(d[4] + d[5], total),
+          distribution: { 1: percent(d[1], total), 2: percent(d[2], total), 3: percent(d[3], total), 4: percent(d[4], total), 5: percent(d[5], total) },
+        }
+      : null;
+
+    return {
+      sectors: activeSectors.map((sector) => ({ id: sector.id, name: sector.name })),
+      overall,
+      steps,
+      breakdown: { by, items },
     };
   }
 }

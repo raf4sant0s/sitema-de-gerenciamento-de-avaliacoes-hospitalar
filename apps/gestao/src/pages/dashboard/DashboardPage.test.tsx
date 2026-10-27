@@ -174,6 +174,26 @@ describe('tela do dashboard (A14)', () => {
     expect(api.getSummary.mock.calls.length).toBe(before + 1);
   });
 
+  it('relatório do setor (RN23): o super admin escolhe o setor nos filtros e baixa o PDF', async () => {
+    render(<DashboardPage />);
+    const report = await screen.findByRole('region', { name: 'Relatório do setor' });
+    const button = within(report).getByRole('button', { name: /Baixar relatório/ }) as HTMLButtonElement;
+    expect(button.disabled).toBe(true); // hospital todo: ainda sem setor
+
+    await userEvent.selectOptions(screen.getByLabelText('Setor'), 'Pronto Atendimento');
+    await userEvent.click(button);
+
+    expect(api.downloadSectorReport).toHaveBeenCalledWith(expect.objectContaining({ id: 1 }), expect.stringMatching(/^\d{4}-\d{2}$/));
+  });
+
+  it('o visualizador não vê o relatório do setor (RN23)', async () => {
+    currentUser = viewerPA;
+    render(<DashboardPage />);
+    await screen.findByText('3,4'); // espera os números carregarem
+
+    expect(screen.queryByRole('region', { name: 'Relatório do setor' })).toBeNull();
+  });
+
   it('"Exportar Excel" baixa a planilha com os filtros que estão na tela (RN19)', async () => {
     const user = userEvent.setup();
     api.exportExcel.mockResolvedValue();

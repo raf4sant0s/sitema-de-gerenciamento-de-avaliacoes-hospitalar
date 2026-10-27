@@ -1,6 +1,7 @@
 import { type FormEvent, useState } from 'react';
 import { ApiError } from '../../api/client';
 import { downloadQrCode, type Sector, updateSector } from '../../api/sectors';
+import SectorReportDownload from '../../components/ui/SectorReportDownload';
 import { input, primaryButton, secondaryButton } from '../../components/ui/styles';
 
 // Um setor na lista: links, código, situação e ações (tarefa B11).
@@ -122,6 +123,11 @@ export default function SectorCard({ sector, onChanged }: { sector: Sector; onCh
         <button type="button" disabled={busy} onClick={toggleActive} className={secondaryButton}>
           {sector.active ? 'Desativar' : 'Reativar'}
         </button>
+      </div>
+
+      {/* RN23: relatório do setor em PDF, para imprimir */}
+      <div className="mt-4 border-t border-line pt-4">
+        <SectorReportDownload sector={sector} idPrefix={`report-${sector.id}`} />
       </div>
     </li>
   );

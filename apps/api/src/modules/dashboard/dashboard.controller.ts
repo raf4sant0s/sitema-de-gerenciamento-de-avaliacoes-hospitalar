@@ -13,6 +13,12 @@ const filtersQuery = z.object({
   teamId: z.coerce.number().pipe(idSchema).optional(),
 });
 
+// RN23: relatório do setor num mês ("AAAA-MM"). Os dois são obrigatórios.
+const reportQuery = z.object({
+  sectorId: z.coerce.number().pipe(idSchema),
+  month: z.string().regex(/^\d{4}-(0[1-9]|1[0-2])$/, 'Informe o mês no formato AAAA-MM'),
+});
+
 const breakdownQuery = filtersQuery.extend({
   by: z.enum(['sector', 'shift', 'team'], 'Use by=sector, by=shift ou by=team'),
 });
@@ -56,9 +62,18 @@ export function createDashboardController(service: DashboardService) {
       res.send(file);
     },
 
-    async tv(req: Request, res: Response) {
-      const { from, to } = parse(filtersQuery, req.query);
-      res.json(await service.tv({ from, to }));
+    async sectorReport(req: Request, res: Response) {
+      const { sectorId, month } = parse(reportQuery, req.query);
+      const { file, fileName } = await service.sectorReport(req.user!, sectorId, month);
+      res.type('application/pdf');
+      res.setHeader('Content-Disposition', `attachment; filename="${fileName}"`);
+      res.send(file);
+    },
+
+    // TV Wall público (RN18): só período e setor; turno e equipe não existem lá.
+    async publicTv(req: Request, res: Response) {
+      const { from, to, sectorId } = parse(filtersQuery, req.query);
+      res.json(await service.publicTv({ from, to, sectorId }));
     },
   };
 }

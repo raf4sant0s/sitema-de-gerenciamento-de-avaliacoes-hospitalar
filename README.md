@@ -79,14 +79,14 @@ Numeradas para serem citadas em código, testes e commits (ex.: `// RN07`).
 
   | Perfil | Código | O que pode |
   | --- | --- | --- |
-  | Super admin (admin master) | `SUPER_ADMIN` | Tudo, em todos os setores. Cadastra setores e admins de setor. É o **único** que vê a aba **TV Wall** |
-  | Admin de setor | `SECTOR_ADMIN` | Gerencia o **seu** setor: pesquisa, escala, comentários e visualizadores do setor |
+  | Super admin (admin master) | `SUPER_ADMIN` | Tudo, em todos os setores. Cadastra setores e é o **único** que cadastra e altera usuários |
+  | Admin de setor | `SECTOR_ADMIN` | Gerencia o **seu** setor: pesquisa, escala e comentários. Não mexe em usuários |
   | Visualizador | `VIEWER` | Só visualiza os dados do setor que os admins designaram para ele. Não edita nada |
 
-  Cadastro de usuários (decisões da dupla, tarefa B12): o super admin cadastra qualquer perfil, **inclusive outro super admin** (sempre sem setor); o admin de setor só cadastra visualizadores do próprio setor. Quem cadastra digita a **senha inicial** (mínimo 8 caracteres) e cada pessoa a troca em **"Minha senha"**. **Ninguém desativa a si mesmo nem muda o próprio perfil ou setor.** Desativar não apaga: a pessoa só deixa de conseguir entrar.
+  Cadastro de usuários (decisões da dupla, tarefa B12): só o super admin cadastra, altera, desativa e redefine a senha de usuários, de qualquer perfil, **inclusive outro super admin** (sempre sem setor). O admin de setor e o visualizador não veem a aba Usuários (ajuste de 27/10/2026: antes, o admin de setor cadastrava visualizadores do próprio setor). Quem cadastra digita a **senha inicial** (mínimo 8 caracteres) e cada pessoa a troca em **"Minha senha"**. **Ninguém desativa a si mesmo nem muda o próprio perfil ou setor.** Desativar não apaga: a pessoa só deixa de conseguir entrar.
 
 - **RN17** Comentários: os gerentes leem e podem **marcar como tratado** (status `NEW` → `TREATED`), com um campo para anotar o que foi feito. Decisões da dupla (tarefa B15): **escrever o que foi feito é obrigatório** para marcar como tratado; um comentário tratado **pode ser reaberto**, e a anotação anterior continua guardada.
-- **RN18** **TV Wall:** aba do site de gestão, visível **só para o super admin**, com os dashboards e **todos os comentários, sem exceção**.
+- **RN18** **TV Wall:** página própria do site de gestão, num **link separado** (`/tv`), que abre **sem login** e **não aparece no menu**: quem precisa recebe o link. É só para visualizar. Mostra apenas **gráficos de barra em percentual**: o % de cada carinha e o % de satisfeitos na avaliação geral, e o % de satisfeitos por etapa da jornada e por setor (com "Hospital todo") ou por turno (com um setor escolhido). **Satisfeito** = resposta Bom ou Ótimo (4 ou 5). Filtros na tela: período (começa nos últimos 30 dias) e setor. **Nunca** mostra comentários, número de respostas nem equipes. Atualiza ao vivo. (Decisão da dupla, tarefa de ajustes de 27/10/2026: substituiu o TV Wall só do super admin com todos os comentários.)
 - **RN19** Exportação em **Excel** das respostas, com os filtros aplicados.
 
 ### Indicadores
@@ -94,6 +94,7 @@ Numeradas para serem citadas em código, testes e commits (ex.: `// RN07`).
 - **RN20** Nota geral = média da pergunta obrigatória (1 a 5, com 1 casa decimal) + quantas respostas houve em cada carinha.
 - **RN21** Média por pergunta e por etapa da jornada: média de 1 a 5 com 1 casa decimal. Perguntas puladas não entram.
 - **RN22** O dashboard filtra por período, setor, turno e equipe e permite navegar hospital → setor → turno → equipe. Atualiza em tempo real. Admin de setor e visualizador só veem o próprio setor.
+- **RN23** **Relatório do setor em PDF**, para imprimir, de **um mês escolhido**: nota geral (média de 1 a 5), total de respostas e quantas em cada carinha (RN20), e a nota por turno e por equipe, com "dados insuficientes" para equipe com menos de 5 respostas (RN15, D4). Quem baixa: super admin (qualquer setor) e admin de setor (só o próprio). O visualizador não baixa. Botão no dashboard e na aba Setores, ao lado do QR Code. (Decisão da dupla, ajustes de 27/10/2026.)
 
 ## 4. Decisões da dupla
 
@@ -105,7 +106,7 @@ O Projeto Aplicado exige no mínimo 4 decisões justificadas, indicadas no mock 
 | D2 | A pergunta obrigatória (avaliação geral) fica na **última** tela | O paciente primeiro relembra cada etapa (recepção, enfermagem, médico) e só depois dá a nota geral, já pensando no atendimento inteiro |
 | D3 | Pesquisa 100% anônima, com comentário de texto opcional | Sem dados pessoais, o paciente se sente seguro para ser sincero, e o hospital não guarda dados protegidos pela LGPD |
 | D4 | Avaliação vinculada à equipe do turno pela escala, nunca a uma pessoa; mínimo de 5 respostas para mostrar a equipe | Não responsabilizar injustamente um profissional por uma avaliação isolada |
-| D5 | TV Wall numa aba só do super admin, com todos os comentários sem exceção | Os comentários podem conter críticas; deixar o TV Wall restrito evita expor problemas ao público e dá à direção a visão completa, sem filtro |
+| D5 | TV Wall público, num link próprio, só com gráficos em percentual: sem comentários, sem número de respostas e sem equipes | A tela fica exposta a qualquer pessoa. Mostrando só percentuais, nada expõe pacientes, profissionais ou críticas, e o hospital pode deixar a TV ligada sem ninguém precisar entrar com senha. Os comentários continuam com os gestores, na aba Comentários |
 | D6 | Celular via QR Code como canal principal; tablet como apoio | Custo zero e o paciente responde com calma, com privacidade |
 | D7 | Salvar a cada toque | Se o paciente fechar no meio, nada se perde |
 | D8 | Três perfis: super admin, admin de setor e visualizador designado a um setor | Cada gestor só vê o próprio setor. O visualizador permite mostrar os resultados a outras pessoas da equipe sem dar poder de mudar nada |
@@ -114,8 +115,8 @@ O Projeto Aplicado exige no mínimo 4 decisões justificadas, indicadas no mock 
 
 | ID | Requisito | Regras |
 | --- | --- | --- |
-| RF01 | Super admin cadastra setores e admins de setor | RN16 |
-| RF02 | Admins cadastram pesquisas, perguntas e visualizadores | RN02, RN05, RN16 |
+| RF01 | Super admin cadastra setores e todos os usuários | RN16 |
+| RF02 | Admins cadastram pesquisas e perguntas | RN02, RN05, RN16 |
 | RF03 | URL e QR Code por setor | RN01 |
 | RF04 | Uma pergunta por tela, sem contador | RN02, RN03 |
 | RF05 | Carinhas 1–5; uma obrigatória na última tela; pular discreto | RN04, RN05, RN07 |
@@ -128,8 +129,9 @@ O Projeto Aplicado exige no mínimo 4 decisões justificadas, indicadas no mock 
 | RF12 | Perfis de acesso | RN16 |
 | RF13 | Comentários: ler e marcar como tratado | RN17 |
 | RF14 | Dashboard em tempo real com filtros e navegação | RN20–RN22 |
-| RF15 | TV Wall só do super admin | RN18 |
+| RF15 | TV Wall público, só com percentuais | RN18 |
 | RF16 | Exportar Excel | RN19 |
+| RF18 | Relatório do setor em PDF, por mês | RN23 |
 | RF17 | Celular e tablet, só toques, botões grandes | Seção 11 |
 | RNF01 | Banco fácil de substituir | Seções 7 e 8 |
 | RNF02 | Manual simples para leigo | — |
@@ -146,7 +148,7 @@ O Projeto Aplicado exige no mínimo 4 decisões justificadas, indicadas no mock 
 | Schemas | SQL em `database/migrations/` + Zod em `packages/schemas/` |
 | Tempo real | Socket.IO |
 | Login | Tabela própria de usuários + JWT (`Authorization: Bearer <token>`) + bcrypt |
-| Excel / QR | exceljs / qrcode |
+| Excel / QR / PDF | exceljs / qrcode / pdfkit |
 | Documentação da API | swagger-jsdoc + swagger-ui-express em `/api/docs` |
 | Testes | Vitest + Supertest (API), Vitest + Testing Library (sites), Playwright (E2E) |
 | Deploy | **(a definir)** |
@@ -297,6 +299,12 @@ Rotas fechadas recebem o token no cabeçalho `Authorization: Bearer <token>`. O 
 | POST | `/public/responses/:id/comment` | `{ type?, text }` | `201 { ok: true }` |
 | POST | `/public/responses/:id/complete` | — | `200 { ok: true }` · 400 `REQUIRED_MISSING` se a obrigatória não foi respondida |
 
+### TV Wall, sem login (módulo `dashboard`) — A
+
+| Método | Rota | Resposta |
+| --- | --- | --- |
+| GET | `/public/tv?from&to&sectorId` | `{ sectors: [{id, name}], overall: { satisfied, distribution: {1,2,3,4,5} } \| null, steps: [{ step, satisfied }], breakdown: { by: 'sector'\|'shift', items: [{ key, label, satisfied }] } }` · todos os valores são **percentuais inteiros de 0 a 100**, nunca quantidades (RN18). `sectors` são os setores ativos, para o filtro. Sem `sectorId`: hospital todo, `breakdown` por setor; com `sectorId`: `breakdown` por turno. 404 `SECTOR_NOT_FOUND` se o setor não existir ou estiver inativo |
+
 ### Login (módulo `auth`) — B
 
 | Método | Rota | Corpo | Resposta |
@@ -313,7 +321,7 @@ Na API, as rotas fechadas usam os middlewares de `src/shared/auth.ts`: `requireA
 | --- | --- | --- |
 | GET/POST | `/sectors` · GET/PUT/DELETE `/sectors/:id` | Super admin (admin de setor e visualizador só leem o próprio). POST: `{ name, slug }`, o código é gerado. PUT: só `{ name?, active? }` (link e código não mudam; 400 se enviados). DELETE desativa. Resposta: `{ id, name, slug, code, active, createdAt, surveyUrl, shortUrl }`. Erros: 409 `SLUG_TAKEN`, 404 `SECTOR_NOT_FOUND` |
 | GET | `/sectors/:id/qrcode?type=slug\|code` | Super admin e admin do setor (PNG) |
-| GET/POST | `/users` · PUT/DELETE `/users/:id` | Super admin: todos. Admin de setor: só visualizadores do seu setor. POST: `{ name, email, password, role, sectorId }`. PUT: `{ name?, email?, password?, role?, sectorId?, active? }` (password = redefinir). DELETE desativa. Resposta: `{ id, name, email, role, sectorId, active, createdAt }`, nunca a senha. Erros: 409 `EMAIL_TAKEN`, 404 `USER_NOT_FOUND`, 404 `SECTOR_NOT_FOUND`, 403 ao tentar desativar ou mudar o perfil de si mesmo |
+| GET/POST | `/users` · PUT/DELETE `/users/:id` | Só o super admin (os outros perfis: 403). POST: `{ name, email, password, role, sectorId }`. PUT: `{ name?, email?, password?, role?, sectorId?, active? }` (password = redefinir). DELETE desativa. Resposta: `{ id, name, email, role, sectorId, active, createdAt }`, nunca a senha. Erros: 409 `EMAIL_TAKEN`, 404 `USER_NOT_FOUND`, 404 `SECTOR_NOT_FOUND`, 403 ao tentar desativar ou mudar o perfil de si mesmo |
 | GET/POST | `/surveys` · GET/PUT `/surveys/:id` | Super admin (todos, ou `?sectorId=`) e admin do setor (o seu). POST: `{ sectorId, title }` (nasce desativada, com a obrigatória). PUT: `{ title?, active? }`. Resposta: `{ id, sectorId, title, active, createdAt }`. Erros: 404 `SURVEY_NOT_FOUND`, 404 `SECTOR_NOT_FOUND` |
 | GET/POST | `/surveys/:id/questions` · PUT/DELETE `/questions/:id` | Super admin e admin do setor. POST: `{ text, step }` (sempre opcional, vai para o fim). PUT: `{ text?, step?, active? }`. DELETE desativa. Resposta: `{ id, surveyId, position, text, step, required, active, answerCount }`. Erros: 404 `QUESTION_NOT_FOUND`, 400 `REQUIRED_QUESTION_LOCKED` (desativar ou mudar a etapa da obrigatória) |
 | PUT | `/surveys/:id/questions/order` | `{ ids: [...] }` com **todas** as opcionais, na nova ordem (a obrigatória fica sempre por último). Devolve as perguntas reordenadas |
@@ -339,8 +347,8 @@ Filtros na query: `from`, `to` (YYYY-MM-DD), `sectorId`, `shift`, `teamId`. Admi
 | GET | `/dashboard/steps` | `[{ step, average, count }]` |
 | GET | `/dashboard/breakdown?by=sector\|shift\|team` | `[{ key, label, average, count, insufficient }]` (RN15) |
 | GET | `/dashboard/timeline` | `[{ date, average, count }]` |
-| GET | `/dashboard/tv` | Só super admin: indicadores do hospital + **todos** os comentários (RN18) |
 | GET | `/dashboard/export.xlsx` | Arquivo Excel das respostas filtradas |
+| GET | `/dashboard/report.pdf?sectorId&month=2026-10` | Relatório do setor no mês, em PDF (RN23). `sectorId` e `month` obrigatórios. Super admin e admin do setor; visualizador: 403. Erros: 400 `VALIDATION_ERROR`, 404 `SECTOR_NOT_FOUND` |
 
 ### Tempo real (Socket.IO) — A
 
@@ -348,8 +356,8 @@ O evento só avisa; a tela busca os dados de novo pela API.
 
 | Evento | Payload | Quem ouve |
 | --- | --- | --- |
-| `response:changed` | `{ sectorId }` | Dashboard, TV Wall |
-| `comment:created` | `{ sectorId }` | Comentários, TV Wall |
+| `response:changed` | `{ sectorId }` | Dashboard; TV Wall, pelo canal público `/tv` (sem login) |
+| `comment:created` | `{ sectorId }` | Comentários |
 
 ## 10. Telas e rotas
 
@@ -368,10 +376,10 @@ Telas internas: perguntas opcionais (uma por tela) → pergunta obrigatória →
 | --- | --- | --- | --- |
 | `/login` | Login | todos | B |
 | `/` | Dashboard | todos | A |
-| `/tv` | TV Wall | só super admin | A |
+| `/tv` | TV Wall (link próprio, fora do menu) | público, sem login (RN18) | A |
 | `/comentarios` | Comentários | todos (tratar: admins) | B |
 | `/setores` | Setores + QR Code | super admin | B |
-| `/usuarios` | Usuários | super admin e admin de setor | B |
+| `/usuarios` | Usuários | só super admin | B |
 | `/minha-senha` | Trocar a própria senha (link embaixo do menu) | todos | B |
 | `/pesquisas`, `/pesquisas/:id` | Pesquisas e perguntas | super admin e admin de setor | B |
 | `/escala` | Equipes e escala | super admin e admin de setor (visualizador só vê) | B |
@@ -389,7 +397,7 @@ Valores iniciais para os dois começarem iguais. A Pessoa A finaliza em `docs/gu
 
 - **Fonte:** Atkinson Hyperlegible (feita para baixa visão), fallback `system-ui`. Texto mínimo 18 px na pesquisa, 16 px na gestão.
 - **Cores:** primária `#0B5FA5` · fundo `#F7F9FC` · texto `#1A2433` · sucesso `#2E7D32` · alerta `#B26A00` · erro `#C62828`. Contraste mínimo AA (4,5:1).
-- **Carinhas (1 a 5):** `#C62828`, `#E65100`, `#F9A825`, `#7CB342`, `#2E7D32`, sempre com o rótulo em texto (Péssimo, Ruim, Regular, Bom, Ótimo), nunca só a cor.
+- **Carinhas (1 a 5):** cores suaves `#E57373`, `#FFB74D`, `#FFD54F`, `#AED581`, `#81C784`, mostradas **da melhor para a pior** (Ótimo em cima, Péssimo embaixo), sempre com o rótulo em texto (Péssimo, Ruim, Regular, Bom, Ótimo), nunca só a cor.
 - **Toque:** área mínima de 56×56 px na pesquisa.
 - **Pesquisa:** logo pequeno no topo, pergunta grande, carinhas grandes, "pular" pequeno embaixo.
 
@@ -528,7 +536,7 @@ Em seguida, avisar a colega para dar `git pull` na `develop` (e `npm install`, s
 | --- | --- | --- |
 | Unitário | Vitest | turno (RN13), médias (RN20, RN21), mínimo de 5 respostas (RN15), permissões por perfil (RN16) |
 | Integração | Vitest + Supertest + banco de teste | criar resposta, salvar toque, completar sem a obrigatória → 400, login, visualizador não edita, marcar comentário como tratado |
-| E2E | Playwright | paciente responde tudo; paciente abandona no meio; super admin vê o TV Wall e o admin de setor não |
+| E2E | Playwright | paciente responde tudo; paciente abandona no meio; TV Wall abre sem login e não mostra comentários |
 
 Rodar: `npm test` dentro de cada app. Os resultados vão para `docs/testes.md`.
 
@@ -548,7 +556,7 @@ Antes de entregar, no sistema **publicado**:
 - [ ] Nenhuma tela da pesquisa mostra quantas perguntas faltam
 - [ ] Nenhum dado pessoal é pedido ao paciente
 - [ ] Admin de setor e visualizador só veem o próprio setor
-- [ ] Só o super admin vê o TV Wall, com todos os comentários
+- [ ] O TV Wall abre pelo link sem login, só com percentuais (sem comentários, números ou equipes)
 - [ ] Comentário pode ser marcado como tratado
 - [ ] Excel baixa
 - [ ] Links abertos para o professor

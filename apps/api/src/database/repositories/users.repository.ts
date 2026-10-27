@@ -27,8 +27,8 @@ export interface UsersRepository {
   findByEmail(email: string): Promise<User | null>;
   // Devolve o usuário com esse id, ou null se não existir.
   findById(id: number): Promise<User | null>;
-  // Lista em ordem alfabética. Com filtro, só os daquele setor e/ou perfil.
-  list(filter?: { sectorId?: number; role?: Role }): Promise<User[]>;
+  // Lista todos, em ordem alfabética (só o super admin vê usuários, RN16).
+  list(): Promise<User[]>;
   create(data: NewUser): Promise<User>;
   update(id: number, changes: UserChanges): Promise<User | null>;
 }

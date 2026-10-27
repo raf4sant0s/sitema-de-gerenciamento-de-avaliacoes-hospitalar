@@ -76,31 +76,42 @@ As decisões abaixo estão resumidas no README (seção 4). Aqui cada uma é exp
 
 **Onde aparece:** tela **Escala** do site `gestao` (equipes e grade do mês por dia e turno); nenhuma tabela do banco liga resposta a uma pessoa (README, seção 8); indicadores por equipe do dashboard, com "dados insuficientes" abaixo de 5 respostas.
 
-### D5 · TV Wall numa aba só do super admin, com todos os comentários sem exceção
+### D5 · TV Wall público, num link próprio, só com gráficos em percentual
 
-**O que é:** o TV Wall é uma aba do site de gestão, com os dashboards e **todos** os comentários dos pacientes, sem filtro (RN18). Só o super admin vê essa aba; para os outros perfis ela nem aparece no menu, e quem tenta abrir pelo endereço recebe "Sem permissão" (RN16).
+**O que é:** o TV Wall é uma página própria do site de gestão, num link separado (`/tv`), que abre **sem login** e não aparece no menu: quem precisa recebe o link (RN18). É só para visualizar. Mostra apenas **gráficos de barra em percentual**:
+- avaliação geral: % de cada carinha e % de satisfeitos (Bom ou Ótimo);
+- % de satisfeitos por etapa da jornada;
+- % de satisfeitos por setor (com "Hospital todo") ou por turno (com um setor escolhido).
+
+Na tela há dois filtros: período (começa nos últimos 30 dias) e setor. O TV Wall **nunca** mostra comentários, número de respostas nem equipes, e atualiza ao vivo.
 
 **Por quê:**
-- Os comentários podem conter críticas. Deixar o TV Wall restrito evita expor problemas ao público e às equipes de outros setores.
-- A direção tem a visão completa do hospital, sem filtro.
+- A tela fica exposta a qualquer pessoa que passa. Mostrando só percentuais, nada expõe pacientes, profissionais ou críticas.
+- Sem login, o hospital pode deixar a TV ligada no link, sem ninguém precisar digitar senha num computador do corredor.
+- Os comentários continuam com os gestores, na aba **Comentários**, que exige login (RN17).
 
-**Ligação com a persona:** a Renata não quer que as críticas dos pacientes ao Pronto Atendimento fiquem expostas para quem passa no corredor. Ela vê e trata os comentários do setor dela na tela **Comentários**; a visão de todos os setores juntos, no TV Wall, fica com a direção.
+**Ligação com a persona:** a Renata não quer que as críticas dos pacientes ao Pronto Atendimento fiquem expostas para quem passa no corredor. Com o TV Wall só em percentuais, ela pode deixar a TV da sala de espera no setor dela, e as críticas ela lê e trata na tela **Comentários**.
 
-**Onde aparece:** menu lateral do site `gestao` (a aba TV Wall só existe para o super admin); proteção da rota `/tv`; rota da API do TV Wall restrita ao super admin (README, seção 9).
+**Onde aparece:** link `/tv` do site `gestao`, fora do menu; rota pública `GET /api/public/tv`, que só devolve percentuais (README, seção 9).
+
+**Mudança de decisão (27/10/2026):** antes, o TV Wall era uma aba só do super admin, com todos os comentários sem exceção. A dupla mudou para a versão pública e só com percentuais, para a TV poder ficar exposta sem expor ninguém.
 
 ### D8 · Três perfis: super admin, admin de setor e visualizador designado a um setor
 
 **O que é:** o site de gestão tem três perfis (RN16):
-- **Super admin:** tudo, em todos os setores; cadastra setores e usuários, inclusive outros super admins.
-- **Admin de setor:** gerencia só o seu setor (pesquisa, escala, comentários e visualizadores).
+- **Super admin:** tudo, em todos os setores; cadastra setores e é o **único** que cadastra e altera usuários, inclusive outros super admins.
+- **Admin de setor:** gerencia só o seu setor (pesquisa, escala e comentários). Não mexe em usuários.
 - **Visualizador:** só olha os dados do setor para o qual foi designado, sem mudar nada.
 
 Cada pessoa troca a própria senha em "Minha senha", e ninguém desativa a si mesmo nem muda o próprio perfil.
 
 **Por quê:**
 - Cada gestor só vê e mexe no próprio setor.
+- Só o super admin decide quem tem acesso ao sistema: o controle de quem entra fica num lugar só.
 - O visualizador permite mostrar os resultados a outras pessoas da equipe sem dar poder de mudar nada.
 
-**Ligação com a persona:** a Renata é admin de setor do Pronto Atendimento. Ela cuida da pesquisa, da escala e dos comentários só do setor dela, e cadastra a enfermeira líder do noturno como visualizadora, para acompanhar os resultados sem conseguir alterar a escala ou tratar comentários.
+**Ligação com a persona:** a Renata é admin de setor do Pronto Atendimento. Ela cuida da pesquisa, da escala e dos comentários só do setor dela. Quando quer que a enfermeira líder do noturno acompanhe os resultados, pede à direção (super admin) que a cadastre como visualizadora: ela vê tudo do setor sem conseguir alterar a escala ou tratar comentários.
 
-**Onde aparece:** menu lateral do site `gestao`, que mostra só as abas de cada perfil; tela **Usuários** (o admin de setor só cadastra visualizadores do próprio setor); telas de **Escala** e **Comentários**, que viram só leitura para o visualizador; todas as rotas da API conferem o perfil e o setor (README, seção 9).
+**Mudança (27/10/2026):** antes, o admin de setor cadastrava visualizadores do próprio setor. A dupla decidiu que só o super admin mexe em usuários.
+
+**Onde aparece:** menu lateral do site `gestao`, que mostra só as abas de cada perfil; tela **Usuários**, que só o super admin vê; telas de **Escala** e **Comentários**, que viram só leitura para o visualizador; todas as rotas da API conferem o perfil e o setor (README, seção 9).

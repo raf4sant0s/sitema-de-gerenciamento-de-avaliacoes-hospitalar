@@ -24,6 +24,9 @@ export default function App() {
         <Routes>
           <Route path="/login" element={<LoginPage />} />
 
+          {/* RN18 / D5: TV Wall num link próprio, sem login e fora do menu (Pessoa A) */}
+          <Route path="/tv" element={<TvWallPage />} />
+
           {/* Tudo daqui para baixo exige login e usa o menu lateral */}
           <Route
             element={
@@ -38,14 +41,6 @@ export default function App() {
               element={
                 <RequireAuth roles={rolesFor('/')}>
                   <DashboardPage />
-                </RequireAuth>
-              }
-            />
-            <Route
-              path="tv"
-              element={
-                <RequireAuth roles={rolesFor('/tv')}>
-                  <TvWallPage />
                 </RequireAuth>
               }
             />

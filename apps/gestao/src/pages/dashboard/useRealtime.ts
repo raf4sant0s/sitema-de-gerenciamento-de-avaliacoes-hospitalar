@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { io } from 'socket.io-client';
 import { loadSession } from '../../auth/session';
 
-// Tempo real no site de gestão (tarefa A15). Usado pelo dashboard e, depois, pelo TV Wall (A16).
+// Tempo real no site de gestão (tarefa A15). Usado pelo dashboard; o TV Wall usa o canal público abaixo.
 // A API só AVISA que algo mudou num setor; quem ouve busca os dados de novo.
 //   response:changed { sectorId }  ·  comment:created { sectorId }
 // O endereço vem do .env (VITE_SOCKET_URL) e a conexão usa o mesmo token do login.
@@ -35,6 +35,31 @@ export function useRealtime(events: RealtimeEvent[], onChange: (event: RealtimeE
       setConnected(false);
     };
   }, [eventList]);
+
+  return connected;
+}
+
+// TV Wall (RN18): canal público "/tv" da API, sem login. Só avisa que chegou resposta num setor.
+// Devolve true enquanto está conectado (para mostrar "Ao vivo").
+export function usePublicTvRealtime(onChange: (sectorId: number) => void): boolean {
+  const [connected, setConnected] = useState(false);
+  const handler = useRef(onChange);
+  handler.current = onChange;
+
+  useEffect(() => {
+    const url = import.meta.env.VITE_SOCKET_URL;
+    if (!url) return;
+
+    const socket = io(`${url}/tv`);
+    socket.on('connect', () => setConnected(true));
+    socket.on('disconnect', () => setConnected(false));
+    socket.on('response:changed', (payload: { sectorId: number }) => handler.current(payload.sectorId));
+
+    return () => {
+      socket.disconnect();
+      setConnected(false);
+    };
+  }, []);
 
   return connected;
 }

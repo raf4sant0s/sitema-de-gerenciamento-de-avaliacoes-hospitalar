@@ -6,7 +6,7 @@ import { createRepositories, type Repositories } from './database';
 import { createAuthRouter } from './modules/auth/auth.routes';
 import { createCommentsRouter } from './modules/comments/comments.routes';
 import { CommentsService } from './modules/comments/comments.service';
-import { createDashboardRouter } from './modules/dashboard/dashboard.routes';
+import { createDashboardRouter, createPublicTvRouter } from './modules/dashboard/dashboard.routes';
 import { DashboardService } from './modules/dashboard/dashboard.service';
 import { createResponsesRouter } from './modules/responses/responses.routes';
 import { ResponsesService } from './modules/responses/responses.service';
@@ -63,7 +63,9 @@ export function createApp(overrides: Partial<Repositories> = {}) {
   app.use('/api/sectors', createSectorsRouter(new SectorsService(repositories.sectors, env.SURVEY_SITE_URL))); // setores e QR Code (B11)
   app.use('/api/users', createUsersRouter(new UsersService(repositories.users, repositories.sectors))); // usuários (B12)
   app.use('/api', createSurveysRouter(new SurveysService(repositories.surveys, repositories.sectors))); // pesquisas e perguntas (B13)
-  app.use('/api/dashboard', createDashboardRouter(new DashboardService(repositories.dashboard, repositories.comments))); // indicadores e TV Wall (A13, A16)
+  const dashboard = new DashboardService(repositories.dashboard, repositories.sectors);
+  app.use('/api/dashboard', createDashboardRouter(dashboard)); // indicadores (A13)
+  app.use('/api', createPublicTvRouter(dashboard)); // TV Wall público, sem login (A16, ajustes RN18)
   app.use('/api/comments', createCommentsRouter(new CommentsService(repositories.comments))); // comentários (B15)
   app.use('/api', createSchedulesRouter(new SchedulesService(repositories.schedules, repositories.sectors))); // equipes e escala (B14)
   app.use('/api', createResponsesRouter(new ResponsesService(repositories.responses))); // pesquisa do paciente, pública (A10)

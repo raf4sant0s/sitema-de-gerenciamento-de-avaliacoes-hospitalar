@@ -23,6 +23,7 @@ import FaceDistribution from '../../components/charts/FaceDistribution';
 import { Face, faceFor, formatAverage } from '../../components/charts/faces';
 import TimelineChart from '../../components/charts/TimelineChart';
 import ErrorMessage from '../../components/ui/ErrorMessage';
+import SectorReportDownload from '../../components/ui/SectorReportDownload';
 import { input, secondaryButton } from '../../components/ui/styles';
 import BreakdownTable from './BreakdownTable';
 import { useRealtime } from './useRealtime';
@@ -307,6 +308,14 @@ export default function DashboardPage() {
           {exporting ? 'Gerando...' : 'Exportar Excel'}
         </button>
       </form>
+
+      {/* RN23: relatório do setor em PDF, só para os admins (o visualizador não baixa) */}
+      {user?.role !== 'VIEWER' && (
+        <section aria-label="Relatório do setor" className="rounded-xl border border-line bg-white p-4">
+          <h2 className="mb-2 font-bold">Relatório do setor para imprimir</h2>
+          <SectorReportDownload sector={sectors.find((s) => s.id === filters.sectorId)} idPrefix="dashboard-report" />
+        </section>
+      )}
 
       <ErrorMessage message={error} />
       {loading && !data && <p className="text-muted">Carregando...</p>}

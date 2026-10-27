@@ -6,10 +6,13 @@ import { verifyToken } from './auth';
 // O evento só AVISA que algo mudou num setor; a tela busca os dados de novo pela API.
 //
 //   response:changed  { sectorId }   → dashboard e TV Wall
-//   comment:created   { sectorId }   → comentários e TV Wall
+//   comment:created   { sectorId }   → comentários
 //
-// Só quem está logado se conecta (mesmo crachá/token do site de gestão).
+// Canal principal: só quem está logado se conecta (mesmo crachá/token do site de gestão).
 // RN16: o super admin ouve todos os setores; admin de setor e visualizador, só o próprio.
+//
+// Canal "/tv": o TV Wall é público (RN18), então este canal não pede login. Ele só recebe
+// response:changed, que diz apenas o número do setor, nunca dados de respostas ou comentários.
 
 export type RealtimeEvent = 'response:changed' | 'comment:created';
 
@@ -20,6 +23,7 @@ export interface Notifier {
 // Salas: "sector:1", "sector:2"... e "all" (super admin).
 const sectorRoom = (sectorId: number) => `sector:${sectorId}`;
 const ALL_ROOM = 'all';
+const TV_NAMESPACE = '/tv';
 
 let io: Server | undefined;
 
@@ -38,6 +42,9 @@ export function attachRealtime(server: HttpServer, corsOrigins: string[]): Serve
     next();
   });
 
+  // Canal público do TV Wall (RN18): criado já na largada, sem a checagem de login acima.
+  io.of(TV_NAMESPACE);
+
   io.on('connection', (socket) => {
     const user = socket.data.user;
     if (user.role === 'SUPER_ADMIN') {
@@ -54,6 +61,7 @@ export function attachRealtime(server: HttpServer, corsOrigins: string[]): Serve
 export const realtime: Notifier = {
   notify(event, sectorId) {
     io?.to([ALL_ROOM, sectorRoom(sectorId)]).emit(event, { sectorId });
+    if (event === 'response:changed') io?.of(TV_NAMESPACE).emit(event, { sectorId });
   },
 };
 

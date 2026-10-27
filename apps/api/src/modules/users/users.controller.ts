@@ -50,11 +50,11 @@ function userId(req: Request): number {
 export function createUsersController(service: UsersService) {
   return {
     async list(req: Request, res: Response) {
-      res.json(await service.list(req.user!));
+      res.json(await service.list());
     },
 
     async create(req: Request, res: Response) {
-      res.status(201).json(await service.create(req.user!, parse(createBody, req.body)));
+      res.status(201).json(await service.create(parse(createBody, req.body)));
     },
 
     async update(req: Request, res: Response) {

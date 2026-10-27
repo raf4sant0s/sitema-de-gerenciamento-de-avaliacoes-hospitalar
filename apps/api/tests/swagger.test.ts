@@ -27,7 +27,7 @@ const closed = operations.filter((item) => item.operation.security);
 describe('Swagger x API', () => {
   it('documenta as rotas das duas pessoas', () => {
     // Login, cadastros e comentários (B) + pesquisa pública e dashboard (A)
-    for (const path of ['/auth/login', '/users', '/sectors/{id}/qrcode', '/schedules', '/comments/{id}', '/public/responses', '/dashboard/tv']) {
+    for (const path of ['/auth/login', '/users', '/sectors/{id}/qrcode', '/schedules', '/comments/{id}', '/public/responses', '/public/tv']) {
       expect(spec.paths).toHaveProperty([path]);
     }
   });

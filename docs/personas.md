@@ -98,9 +98,9 @@ Coordena as equipes de enfermagem do **Pronto Atendimento**, que trabalham em tr
 | Saber de qual turno e equipe é cada resposta | Cada resposta guarda setor, data, hora e turno; a escala do mês liga a resposta à equipe de plantão. Se a escala for cadastrada com atraso, as respostas passam para a equipe certa ao salvar | RN12, RN13, RN14 |
 | Não culpar um profissional por uma reclamação | A avaliação é ligada à equipe do turno, nunca a uma pessoa; a nota de uma equipe só aparece com 5 ou mais respostas | RN15, D4 |
 | Responder às reclamações | Tela de comentários com filtros; para marcar como tratado, ela escreve o que foi feito, e pode reabrir | RN17 |
-| Só ver e mexer no próprio setor | Perfil admin de setor: pesquisa, escala, comentários e visualizadores só do Pronto Atendimento | RN16, D8 |
-| Deixar as enfermeiras líderes acompanharem | Ela mesma cadastra visualizadores do setor, que só olham, sem mudar nada | RN16, D8 |
-| Críticas não expostas ao público | O TV Wall, com todos os comentários, é uma aba só do super admin (a direção) | RN18, D5 |
+| Só ver e mexer no próprio setor | Perfil admin de setor: pesquisa, escala e comentários só do Pronto Atendimento | RN16, D8 |
+| Deixar as enfermeiras líderes acompanharem | A direção (super admin) cadastra visualizadores do setor a pedido dela; eles só olham, sem mudar nada | RN16, D8 |
+| Críticas não expostas ao público | O TV Wall, que fica exposto, mostra só percentuais, sem comentários; as críticas ficam na aba Comentários, com login | RN18, D5 |
 | Pouca familiaridade com sistemas | Telas em português simples, botões grandes, situação sempre escrita (não só cor), aviso antes de ações que não dá para desfazer | Seção 11 |
 | Parar de digitar papel | As respostas chegam sozinhas e podem ser exportadas em Excel | RN19 |
 
@@ -110,4 +110,4 @@ Coordena as equipes de enfermagem do **Pronto Atendimento**, que trabalham em tr
 2. Abre **Comentários**, filtra as reclamações novas do fim de semana e lê uma sobre a espera na recepção, na noite de sábado.
 3. Abre a **Escala** e confere que a Equipe B estava de plantão naquela noite. Combina uma conversa com a equipe e, em **Comentários**, marca como tratado escrevendo o que foi feito.
 4. No **Dashboard**, compara a média de cada turno no mês. Uma equipe com menos de 5 respostas aparece como "dados insuficientes", e ela não tira conclusão dela (D4).
-5. Em **Usuários**, cadastra a enfermeira líder do noturno como visualizadora do Pronto Atendimento, para ela acompanhar os resultados.
+5. Pede à direção (super admin) que cadastre a enfermeira líder do noturno como visualizadora do Pronto Atendimento, para ela acompanhar os resultados.
