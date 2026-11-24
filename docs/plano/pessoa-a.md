@@ -30,11 +30,11 @@ Contexto, regras (RN), decisões (D) e contratos: [README](../../README.md). Pla
   - O que fazer: `docs/guia-de-estilos.md` com cores, fontes, tamanhos, carinhas, botões e estados (normal, tocado, desabilitado). Partir da seção 11 do README e atualizá-la se algo mudar.
   - Commit: `docs: guia de estilos`
 
-- [ ] **A4 · Figma: fluxo da pesquisa** (fora do git)
+- [x] **A4 · Figma: fluxo da pesquisa** (fora do git)
   - O que fazer: fluxo do QR Code até o agradecimento, com as perguntas opcionais, o "pular", a obrigatória na última tela, o comentário e o caso de quem fecha no meio.
   - Pronto quando: o link do Figma está colado no README (seção 13) e aberto para visualização.
 
-- [ ] **A5 · Mock: pesquisa, dashboard e TV Wall** (fora do git)
+- [x] **A5 · Mock: pesquisa, dashboard e TV Wall** (fora do git)
   - O que fazer: telas em alta fidelidade seguindo o guia de estilos, com as decisões indicadas nas telas.
 
 ## Etapa 2 — Base
@@ -138,8 +138,9 @@ Contexto, regras (RN), decisões (D) e contratos: [README](../../README.md). Pla
 
 ## Etapa 6 — Entrega
 
-- [ ] **A21 · Manual de uso**
+- [x] **A21 · Manual de uso**
   - Branch: `docs/manual-pesquisa-dashboard`
   - O que fazer: em `docs/manual/`, como responder a pesquisa, como ler o dashboard e como usar o TV Wall, com prints do sistema publicado e linguagem para leigos.
   - Commit: `docs: manual da pesquisa e do dashboard`
+  - Feito em `docs/manual/manual-de-uso.md`; a versão com prints está no PDF de entrega.
 - [ ] **A22 · Juntos:** registro do processo completo, PDF de entrega e ensaio de 8 minutos (A apresenta a pesquisa, o dashboard e o TV Wall).
