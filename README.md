@@ -6,6 +6,21 @@ Pesquisa de satisfação **100% anônima** para hospital. O paciente responde pe
 >
 > Itens marcados **(a definir)** ainda não foram decididos pela dupla. Não implemente nada deles sem decidir antes.
 
+## Links do projeto
+
+| O quê | Link |
+| --- | --- |
+| Pesquisa do paciente (publicada) | https://fhdod-pesquisa.onrender.com/avaliacao/pronto-atendimento |
+| Site de gestão (publicado) | https://fhdod-gestao.onrender.com |
+| TV Wall (publicado, sem login) | https://fhdod-gestao.onrender.com/tv |
+| **Documentação online da API (Swagger)** | https://sitema-de-gerenciamento-de-avaliacoes.onrender.com/api/docs |
+| **Quadro Kanban** (GitHub Projects) | [COLAR O LINK DO KANBAN] |
+| Usuário de teste (super admin) | `superadmin@example.com` · senha `hospital` |
+
+> O servidor gratuito "dorme" quando fica parado: a primeira abertura pode levar até 1 minuto.
+
+**Documentos (pasta `docs/`):** [requisitos](docs/requisitos.md) · [arquitetura do backend](docs/arquitetura-backend.md) · [padrões de Git](docs/padroes-git.md) · [plano e relatório de testes](docs/plano-e-relatorio-de-testes.md) · [banco de dados](docs/banco-de-dados.md) · [manual de uso](docs/manual/manual-de-uso.md) · [registro do processo](docs/registro-processo.md)
+
 ## Sumário
 
 1. [Contexto acadêmico](#1-contexto-acadêmico)
@@ -31,12 +46,13 @@ Pesquisa de satisfação **100% anônima** para hospital. O paciente responde pe
 
 ## 1. Contexto acadêmico
 
-Projeto em **dupla**, entregue para **duas disciplinas** com o mesmo sistema:
+Projeto em **dupla**, entregue para **três disciplinas** com o mesmo sistema:
 
 | Disciplina | O que é avaliado |
 | --- | --- |
 | **Projeto Aplicado** (14 pts) | Personas (2,5) · Figma com o fluxo do paciente (2,5) · Mock alta fidelidade com as decisões indicadas (3,0) · Front publicado e fiel ao mock (3,5) · Manual de uso para leigo (1,5) · Registro do processo (1,0). Entrega: um PDF no Classroom. Apresentação: 8 min, com o sistema funcionando pelo link |
 | **Desenvolvimento de Solução Web Corporativa** | Requisitos + matriz de rastreabilidade · UX/UI e guia de estilos · Relatório SQL vs NoSQL, modelos e scripts DDL/DML · Front + back modulares · API documentada (Swagger/OpenAPI) · Testes em estágios (unitário, integração, E2E) · Repositório git · Pitch |
+| **Criação de Sites** (Projeto Integrador) | Requisitos (IEEE 830 / ISO 25010) · Arquitetura do backend (qualidade, segurança, escalabilidade) · Swagger online · Padrões de Git e PRs · README e repositório · Kanban e contribuição individual · Plano e relatório de testes com cobertura · Aceite do cliente · Pitch técnico. Entregáveis na pasta `docs/` |
 
 **Fora do escopo por enquanto:** plano de negócios.
 
@@ -151,7 +167,7 @@ O Projeto Aplicado exige no mínimo 4 decisões justificadas, indicadas no mock 
 | Excel / QR / PDF | exceljs / qrcode / pdfkit |
 | Documentação da API | swagger-jsdoc + swagger-ui-express em `/api/docs` |
 | Testes | Vitest + Supertest (API), Vitest + Testing Library (sites), Playwright (E2E) |
-| Deploy | **(a definir)** |
+| Deploy | Render (API como Web Service, sites como Static Sites) + Supabase (banco) |
 
 **Por que relacional (SQL):** o cruzamento resposta → escala (setor + data + turno → equipe) é um JOIN; precisamos de integridade entre setor, pesquisa, escala e comentários; o dashboard depende de agregações.
 
@@ -401,7 +417,7 @@ Valores iniciais para os dois começarem iguais. A Pessoa A finaliza em `docs/gu
 
 ## 12. Como rodar localmente
 
-Pré-requisitos: Node.js 20 LTS, Git e VS Code.
+Pré-requisitos: Node.js 22 ou mais novo, Git e VS Code.
 
 **Banco:** as duas usam **o mesmo projeto Supabase**, também durante o desenvolvimento. Por isso:
 - o `DATABASE_URL` é o mesmo nas duas máquinas (passem um para a outra por mensagem privada, nunca pelo git);
@@ -497,7 +513,7 @@ Contratos = seções 3, 8, 9 e 10. Os dois dependem deles.
 
 - `main`: só recebe a `develop` quando algo estiver pronto para publicar.
 - `develop`: onde o trabalho dos dois se junta.
-- Uma branch por tarefa, **saindo da `develop`**, com o nome indicado no plano (ex.: `feat/pesquisa-carinhas`). Ao terminar, a própria pessoa junta a branch na `develop` com `git merge`. **A dupla não usa Pull Request.**
+- Uma branch por tarefa, **saindo da `develop`**, com o nome indicado no plano (ex.: `feat/pesquisa-carinhas`). Ao terminar, a pessoa abre um **Pull Request** para a `develop`; a colega revisa e aprova, e a dona da tarefa faz o merge. Durante o desenvolvimento do sistema, as branches eram juntadas direto com `git merge`. Padrões completos em [docs/padroes-git.md](docs/padroes-git.md).
 
 ```bash
 git checkout develop
@@ -536,17 +552,31 @@ Em seguida, avisar a colega para dar `git pull` na `develop` (e `npm install`, s
 | Integração | Vitest + Supertest + banco de teste | criar resposta, salvar toque, completar sem a obrigatória → 400, login, visualizador não edita, marcar comentário como tratado |
 | E2E | Playwright | paciente responde tudo; paciente abandona no meio; TV Wall abre sem login e não mostra comentários |
 
-Rodar: `npm test` dentro de cada app. Os resultados vão para `docs/testes.md`.
+Rodar: `npm test` dentro de cada app. Estratégia, resultados e cobertura em [docs/plano-e-relatorio-de-testes.md](docs/plano-e-relatorio-de-testes.md); detalhe por arquivo em [docs/testes.md](docs/testes.md).
 
 ## 17. Publicação (deploy)
 
-**(a definir:** onde publicar a API e os dois sites. A dupla quer opções gratuitas; pedir sugestões antes da Etapa 5.) O banco fica no Supabase.
+Tudo com planos gratuitos, a partir da branch `main` do repositório público.
+
+| Parte | Serviço | Configuração |
+| --- | --- | --- |
+| API (`apps/api`) | Render · Web Service (Node) | Build `npm install` · Start `npm run start --workspace api` · variáveis `NODE_VERSION`, `DATABASE_URL`, `JWT_SECRET`, `CORS_ORIGINS`, `SURVEY_SITE_URL` |
+| Site da pesquisa (`apps/pesquisa`) | Render · Static Site | Build `npm install && npm run build --workspace pesquisa` · Publish `apps/pesquisa/dist` · variável `VITE_API_URL` · regra Rewrite `/*` → `/index.html` |
+| Site de gestão (`apps/gestao`) | Render · Static Site | Build `npm install && npm run build --workspace gestao` · Publish `apps/gestao/dist` · variáveis `VITE_API_URL`, `VITE_SOCKET_URL` · regra Rewrite `/*` → `/index.html` |
+| Banco | Supabase (PostgreSQL) | Tabelas com `npm run db:migrate` e dados de exemplo com `npm run db:seed` |
+
+Cuidados do plano gratuito:
+- A API "dorme" depois de 15 minutos parada; a primeira abertura leva até 1 minuto.
+- O projeto do Supabase pausa depois de cerca de 7 dias sem uso. Para voltar: Supabase → projeto → **Resume project** e, no Render, **Manual Deploy → Restart service** da API.
+- Como o repositório não é da conta que publicou, o Render não atualiza sozinho: depois de um merge na `main`, usar **Manual Deploy → Deploy latest commit** em cada serviço.
 
 ## 18. Entregáveis e checklist
 
 **PDF do Projeto Aplicado:** nomes e cursos, personas, link do Figma (aberto), imagens do mock, link do sistema publicado, manual de uso, registro do processo com as justificativas.
 
 **Solução Web Corporativa:** requisitos + matriz, relatório do banco + modelos + scripts SQL, repositório, Swagger, relatório de testes, sistema funcionando, pitch.
+
+**Criação de Sites:** [requisitos.md](docs/requisitos.md), [arquitetura-backend.md](docs/arquitetura-backend.md), [padroes-git.md](docs/padroes-git.md), [plano-e-relatorio-de-testes.md](docs/plano-e-relatorio-de-testes.md), link do Swagger e do Kanban neste README (seção "Links do projeto").
 
 Antes de entregar, no sistema **publicado**:
 - [ ] Uma resposta nova aparece no dashboard e no TV Wall
