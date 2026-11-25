@@ -14,7 +14,7 @@ Pesquisa de satisfação **100% anônima** para hospital. O paciente responde pe
 | Site de gestão (publicado) | https://fhdod-gestao.onrender.com |
 | TV Wall (publicado, sem login) | https://fhdod-gestao.onrender.com/tv |
 | **Documentação online da API (Swagger)** | https://sitema-de-gerenciamento-de-avaliacoes.onrender.com/api/docs |
-| **Quadro Kanban** (GitHub Projects) | [COLAR O LINK DO KANBAN] |
+| **Quadro Kanban** (Trello) | https://trello.com/b/qz8xXFWt/sistema-hospitalar |
 | Usuário de teste (super admin) | `superadmin@example.com` · senha `hospital` |
 
 > O servidor gratuito "dorme" quando fica parado: a primeira abertura pode levar até 1 minuto.
